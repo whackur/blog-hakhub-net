@@ -12,9 +12,19 @@ translationKey: "harness-1-state-externalizing-search-agents"
 draft: false
 ---
 
-When an agent searches for evidence over a long multi-hop task, the transcript gets noisy fast. Candidate lists, seen documents, verification records, context budget markers: all of it accumulates in the model's context, and when RL training fails to improve the policy, it's hard to tell if the agent was making bad search decisions or just forgetting state it already had.
+## Search agents and the state problem
 
-[Harness-1](https://arxiv.org/abs/2606.02373v1) (arXiv, June 2026) is a 20B search subagent built around one idea: move the bookkeeping out of the model and into a stateful harness, so the model only has to make semantic decisions. The code and checkpoint are public on [GitHub](https://github.com/pat-jj/harness-1) and [Hugging Face](https://huggingface.co/pat-jj/harness-1) under Apache 2.0.
+A search agent is an AI system that answers a question by iterating through multiple searches. Unlike a one-shot retrieval lookup, it reads intermediate results, adjusts its search strategy, compares candidate documents, and checks whether specific claims are actually supported by what it found. Tasks like analyzing financial filings, tracing multi-hop facts across sources, or interpreting complex regulations need this kind of iterative work. A single query won't get you there.
+
+The problem is state. To do any of this, the agent needs to track what it's already seen, which candidates it's keeping, which claims it's verified, and how much context budget remains. If all of that lives in the transcript, the model's context gets noisy fast. When RL training fails to improve the policy, it's not clear what went wrong: bad search decisions, forgetting state that got pushed off the edge of the context, or a skipped verification step. Transcript accumulation tangles the signal.
+
+## The harness approach
+
+A harness, in software engineering, wraps a unit under test to provide it with a controlled environment (inputs, mocks, fixtures). In the agent context, a search harness wraps the model to provide it with a managed state environment. Instead of the model maintaining its own working memory inside the transcript, the harness holds that state externally and hands the model a compressed rendering of it at each turn.
+
+This is a form of cognitive offloading. People doing complex multi-step work use notebooks, whiteboards, and spreadsheets to extend working memory beyond what they can hold in their head. A search harness does the same for a model: it holds the intermediate state so the model can focus on decisions rather than bookkeeping. From RL's perspective, this means the training signal is cleaner. The policy is learning to make search decisions, not to maintain a consistent internal log.
+
+[Harness-1](https://arxiv.org/abs/2606.02373v1) (arXiv, June 2026) is a 20B search subagent built on this idea. The code and checkpoint are public on [GitHub](https://github.com/pat-jj/harness-1) and [Hugging Face](https://huggingface.co/pat-jj/harness-1) under Apache 2.0.
 
 ## The core split
 
@@ -26,10 +36,10 @@ The model handles:
 
 The harness handles:
 - `P_t`: the candidate document pool after compression/dedup
-- `C_t, I_t`: the curated evidence set with importance tags (very_high/high/fair/low)
-- `D_t`: full-text store of every document seen during the episode
-- `G_t`: an evidence graph of entities, dates, and document relationships
-- `V_t`: per-claim verification records
+- `C_t, I_t`: the curated evidence set with importance tags (very_high/high/fair/low). This is not the raw list of retrieved documents; it's the subset the model has explicitly chosen as relevant to the answer, with importance labels attached. Only documents the model curated end up here.
+- `D_t`: full-text store of every document seen during the episode. Documents stay retrievable without a new search call.
+- `G_t`: an evidence graph connecting entities (company names, dates, figures) and documents. This lets the model reference relationships across multiple sources without re-fetching them — useful for multi-hop questions where the answer requires connecting information from several documents.
+- `V_t`: per-claim verification records. Each entry is the result of asking "does this document actually support this claim?" Once a claim is verified, it doesn't need to be re-checked. RL can use the verification sequence as part of its reward computation.
 - `H_t`: search history and result summaries
 - `B_t`: context budget marker
 
