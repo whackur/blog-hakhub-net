@@ -12,7 +12,13 @@ translationKey: "lighter-zk-orderbook-dex"
 draft: false
 ---
 
-중앙화 거래소(CEX) 수준의 오더북 UX를 비수탁 환경에서 구현하려는 시도는 오랫동안 DEX 개발자들의 목표였다. Lighter는 그 답을 Ethereum 위의 애플리케이션 특화 zk-rollup에서 찾는다. 매칭 로직의 정당성을 SNARK로 증명하고 Ethereum에서 검증함으로써, 오퍼레이터를 신뢰하지 않아도 거래 결과를 검증할 수 있게 하는 구조다.
+탈중앙화 거래소(DEX)는 크게 두 방식으로 나뉜다. Uniswap처럼 유동성 풀 수식으로 가격을 결정하는 AMM(자동화 마켓 메이커)과, 매도·매수 주문을 직접 대응시키는 오더북 방식이다. AMM은 스마트 컨트랙트로 구현하기 쉽다. 그러나 지정가 주문이나 price-time priority 같은 기능 없이는 중앙화 거래소(CEX)와 동등한 거래 환경을 제공하기 어렵다.
+
+오더북을 Ethereum 위에 그대로 올리는 것은 쉽지 않다. 초당 수천 건의 주문·취소·매칭을 온체인 트랜잭션으로 처리하면 가스비와 블록 확인 대기 시간이 곧 병목이 된다. MEV(Maximal Extractable Value) 문제도 있다. 블록을 구성하는 검증자나 빌더가 보류 중인 주문 흐름을 보고 일반 트레이더보다 먼저 주문을 끼워넣는 프론트러닝이 구조적으로 가능해진다.
+
+zk-rollup은 이 구조적 문제에 하나의 답을 제시한다. 실제 주문 처리는 체인 바깥의 고속 실행 엔진(시퀀서)이 담당하고, 처리 결과가 공개된 규칙에 따라 올바르게 계산됐는지만 암호학적 증명(SNARK, Succinct Non-interactive Argument of Knowledge)으로 만들어 이더리움에 제출한다. 이더리움 스마트 컨트랙트가 이 증명을 검증하고 최종 상태를 확정한다. 사용자는 오퍼레이터를 직접 신뢰하지 않아도, 증명 자체로 정당성을 확인할 수 있다.
+
+Lighter는 이 구조를 오더북 DEX에 특화해 설계한 프로젝트다. 매칭 로직의 정당성을 SNARK로 증명하고, Ethereum 스마트 컨트랙트가 그 증명과 상태 루트를 검증·보관한다.
 
 ## Lighter의 포지션
 
@@ -46,7 +52,7 @@ Ethereum smart contract는 사용자가 예치한 자산과 canonical Lighter st
 
 사용자는 Ethereum smart contract를 통해 priority transaction을 직접 제출할 수 있다. Sequencer가 정해진 기한 안에 이를 포함하지 않으면 거래소 상태가 freeze되고 Escape Hatch가 활성화된다. 이 장치는 일반 주문의 front-running 방지보다는 출금·liveness·검열 저항을 위한 안전장치에 가깝다.
 
-## MEV와 front-running에 대한 정확한 이해
+## zk 증명이 실제로 보장하는 범위
 
 "zk로 증명하므로 front-running이 불가능하다"는 표현은 정확하지 않다. [Lighter whitepaper](https://assets.lighter.xyz/whitepaper.pdf)는 MEV를 "substantially reducing"하는 방향으로 표현하고, 향후 fair sequencing, 트랜잭션 암호화, pre-commitment scheme을 언급한다.
 

@@ -14,11 +14,38 @@ draft: false
 
 Agentic payments in June 2026 moved from "can an agent pay" toward "who authorized the payment, how is it verified, and how is it traced." The major open protocols (x402, UCP, MPP/pay.sh, and ACP) each had meaningful implementation changes. All figures and commit details below come from GitHub API, PyPI, and npm registry checks.
 
+## What agentic payments are
+
+Agentic payments are transactions where an AI agent pays for services without real-time human approval. The basic flow: an agent calls an image-generation API. The API returns HTTP 402 with a payment challenge: a specification that says "send this amount in this token to this address and I'll serve you." The agent executes an on-chain stablecoin payment and re-sends the request with a payment receipt. The API verifies the receipt and returns the content.
+
+Card payments don't fit here for two reasons. Card checkout requires a human to approve each transaction. An agent calling dozens of APIs per minute can't pause for human input each time. And usage-based services like LLM inference don't have a fixed charge until the request completes, which breaks the pre-authorization assumption that card payments depend on.
+
+**Key actors in an agentic payment flow:**
+
+- **Requester**: the AI agent or client application calling the paid API
+- **Resource server**: the server offering paid content or services; returns HTTP 402 with a payment challenge when a request arrives without valid payment
+- **Facilitator**: an intermediate service that executes the on-chain payment on behalf of the requester and delivers the payment receipt to the resource server
+- **Merchant**: in UCP contexts, the business selling goods or services
+- **Buyer agent**: an agent handling the purchase flow on the merchant's platform
+- **Payment challenge**: the specification in the HTTP 402 response body describing payment terms
+- **Settlement**: the on-chain transfer of payment tokens. Fulfillment is the subsequent delivery of the service or product
+
+**What each protocol targets:**
+
+Agentic payments aren't a single protocol. Different standards handle different layers.
+
+- **x402**: standardizes the HTTP payment challenge and response. Covers immediate settlement and auth-capture (pre-authorize now, settle later) flows. Stablecoin-centric.
+- **UCP (Universal Commerce Protocol)**: the commerce layer for cart and checkout. Handles buyer consent, delegated identity, and signed order evidence for agentic shopping scenarios.
+- **MPP/pay.sh**: tooling for payment initiation from execution environments like CLI and MCP servers. Solana-based.
+- **ACP (Agentic Commerce Protocol)**: the OpenAI/Stripe-affiliated protocol. Focused on product feed provenance and transaction traceability.
+
+What follows covers the concrete implementation changes each protocol made in June 2026.
+
 ## x402: auth-capture, attribution, usage-based settlement
 
 Development on x402 is concentrated in `x402-foundation/x402`. The `coinbase/x402` fork saw near-zero activity in June.
 
-**Auth-capture flow.** The TypeScript `@x402/evm` client added support for detecting auth-capture payment requirements and signing a payer-agnostic `PaymentInfo` hash using ERC-3009 (default) or Permit2 (fallback). This extends x402 beyond immediate settlement toward split authorization-and-capture, which is standard in e-commerce. Server and facilitator support was left for follow-up PRs.
+**Auth-capture flow.** The TypeScript `@x402/evm` client added support for detecting auth-capture payment requirements and signing a payer-agnostic `PaymentInfo` hash using ERC-3009 (a meta-transaction token transfer authorization standard) by default, or Permit2 (Uniswap's one-shot signature delegation standard) as fallback. This extends x402 beyond immediate settlement toward split authorization-and-capture, which is standard in e-commerce. Server and facilitator support was left for follow-up PRs.
 
 **Builder-code attribution.** x402's builder-code extension embeds ERC-8021 Schema 2 attribution codes in settlement transaction calldata as a CBOR suffix. Three codes: `a` for the application exposing the paid API, `s` for the client or intermediate service, `w` for the settlement facilitator wallet.
 

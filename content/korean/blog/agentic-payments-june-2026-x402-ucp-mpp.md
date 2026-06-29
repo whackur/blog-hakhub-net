@@ -14,13 +14,40 @@ draft: false
 
 2026년 6월 에이전트 결제 관련 오픈소스 프로토콜들이 "에이전트가 결제할 수 있는가"에서 "누가 결제 권한을 갖고, 어떻게 검증하며, 어떻게 추적하는가"로 초점을 이동했다. x402, UCP, MPP/pay.sh, ACP 각각에서 크고 작은 구현 변화가 있었다. 이 글은 2026년 6월 한 달간 관찰된 주요 변화를 정리한다. 수치와 커밋 내용은 직접 확인한 GitHub API·PyPI·npm registry 기준이다.
 
+## 에이전트 결제 개념과 배경
+
+에이전트 결제(agentic payments)는 AI 에이전트가 사람의 실시간 개입 없이 유료 서비스에 자동으로 대금을 지불하는 흐름이다. 기본 시나리오를 보면 이해가 빠르다. 에이전트가 이미지 생성 API를 호출한다. 서버는 HTTP 402 응답으로 결제 과제(payment challenge)를 보낸다. "이 주소에, 이 토큰으로, 이 금액을 보내면 콘텐츠를 주겠다"는 명세다. 에이전트는 스테이블코인 결제를 완료하고 결제 증거를 첨부해 재요청한다. 서버가 확인하면 콘텐츠를 돌려준다.
+
+카드 결제를 그대로 쓰면 안 되는 이유가 있다. 카드 결제는 사람이 화면에서 직접 승인하는 구조다. 에이전트가 분당 수십 개의 API를 자동으로 호출할 때마다 사람이 개입할 수 없다. 또한 LLM 추론처럼 실행이 끝나야 금액이 확정되는 종량제 서비스는 거래 전 금액이 고정된다는 카드 결제의 전제와 맞지 않는다.
+
+**결제 흐름의 주요 참여자**
+
+- **요청자(requester)**: 유료 API를 호출하는 AI 에이전트 또는 클라이언트 애플리케이션
+- **자원 서버(resource server)**: 유료 콘텐츠·서비스를 제공하는 서버. 결제 미완료 요청에 HTTP 402와 결제 과제를 돌려보낸다
+- **촉진자(facilitator)**: 요청자를 대신해 온체인 결제를 실행하고 자원 서버에 결제 증거를 전달하는 중간 서비스
+- **판매자(merchant)**: UCP 맥락에서 상품·서비스를 판매하는 사업자
+- **구매 에이전트(buyer agent)**: 판매자 플랫폼에서 구매 절차를 처리하는 에이전트
+- **결제 과제(payment challenge)**: HTTP 402 응답에 담긴, 결제 조건을 서술한 명세
+- **정산(settlement)**: 결제 토큰이 실제로 온체인에서 이전되는 행위. fulfillment는 정산 이후 서비스가 실제로 제공되는 단계
+
+**각 프로토콜이 다루는 문제**
+
+현재 에이전트 결제 스택은 단일 프로토콜이 아니라 계층별로 다른 표준이 담당한다.
+
+- **x402**: HTTP 요청/응답 안에서 결제 과제와 응답 흐름을 표준화한다. 즉시 정산 외에 승인과 capture를 분리하는 상거래형 흐름도 지원하며 스테이블코인 결제 중심이다
+- **UCP(Universal Commerce Protocol)**: 장바구니·결제 단계에서 구매 동의, 신원 위임, 주문 증거를 다루는 상거래 계층이다
+- **MPP/pay.sh**: CLI·MCP 서버 같은 실행 환경에서 결제 시작을 처리하는 도구 계층이다. Solana 기반으로 개발 중이다
+- **ACP(Agentic Commerce Protocol)**: OpenAI·Stripe 계열로, 상품 피드와 거래 데이터의 출처 추적에 초점을 맞춘다
+
+아래 내용은 2026년 6월 한 달간 각 프로토콜에서 있었던 구체적인 구현 변화를 정리한다.
+
 ## x402: auth-capture, attribution, 사용량 기반 정산
 
 `x402-foundation/x402` 저장소는 6월 한 달간 수십 개의 커밋이 누적됐다. `coinbase/x402`는 같은 기간 거의 활동이 없었고 실질 개발 표면은 Foundation 저장소에 집중되어 있다.
 
 **auth-capture 흐름**
 
-TypeScript `@x402/evm` 클라이언트에 auth-capture payment requirement를 감지하고 ERC-3009를 기본값으로, Permit2를 대안으로 사용해 payer-agnostic `PaymentInfo` hash에 서명하는 흐름이 추가됐다. 기존 즉시 결제뿐 아니라 승인과 capture가 분리되는 상거래형 결제 흐름으로 x402가 확장되는 신호다. 서버와 facilitator 지원은 후속 단계다.
+TypeScript `@x402/evm` 클라이언트에 auth-capture payment requirement를 감지하고 ERC-3009(메타트랜잭션 방식 결제 위임 표준)를 기본값으로, Permit2(Uniswap이 개발한 일회성 서명 위임 방식)를 대안으로 사용해 payer-agnostic `PaymentInfo` hash에 서명하는 흐름이 추가됐다. 기존 즉시 결제뿐 아니라 승인과 capture가 분리되는 상거래형 결제 흐름으로 x402가 확장되는 신호다. 서버와 facilitator 지원은 후속 단계다.
 
 **builder-code attribution**
 
@@ -86,7 +113,7 @@ Ethereum ERC 쪽에서는 두 신호가 있었다.
 
 [ERC-8126](https://eips.ethereum.org/EIPS/eip-8126) (AI Agent Verification)이 2026년 6월 2일 `Final` 상태로 이동했다. ERC-8004에 등록된 에이전트의 지갑·코드·web endpoint·컨트랙트·미디어를 검증하고 0~100 위험 점수와 ZKP proof를 제공하는 표준이다. Final 이동은 Draft 실험에서 구현 가능한 기준으로 올라섰다는 신호다.
 
-[ERC-8273](https://github.com/ethereum/ercs/blob/master/ERCS/erc-8273.md) (Attestation-Gated Agentic Actions) 초안이 추가됐다. 장기 신원 registry만으로는 "이번 특정 action이 허용됐는가"를 답하기 어렵다는 문제를 겨냥한다. `attestAndCall()` 패턴으로 authorization-and-action을 같은 transaction에서 atomic하게 실행하고, EIP-1153 transient storage에 일회성 권한을 써서 transaction이 끝나면 자동 소멸시킨다. Draft이므로 interface와 보안 모델이 변경될 가능성이 높다.
+[ERC-8273](https://github.com/ethereum/ercs/blob/master/ERCS/erc-8273.md) (Attestation-Gated Agentic Actions) 초안이 추가됐다. 장기 신원 registry만으로는 "이번 특정 action이 허용됐는가"를 답하기 어렵다는 문제를 겨냥한다. `attestAndCall()` 패턴으로 authorization-and-action을 같은 transaction에서 atomic하게 실행하고, EIP-1153 transient storage(트랜잭션 종료 시 자동 삭제되는 임시 저장소)에 일회성 권한을 써서 transaction이 끝나면 자동 소멸시킨다. Draft이므로 interface와 보안 모델이 변경될 가능성이 높다.
 
 ERC-8004 자체는 6월 한 달간 공식 변경이 없었고 Draft 상태를 유지했다.
 

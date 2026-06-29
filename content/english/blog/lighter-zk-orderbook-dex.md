@@ -12,7 +12,13 @@ translationKey: "lighter-zk-orderbook-dex"
 draft: false
 ---
 
-Building a CEX-style orderbook experience without a custodian has been a recurring problem for DEX developers. [Lighter](https://lighter.xyz/) tries to solve it with an application-specific zk-rollup on Ethereum: a sequencer handles fast order execution, a prover generates SNARK proofs of correctness, and Ethereum smart contracts verify those proofs on-chain.
+Decentralized exchanges come in two main forms. AMMs (Automated Market Makers) like Uniswap set prices algorithmically from pool ratios and work as permissionless swap venues. Orderbook DEXes match individual buy and sell orders by price and time priority, the same way centralized exchanges like Binance or Coinbase operate. Orderbooks enable limit orders, tighter spreads with active market-making, and more precise price discovery. AMMs do not.
+
+Building a functioning orderbook on Ethereum runs into two problems immediately. First, processing thousands of order placements, cancellations, and matches per second as individual on-chain transactions means gas costs and block time delays that no market maker can work around. Second, MEV (Maximal Extractable Value): validators and block builders who see pending order flow can front-run individual trades by inserting their own transactions ahead of incoming orders.
+
+A zk-rollup changes the equation. Order processing runs off-chain in a fast sequencer. A prover then generates a cryptographic proof, specifically a SNARK (Succinct Non-interactive Argument of Knowledge), that the processing followed the published matching rules. An Ethereum smart contract verifies that proof and settles the canonical state. Users do not have to trust the sequencer operator directly: the proof attests that the rules were followed.
+
+[Lighter](https://lighter.xyz/) applies this design to an orderbook DEX. A sequencer handles low-latency execution, a prover generates SNARK proofs for exchange operations, and Ethereum smart contracts verify those proofs and hold deposited assets.
 
 ## How Lighter Fits Against Hyperliquid
 
