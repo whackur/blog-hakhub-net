@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["ai-blockchain", "bittensor", "depin", "agent-finance", "akash", "render", "x402", "decentralized-compute"]
 author: "hakhub"
 translationKey: "ai-blockchain-2026-bittensor-depin-agent-finance"
-draft: true
+draft: false
 ---
 
 AI와 블록체인을 결합한다는 말은 2020년대 초반에는 막연한 슬로건에 가까웠다. 2026년 현재, 그 결합이 네 개의 레이어로 구체화되고 있다. 분산 지능 레이어, 분산 GPU 컴퓨팅, 에이전트 금융, 머신 간 결제다. 각 레이어마다 살아남은 프로젝트와 사라진 프로젝트가 나뉘고 있다.

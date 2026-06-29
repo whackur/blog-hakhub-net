@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["agentic-payments", "x402", "ucp", "mpp", "stablecoin"]
 author: "hakhub"
 translationKey: "agentic-payments-june-2026-x402-ucp-mpp"
-draft: true
+draft: false
 ---
 
 2026년 6월 에이전트 결제 관련 오픈소스 프로토콜들이 "에이전트가 결제할 수 있는가"에서 "누가 결제 권한을 갖고, 어떻게 검증하며, 어떻게 추적하는가"로 초점을 이동했다. x402, UCP, MPP/pay.sh, ACP 각각에서 크고 작은 구현 변화가 있었다. 이 글은 2026년 6월 한 달간 관찰된 주요 변화를 정리한다. 수치와 커밋 내용은 직접 확인한 GitHub API·PyPI·npm registry 기준이다.

@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["rwa", "provenance", "capital-markets", "tokenization", "heloc", "ylds"]
 author: "hakhub"
 translationKey: "figure-blockchain-capital-markets"
-draft: true
+draft: false
 ---
 
 Figure라는 이름은 두 개의 회사를 가리킨다. 하나는 휴머노이드 로봇으로 알려진 Figure AI이고, 다른 하나는 이 글의 주제인 [Figure Technology Solutions](https://www.figure.com/)다. 두 회사는 무관하다.

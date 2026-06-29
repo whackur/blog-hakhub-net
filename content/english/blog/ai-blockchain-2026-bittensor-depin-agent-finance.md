@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["ai-blockchain", "bittensor", "depin", "agent-finance", "akash", "render", "x402", "decentralized-compute"]
 author: "hakhub"
 translationKey: "ai-blockchain-2026-bittensor-depin-agent-finance"
-draft: true
+draft: false
 ---
 
 "AI plus blockchain" spent most of the early 2020s as a marketing phrase. By mid-2026, it has organized into four distinct layers, each with its own competitive dynamics. Which projects have staying power, and what are the actual evaluation criteria at this point?

@@ -9,7 +9,7 @@ categories: ["AI"]
 tags: ["llm-observability", "evals", "tracing", "langfuse", "opik"]
 author: "hakhub"
 translationKey: "llm-observability-langsmith-alternatives"
-draft: true
+draft: false
 ---
 
 At some point in building LLM applications or agents, you need to know why a call failed, what the tool invocation looked like, or why the agent got stuck in a loop. LangSmith has been the default answer, but it has pricing and hosting constraints that send a lot of teams looking for alternatives.

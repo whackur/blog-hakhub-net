@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["zk-rollup", "orderbook", "dex", "mev", "ethereum", "snark"]
 author: "hakhub"
 translationKey: "lighter-zk-orderbook-dex"
-draft: true
+draft: false
 ---
 
 Building a CEX-style orderbook experience without a custodian has been a recurring problem for DEX developers. [Lighter](https://lighter.xyz/) tries to solve it with an application-specific zk-rollup on Ethereum: a sequencer handles fast order execution, a prover generates SNARK proofs of correctness, and Ethereum smart contracts verify those proofs on-chain.

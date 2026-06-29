@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["agentic-payments", "x402", "ucp", "mpp", "stablecoin"]
 author: "hakhub"
 translationKey: "agentic-payments-june-2026-x402-ucp-mpp"
-draft: true
+draft: false
 ---
 
 Agentic payments in June 2026 moved from "can an agent pay" toward "who authorized the payment, how is it verified, and how is it traced." The major open protocols (x402, UCP, MPP/pay.sh, and ACP) each had meaningful implementation changes. All figures and commit details below come from GitHub API, PyPI, and npm registry checks.

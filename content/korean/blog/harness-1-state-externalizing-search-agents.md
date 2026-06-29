@@ -9,7 +9,7 @@ categories: ["AI"]
 tags: ["search-agent", "retrieval", "rl", "rag", "agent-harness"]
 author: "hakhub"
 translationKey: "harness-1-state-externalizing-search-agents"
-draft: true
+draft: false
 ---
 
 에이전트가 긴 검색 태스크를 처리할 때 흔히 생기는 문제가 있다. 의미적 판단과 기계적 상태 관리를 모델 정책이 동시에 떠맡는 구조다. 이미 본 문서 목록, 후보 풀, 검증 여부, 남은 컨텍스트 예산까지 transcript 안에 쌓이면 RL로 검색 행동을 개선하기 점점 어려워진다. 실패했을 때 "검색을 잘못한 건지, 봤지만 잊은 건지, 검증을 빠뜨린 건지" 구분이 안 된다.

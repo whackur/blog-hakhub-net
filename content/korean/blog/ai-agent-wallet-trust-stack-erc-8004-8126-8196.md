@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["ai-agent", "wallet", "erc-8004", "erc-8126", "erc-8196"]
 author: "hakhub"
 translationKey: "ai-agent-wallet-trust-stack-erc-8004-8126-8196"
-draft: true
+draft: false
 ---
 
 AI 에이전트가 사용자를 대신해 자산을 쓰고, 컨트랙트를 호출하고, 유료 API에 접근하는 시대가 가까워지면서 "이 에이전트를 믿고 돈을 맡겨도 되는가"라는 질문이 실질적인 설계 문제가 됐다. 블록체인 커뮤니티는 이 문제를 세 계층으로 나눠 접근하고 있다. 신원 등록(ERC-8004), 보안 검증(ERC-8126), 정책 기반 실행(ERC-8196)이다.

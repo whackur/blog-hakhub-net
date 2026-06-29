@@ -9,7 +9,7 @@ categories: ["AI"]
 tags: ["llm-observability", "evals", "tracing", "langfuse", "opik"]
 author: "hakhub"
 translationKey: "llm-observability-langsmith-alternatives"
-draft: true
+draft: false
 ---
 
 LLM 앱이나 AI 에이전트를 운영하다 보면 "어떤 프롬프트가 실패했고, 어떤 도구 호출이 막혔고, 왜 에이전트가 루프에 빠졌는가"를 추적해야 하는 시점이 온다. LangSmith가 이 공간을 선점했지만, 자체 호스팅과 오픈소스 선호도에 따라 여러 대안이 등장했다.

@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["zk-rollup", "orderbook", "dex", "mev", "ethereum", "snark"]
 author: "hakhub"
 translationKey: "lighter-zk-orderbook-dex"
-draft: true
+draft: false
 ---
 
 중앙화 거래소(CEX) 수준의 오더북 UX를 비수탁 환경에서 구현하려는 시도는 오랫동안 DEX 개발자들의 목표였다. Lighter는 그 답을 Ethereum 위의 애플리케이션 특화 zk-rollup에서 찾는다. 매칭 로직의 정당성을 SNARK로 증명하고 Ethereum에서 검증함으로써, 오퍼레이터를 신뢰하지 않아도 거래 결과를 검증할 수 있게 하는 구조다.

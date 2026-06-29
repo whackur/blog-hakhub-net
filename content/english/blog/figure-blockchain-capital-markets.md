@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["rwa", "provenance", "capital-markets", "tokenization", "heloc", "ylds"]
 author: "hakhub"
 translationKey: "figure-blockchain-capital-markets"
-draft: true
+draft: false
 ---
 
 Two companies go by the name Figure. One is Figure AI, the humanoid robotics company. The other is [Figure Technology Solutions](https://www.figure.com/), which is what this post is about. They are unrelated.

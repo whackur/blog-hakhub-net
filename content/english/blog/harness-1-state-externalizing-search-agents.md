@@ -9,7 +9,7 @@ categories: ["AI"]
 tags: ["search-agent", "retrieval", "rl", "rag", "agent-harness"]
 author: "hakhub"
 translationKey: "harness-1-state-externalizing-search-agents"
-draft: true
+draft: false
 ---
 
 When an agent searches for evidence over a long multi-hop task, the transcript gets noisy fast. Candidate lists, seen documents, verification records, context budget markers: all of it accumulates in the model's context, and when RL training fails to improve the policy, it's hard to tell if the agent was making bad search decisions or just forgetting state it already had.

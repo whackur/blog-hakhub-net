@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["ai-agent", "wallet", "erc-8004", "erc-8126", "erc-8196"]
 author: "hakhub"
 translationKey: "ai-agent-wallet-trust-stack-erc-8004-8126-8196"
-draft: true
+draft: false
 ---
 
 When an AI agent acts on behalf of a user (spending funds, calling contracts, accessing paid APIs), the obvious question is: how do you know this agent is safe? The Ethereum community has three draft or finalized standards that address different layers of that question. They don't solve the whole problem, but they're building toward a coherent stack.
