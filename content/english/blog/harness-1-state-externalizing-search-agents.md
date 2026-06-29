@@ -61,9 +61,9 @@ The policy issues one structured action per turn. The notable entries:
 
 ## Training
 
-SFT used GPT-5.4 as a teacher agent on 899 filtered trajectories, with `openai/gpt-oss-20b` MoE as the base model. LoRA rank 32, max sequence 32,768, 3 epochs. The goal wasn't knowledge injection: it was teaching the model how to use the stateful interface.
+Supervised fine-tuning (SFT) used GPT-5.4 as a teacher agent on 899 filtered trajectories, with `openai/gpt-oss-20b` MoE as the base model. LoRA rank 32, max sequence 32,768, 3 epochs. The goal wasn't knowledge injection: it was teaching the model how to use the stateful interface.
 
-RL used on-policy CISPO on SEC training queries: 128 queries per step, 8 rollouts per query, ~82K total rollouts. Reward combined curated set quality, trajectory recall, final-answer evidence recall, and a tool diversity bonus. KL anchor disabled.
+RL used on-policy CISPO (an on-policy reinforcement learning algorithm) on SEC training queries: 128 queries per step, 8 rollouts per query, ~82K total rollouts. Reward combined curated set quality, trajectory recall, final-answer evidence recall, and a tool diversity bonus. KL anchor disabled.
 
 Three design choices the paper argues are necessary for RL to work:
 

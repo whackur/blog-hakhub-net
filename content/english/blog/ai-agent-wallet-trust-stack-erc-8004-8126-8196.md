@@ -62,7 +62,7 @@ The key design constraint: verifiers don't accept raw parameters like `walletAdd
 - **WAV (Web Application Verification)**: validates HTTPS endpoints, TLS certificates, and common web vulnerabilities
 - **WV (Wallet Verification)**: checks wallet history against threat intelligence databases, looks for mixer interactions and sanctioned address links
 
-PDV (Private Data Verification) generates a ZKP proof so verification results can be shared without exposing sensitive details. QCV (Quantum Cryptography Verification) is an optional extension for long-lived sensitive data.
+PDV (Private Data Verification) generates a ZKP (zero-knowledge proof) so verification results can be shared without exposing sensitive details. QCV (Quantum Cryptography Verification) is an optional extension for long-lived sensitive data.
 
 **Risk scoring.** Overall score is the average of applicable verification scores, on a 0–100 scale where 0 is safest. Low Risk is 0–20; Critical is 81–100. That's a risk score, not a trust score: lower is better.
 

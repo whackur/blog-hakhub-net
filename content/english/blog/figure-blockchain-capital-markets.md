@@ -44,13 +44,13 @@ Provenance is a proof-of-stake blockchain built on the Cosmos SDK and designed s
 
 ### Figure Connect: Consumer Loan Marketplace
 
-Figure Connect connects loan originators with capital buyers for HELOC, DSCR, and personal loan assets. Per [Figure's Q1 2026 results](https://investors.figure.com/investor-relations), Figure Connect volume was $1.6B in the quarter, representing 56% of the total Consumer Loan Marketplace volume of $2.9B.
+Figure Connect connects loan originators with capital buyers for HELOC, DSCR (Debt Service Coverage Ratio loans, which qualify borrowers based on rental income rather than personal income), and personal loan assets. Per [Figure's Q1 2026 results](https://investors.figure.com/investor-relations), Figure Connect volume was $1.6B in the quarter, representing 56% of the total Consumer Loan Marketplace volume of $2.9B.
 
 ### YLDS: A Registered Fixed-Income Security
 
 YLDS transfers and settles like a stablecoin, but [its official site](https://www.ylds.com/) is explicit: it is "a registered fixed-income security, not a stablecoin."
 
-Key details: issued by Figure Certificate Company, registered with the SEC as a fixed-income security under the Investment Company Act, with 1 YLDS = 1 Certificate = $0.01 NAV. It accrues a variable yield based on SOFR minus 35bps, credited daily. It supports peer-to-peer on-chain transfer and 24/7 settlement across Provenance, Solana, and Stellar. A Big Four audit is mentioned. As of May 2026, $557M in YLDS was in circulation.
+Key details: issued by Figure Certificate Company, registered with the SEC as a fixed-income security under the Investment Company Act, with 1 YLDS = 1 Certificate = $0.01 NAV. It accrues a variable yield based on SOFR minus 35bps (SOFR, the Secured Overnight Financing Rate, is the US short-term benchmark rate that replaced LIBOR), credited daily. It supports peer-to-peer on-chain transfer and 24/7 settlement across Provenance, Solana, and Stellar. A Big Four audit is mentioned. As of May 2026, $557M in YLDS was in circulation.
 
 In practice, YLDS functions as a regulated yield-bearing cash instrument inside the Figure ecosystem: idle capital, lender supply, settlement asset, or treasury holding. The security classification, not stablecoin classification, is the key legal point.
 

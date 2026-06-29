@@ -12,7 +12,7 @@ translationKey: "llm-observability-langsmith-alternatives"
 draft: false
 ---
 
-At some point in building LLM applications or agents, you need to know why a call failed, what the tool invocation looked like, or why the agent got stuck in a loop. LangSmith has been the default answer, but it has pricing and hosting constraints that send a lot of teams looking for alternatives.
+At some point in building LLM applications or agents, you need to know why a call failed, what the tool invocation looked like, or why the agent got stuck in a loop. LangSmith, LangChain's commercial observability platform, has been the default answer for this: it covers trace visualization, prompt versioning, and evaluation in one place. Its usage-based pricing and cloud-hosted architecture are where teams start looking for alternatives.
 
 Five tools are worth knowing. They cover different parts of the space, and picking the right one depends on what you're actually trying to observe.
 

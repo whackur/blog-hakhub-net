@@ -52,7 +52,7 @@ Ethereum smart contract는 사용자가 예치한 자산과 canonical Lighter st
 
 사용자는 Ethereum smart contract를 통해 priority transaction을 직접 제출할 수 있다. Sequencer가 정해진 기한 안에 이를 포함하지 않으면 거래소 상태가 freeze되고 Escape Hatch가 활성화된다. 이 장치는 일반 주문의 front-running 방지보다는 출금·liveness·검열 저항을 위한 안전장치에 가깝다.
 
-## MEV와 front-running에 대한 정확한 이해
+## zk 증명이 실제로 보장하는 범위
 
 "zk로 증명하므로 front-running이 불가능하다"는 표현은 정확하지 않다. [Lighter whitepaper](https://assets.lighter.xyz/whitepaper.pdf)는 MEV를 "substantially reducing"하는 방향으로 표현하고, 향후 fair sequencing, 트랜잭션 암호화, pre-commitment scheme을 언급한다.
 

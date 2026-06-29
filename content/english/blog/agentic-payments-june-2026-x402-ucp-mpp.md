@@ -45,7 +45,7 @@ What follows covers the concrete implementation changes each protocol made in Ju
 
 Development on x402 is concentrated in `x402-foundation/x402`. The `coinbase/x402` fork saw near-zero activity in June.
 
-**Auth-capture flow.** The TypeScript `@x402/evm` client added support for detecting auth-capture payment requirements and signing a payer-agnostic `PaymentInfo` hash using ERC-3009 (default) or Permit2 (fallback). This extends x402 beyond immediate settlement toward split authorization-and-capture, which is standard in e-commerce. Server and facilitator support was left for follow-up PRs.
+**Auth-capture flow.** The TypeScript `@x402/evm` client added support for detecting auth-capture payment requirements and signing a payer-agnostic `PaymentInfo` hash using ERC-3009 (a meta-transaction token transfer authorization standard) by default, or Permit2 (Uniswap's one-shot signature delegation standard) as fallback. This extends x402 beyond immediate settlement toward split authorization-and-capture, which is standard in e-commerce. Server and facilitator support was left for follow-up PRs.
 
 **Builder-code attribution.** x402's builder-code extension embeds ERC-8021 Schema 2 attribution codes in settlement transaction calldata as a CBOR suffix. Three codes: `a` for the application exposing the paid API, `s` for the client or intermediate service, `w` for the settlement facilitator wallet.
 

@@ -63,9 +63,9 @@ draft: false
 
 ## 훈련
 
-SFT 단계에서는 GPT-5.4 live agent를 teacher로 `openai/gpt-oss-20b` MoE를 fine-tuning했다. 필터링 후 899개 trajectory, LoRA rank 32, max sequence 32,768, 3 epochs. 목표는 지식 주입이 아니라 **stateful interface 조작법** 습득이다.
+SFT(Supervised Fine-Tuning, 지도 학습 미세조정) 단계에서는 GPT-5.4 live agent를 teacher로 `openai/gpt-oss-20b` MoE를 fine-tuning했다. 필터링 후 899개 trajectory, LoRA rank 32, max sequence 32,768, 3 epochs. 목표는 지식 주입이 아니라 **stateful interface 조작법** 습득이다.
 
-RL 단계에서는 on-policy CISPO를 사용했다. SEC training queries 단일 도메인, 128 queries/step, 8 rollouts/query, 총 약 82K rollouts. 보상은 curated set 품질, trajectory recall, final-answer evidence recall, tool diversity bonus 등을 결합했다. KL anchor는 비활성화했다.
+RL 단계에서는 on-policy RL 알고리즘인 CISPO를 사용했다. SEC training queries 단일 도메인, 128 queries/step, 8 rollouts/query, 총 약 82K rollouts. 보상은 curated set 품질, trajectory recall, final-answer evidence recall, tool diversity bonus 등을 결합했다. KL anchor는 비활성화했다.
 
 논문은 하네스가 있어도 다음 세 가지 설계가 없으면 RL이 제대로 동작하지 않는다고 강조한다.
 

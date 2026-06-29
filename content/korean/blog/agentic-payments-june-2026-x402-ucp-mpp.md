@@ -47,7 +47,7 @@ draft: false
 
 **auth-capture 흐름**
 
-TypeScript `@x402/evm` 클라이언트에 auth-capture payment requirement를 감지하고 ERC-3009를 기본값으로, Permit2를 대안으로 사용해 payer-agnostic `PaymentInfo` hash에 서명하는 흐름이 추가됐다. 기존 즉시 결제뿐 아니라 승인과 capture가 분리되는 상거래형 결제 흐름으로 x402가 확장되는 신호다. 서버와 facilitator 지원은 후속 단계다.
+TypeScript `@x402/evm` 클라이언트에 auth-capture payment requirement를 감지하고 ERC-3009(메타트랜잭션 방식 결제 위임 표준)를 기본값으로, Permit2(Uniswap이 개발한 일회성 서명 위임 방식)를 대안으로 사용해 payer-agnostic `PaymentInfo` hash에 서명하는 흐름이 추가됐다. 기존 즉시 결제뿐 아니라 승인과 capture가 분리되는 상거래형 결제 흐름으로 x402가 확장되는 신호다. 서버와 facilitator 지원은 후속 단계다.
 
 **builder-code attribution**
 
@@ -113,7 +113,7 @@ Ethereum ERC 쪽에서는 두 신호가 있었다.
 
 [ERC-8126](https://eips.ethereum.org/EIPS/eip-8126) (AI Agent Verification)이 2026년 6월 2일 `Final` 상태로 이동했다. ERC-8004에 등록된 에이전트의 지갑·코드·web endpoint·컨트랙트·미디어를 검증하고 0~100 위험 점수와 ZKP proof를 제공하는 표준이다. Final 이동은 Draft 실험에서 구현 가능한 기준으로 올라섰다는 신호다.
 
-[ERC-8273](https://github.com/ethereum/ercs/blob/master/ERCS/erc-8273.md) (Attestation-Gated Agentic Actions) 초안이 추가됐다. 장기 신원 registry만으로는 "이번 특정 action이 허용됐는가"를 답하기 어렵다는 문제를 겨냥한다. `attestAndCall()` 패턴으로 authorization-and-action을 같은 transaction에서 atomic하게 실행하고, EIP-1153 transient storage에 일회성 권한을 써서 transaction이 끝나면 자동 소멸시킨다. Draft이므로 interface와 보안 모델이 변경될 가능성이 높다.
+[ERC-8273](https://github.com/ethereum/ercs/blob/master/ERCS/erc-8273.md) (Attestation-Gated Agentic Actions) 초안이 추가됐다. 장기 신원 registry만으로는 "이번 특정 action이 허용됐는가"를 답하기 어렵다는 문제를 겨냥한다. `attestAndCall()` 패턴으로 authorization-and-action을 같은 transaction에서 atomic하게 실행하고, EIP-1153 transient storage(트랜잭션 종료 시 자동 삭제되는 임시 저장소)에 일회성 권한을 써서 transaction이 끝나면 자동 소멸시킨다. Draft이므로 interface와 보안 모델이 변경될 가능성이 높다.
 
 ERC-8004 자체는 6월 한 달간 공식 변경이 없었고 Draft 상태를 유지했다.
 
