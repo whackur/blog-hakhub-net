@@ -2,14 +2,14 @@
 title: "Robot Learning: A Tutorial (고전 로보틱스에서 VLA까지)"
 meta_title: "Robot Learning: A Tutorial 리뷰 (arXiv:2510.12403)"
 description: "Francesco Capuano 외 저자들이 Hugging Face LeRobot과 함께 공개한 로봇 학습 튜토리얼 논문. 고전 로보틱스부터 ACT, Diffusion Policy, pi0, SmolVLA까지 전체 흐름을 정리합니다."
-date: 2026-06-30T10:00:00+09:00
-lastmod: 2026-06-30T10:00:00+09:00
+date: 2026-06-30T02:00:00+09:00
+lastmod: 2026-06-30T02:00:00+09:00
 image: ""
 categories: ["Physical AI"]
 tags: ["lerobot", "robot-learning", "imitation-learning", "diffusion-policy", "act", "vla", "smolvla"]
 author: "hakhub"
 translationKey: "lerobot-robot-learning-tutorial"
-draft: true
+draft: false
 ---
 
 "Robot Learning: A Tutorial"([arXiv:2510.12403](https://arxiv.org/abs/2510.12403))은 Francesco Capuano, Caroline Pascal, Adil Zouitine, Thomas Wolf, Michel Aractingi가 작성한 논문 형식의 튜토리얼이다. University of Oxford와 Hugging Face 소속 저자들이 LeRobot 라이브러리를 기반으로 고전 로보틱스부터 강화학습, 모방 학습, Vision-Language-Action 모델까지 로봇 학습 전반을 한 편에 담았다.
