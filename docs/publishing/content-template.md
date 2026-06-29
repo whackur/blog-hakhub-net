@@ -25,7 +25,7 @@ lastmod: 2026-06-30T10:00:00+09:00     # 최종 수정일. 수정 시 갱신(또
 image: "/images/posts/<slug>/cover.png"  # 대표 이미지 (static/ 기준 경로)
 categories: ["AI"]                     # AI / Blockchain (subtopics go in tags, e.g. local-llm, physical-ai)
 tags: ["llm", "quantization"]
-author: "hakhub"                        # content/<lang>/authors/ 의 작성자 페이지
+author: "whackur"                        # content/<lang>/authors/ 의 작성자 페이지
 translationKey: "<slug>"               # 한/영을 묶는 키 — 양쪽 동일! (안전장치)
 draft: true                             # 발행 시 false
 ---

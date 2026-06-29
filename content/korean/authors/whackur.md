@@ -1,6 +1,6 @@
 ---
-title: hakhub
-email: ""
+title: whackur
+email: "whackur@gmail.com"
 image: "/images/avatar.png"
 description: "AI·블록체인·로컬 LLM·피지컬 AI를 다루는 기술 블로그"
 social:

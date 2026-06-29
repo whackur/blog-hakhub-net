@@ -7,7 +7,7 @@ lastmod: 2026-06-30T07:00:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["search-agent", "retrieval", "rl", "rag", "agent-harness"]
-author: "hakhub"
+author: "whackur"
 translationKey: "harness-1-state-externalizing-search-agents"
 draft: false
 ---

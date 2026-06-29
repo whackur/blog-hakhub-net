@@ -7,7 +7,7 @@ lastmod: 2026-06-30T07:00:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["llm-observability", "evals", "tracing", "langfuse", "opik"]
-author: "hakhub"
+author: "whackur"
 translationKey: "llm-observability-langsmith-alternatives"
 draft: false
 ---

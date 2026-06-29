@@ -7,7 +7,7 @@ lastmod: 2026-06-30T02:00:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["fhe", "zk-proof", "groth16", "sp1", "voting", "privacy", "zero-knowledge", "maci", "semaphore"]
-author: "hakhub"
+author: "whackur"
 translationKey: "fhe-sp1-groth16-secret-voting"
 draft: false
 ---

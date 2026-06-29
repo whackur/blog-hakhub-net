@@ -7,7 +7,7 @@ lastmod: 2026-06-30T02:00:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["moa", "llm", "multi-agent", "ensemble", "ai-architecture"]
-author: "hakhub"
+author: "whackur"
 translationKey: "mixture-of-agents-moa"
 draft: false
 ---

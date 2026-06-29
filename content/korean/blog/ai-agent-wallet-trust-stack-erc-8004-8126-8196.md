@@ -7,7 +7,7 @@ lastmod: 2026-06-30T07:00:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "wallet", "erc-8004", "erc-8126", "erc-8196"]
-author: "hakhub"
+author: "whackur"
 translationKey: "ai-agent-wallet-trust-stack-erc-8004-8126-8196"
 draft: false
 ---

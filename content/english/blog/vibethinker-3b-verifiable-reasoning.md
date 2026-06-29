@@ -7,7 +7,7 @@ lastmod: 2026-06-30T02:00:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["small-language-model", "reasoning", "reinforcement-learning", "math", "coding"]
-author: "hakhub"
+author: "whackur"
 translationKey: "vibethinker-3b-verifiable-reasoning"
 draft: false
 ---

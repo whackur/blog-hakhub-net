@@ -7,7 +7,7 @@ lastmod: 2026-06-30T07:00:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["zk-rollup", "orderbook", "dex", "mev", "ethereum", "snark"]
-author: "hakhub"
+author: "whackur"
 translationKey: "lighter-zk-orderbook-dex"
 draft: false
 ---

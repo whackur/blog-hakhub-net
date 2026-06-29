@@ -7,7 +7,7 @@ lastmod: 2026-06-30T07:00:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["rwa", "provenance", "capital-markets", "tokenization", "heloc", "ylds"]
-author: "hakhub"
+author: "whackur"
 translationKey: "figure-blockchain-capital-markets"
 draft: false
 ---
