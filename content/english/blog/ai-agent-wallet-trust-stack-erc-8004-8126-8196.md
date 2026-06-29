@@ -14,6 +14,18 @@ draft: false
 
 When an AI agent acts on behalf of a user (spending funds, calling contracts, accessing paid APIs), the obvious question is: how do you know this agent is safe? The Ethereum community has three draft or finalized standards that address different layers of that question. They don't solve the whole problem, but they're building toward a coherent stack.
 
+## The trust problem with autonomous agents
+
+When a person signs a transaction in MetaMask, the signing party is unambiguous. When an AI agent executes transactions automatically, three distinct problems arise.
+
+**Identity.** Agents from different organizations need a shared registry to interact. An agent claiming to be a "payment agent" is unverifiable without one. Without a common scheme, every platform builds its own allowlist, which fragments at scale.
+
+**Verification.** Registration says an agent exists; it says nothing about whether it's safe. The smart contract code may have a reentrancy bug. The wallet may have prior interactions with sanctioned addresses. A separate security assessment layer is needed, independent of the identity registry.
+
+**Execution scope.** Giving an agent a private key means unconstrained access. Owners need to express delegation boundaries: this agent can swap up to $100 per day on these contracts, and nothing else. Those constraints need to be enforced at execution time, not just agreed upon informally.
+
+Ethereum addresses these three problems with separate ERC standards. ERC-8004 (Draft) handles identity. ERC-8126 (Final) handles verification. ERC-8196 (Draft) handles execution policy. Each can be used independently, but high-value automated transactions benefit from all three.
+
 ## ERC-8004: Trustless Agents
 
 [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) (Draft) provides a common registry for discovering and interacting with agents across organizational boundaries. Authors: Marco De Rossi, Davide Crapis, Jordan Ellis, Erik Reppel. It builds on ERC-721, EIP-712, EIP-155, and ERC-1271.
@@ -36,6 +48,8 @@ ERC-8004 doesn't mandate a single trust model. Low-stakes tasks and high-risk on
 
 ## ERC-8126: AI Agent Verification
 
+ERC-8004 records that an agent exists and who owns it. It says nothing about whether that agent is trustworthy. ERC-8126 is the verification layer: it defines the interface for external security assessment providers who evaluate a registered agent across wallet history, contract code, web endpoints, and media, then return a 0–100 risk score. Lower score means lower risk.
+
 [ERC-8126](https://eips.ethereum.org/EIPS/eip-8126) moved to Final status on June 2, 2026. Authors: Leigh Cronian and Chris Johnson. It defines the interface for specialized security verification providers that assess an ERC-8004 registered agent.
 
 The key design constraint: verifiers don't accept raw parameters like `walletAddress` or `url` directly. They take an `agentId` and read the registration metadata through ERC-8004. This ties verification results to a registered agent identity rather than arbitrary parameters.
@@ -56,7 +70,9 @@ Final status means the spec is stable enough to implement against. It doesn't me
 
 ## ERC-8196: AI Agent Authenticated Wallet
 
-[ERC-8196](https://eips.ethereum.org/EIPS/eip-8196) (Draft) is the execution layer. Author: Leigh Cronian. Instead of handing an agent a private key, the owner registers a policy that constrains what the agent can do.
+Having an agent's identity (ERC-8004) and risk score (ERC-8126) still leaves the execution scope problem open. A private key gives an agent unconstrained access to all funds in the wallet. ERC-8196 defines a policy structure that sits in front of execution: the owner registers permitted actions, a contract allowlist, per-transaction and daily spending limits, and an expiry time. The smart wallet checks the active policy before executing any agent request. The agent receives a scoped delegation, not a key.
+
+[ERC-8196](https://eips.ethereum.org/EIPS/eip-8196) (Draft) defines this execution layer. Author: Leigh Cronian. Instead of handing an agent a private key, the owner registers a policy that constrains what the agent can do.
 
 **Policy fields:**
 
