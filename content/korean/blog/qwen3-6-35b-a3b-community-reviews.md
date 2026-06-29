@@ -5,7 +5,7 @@ description: "1.2M 다운로드의 uncensored 변종부터 12GB/16GB VRAM 실측
 date: 2026-06-30T02:00:00+09:00
 lastmod: 2026-06-30T02:00:00+09:00
 image: ""
-categories: ["Local LLM"]
+categories: ["AI"]
 tags: ["qwen", "local-llm", "moe", "mtp", "uncensored", "llama-cpp"]
 author: "hakhub"
 translationKey: "qwen3-6-35b-a3b-community-reviews"

@@ -5,8 +5,8 @@ description: "Francesco Capuano 외 저자들이 Hugging Face LeRobot과 함께 
 date: 2026-06-30T02:00:00+09:00
 lastmod: 2026-06-30T02:00:00+09:00
 image: ""
-categories: ["Physical AI"]
-tags: ["lerobot", "robot-learning", "imitation-learning", "diffusion-policy", "act", "vla", "smolvla"]
+categories: ["AI"]
+tags: ["lerobot", "robot-learning", "imitation-learning", "diffusion-policy", "act", "vla", "smolvla", "physical-ai"]
 author: "hakhub"
 translationKey: "lerobot-robot-learning-tutorial"
 draft: false
