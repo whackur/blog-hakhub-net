@@ -28,7 +28,7 @@ This post maps the landscape as of June 2026, drawing on public project document
 
 ## Bittensor: The Current Reference Point for Decentralized AI Incentives
 
-[Bittensor](https://bittensor.com/) describes itself as a marketplace for intelligence. Miners produce AI outputs, validators score quality, and Yuma Consensus aggregates those scores on-chain to determine TAO emission rewards. Over 128 subnets are currently active, each functioning as a separate AI task market with its own miners, validators, incentive rules, and service demand.
+[Bittensor](https://bittensor.com/) describes itself as a marketplace for intelligence. Miners (AI service providers) produce outputs; validators (quality scorers) assess them; and Yuma Consensus aggregates those scores on-chain to distribute TAO (Bittensor's native token) as emission rewards. The terms "miner" and "validator" here describe functional roles, not proof-of-work mining or proof-of-stake validation. Over 128 subnets are currently active, each functioning as a separate AI task market with its own miners, validators, incentive rules, and service demand.
 
 ### How Yuma Consensus Works
 
@@ -44,9 +44,11 @@ The risks to watch: per-subnet quality and demand variance, operational difficul
 
 ## Four Decentralized Compute Projects
 
+DePIN (Decentralized Physical Infrastructure Networks) is a model where physical hardware, including GPU servers, wireless equipment, and storage devices, is pooled and governed through token incentives rather than owned by a single provider. Hardware owners contribute idle capacity and earn token rewards; buyers access that capacity at market prices. GPU DePIN applies this to AI compute: instead of renting from AWS or Google Cloud, workloads run on a distributed network of independent GPU providers worldwide.
+
 [Akash](https://akash.network/), [Render Network](https://rendernetwork.com/), [Aethir](https://www.aethir.com/), and [io.net](https://io.net/) all tokenize GPU supply, but they serve different customers with different pricing models.
 
-**Akash** is an auction-based cloud marketplace targeting developers and AI startups. Docker-native and Ray cluster support make it easy to migrate existing workloads. The main concerns are supplier concentration and availability variability.
+**Akash** is a Cosmos-based decentralized cloud marketplace for developers and AI startups. It uses a reverse-auction model: buyers post the compute specs and price they want, and GPU providers bid to fulfill the request. Docker-native support and Ray cluster integration make it straightforward to migrate existing workloads. The main concerns are supplier concentration and availability variability.
 
 **Render Network** started with 3D rendering workflows (OctaneRender, Blender, Runway) and is extending into AI image and video workloads. The strength is that demand is tied to work that generates actual revenue. Dependence on the creator market is the main constraint.
 

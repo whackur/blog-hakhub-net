@@ -18,7 +18,7 @@ Figure Technology Solutions started as a consumer home equity lender and has bui
 
 ## The Closed-Loop Thesis
 
-"Putting RWA on a blockchain" undersells what Figure is building. The actual thesis, as stated in its [Investor Relations materials](https://investors.figure.com/investor-relations), is a "blockchain-native capital marketplace for the origination, funding, sale and trading of on-chain loan products and tokenized assets."
+A quick definition: real-world assets (RWA) in blockchain finance refers to financial instruments that originate outside the chain, such as mortgages, government bonds, and private credit, and are represented as on-chain tokens. "Putting RWA on a blockchain" undersells what Figure is building. The actual thesis, as stated in its [Investor Relations materials](https://investors.figure.com/investor-relations), is a "blockchain-native capital marketplace for the origination, funding, sale and trading of on-chain loan products and tokenized assets."
 
 The important detail: Figure is not tokenizing assets that were created somewhere else. It originates loans directly onto Provenance Blockchain, then connects those loans to an ownership registry, a trading marketplace, and a yield-bearing cash instrument. The pipeline is closed-loop from the start.
 
@@ -26,13 +26,13 @@ The important detail: Figure is not tokenizing assets that were created somewher
 
 ### HELOC and Loan Origination
 
-Figure's consumer product is a HELOC (Home Equity Line of Credit). The official site advertises five-minute approvals, funding in as little as five days, and loans up to $750,000. These loans are the source assets for the tokenized pipeline that follows: DART registration, marketplace trading, and securitization.
+Figure's consumer product is a HELOC (Home Equity Line of Credit). A HELOC is a revolving credit line secured by home equity. Unlike a fixed mortgage that disburses a lump sum upfront, a HELOC sets a borrowing limit based on the home's appraised value minus any outstanding debt, then lets the borrower draw, repay, and redraw within that limit, similar to a credit card backed by property rather than unsecured credit. The official site advertises five-minute approvals, funding in as little as five days, and credit limits up to $750,000. These loans are the source assets for the tokenized pipeline that follows: DART registration, marketplace trading, and securitization.
 
 The Loan Origination System (LOS) automates application processing, underwriting, valuation, lien verification, income checks, and remote closing. Figure says AI partnerships have cut document processing costs and improved partner onboarding, though these are company-reported figures without independent verification.
 
 ### DART: On-Chain Ownership Registry
 
-DART (Digital Asset Registry Technology) records loan ownership and liens on Provenance Blockchain. [Provenance's official site](https://provenance.io/) describes it as "the first blockchain-based system for real-time loan ownership updates" and notes ESIGN/UETA compliance.
+In the US mortgage market, loan ownership transfers are traditionally tracked through MERS (Mortgage Electronic Registration Systems) or individual state recording processes. DART (Digital Asset Registry Technology) moves that function onto Provenance Blockchain. [Provenance's official site](https://provenance.io/) describes DART as "the first blockchain-based system for real-time loan ownership updates" and notes ESIGN/UETA compliance.
 
 DART handles ownership transfers, lien and collateral management, eNote and servicer connections, and the link between tokenized loans and their legal ownership records.
 
@@ -40,7 +40,7 @@ One caveat: ESIGN/UETA compliance means the electronic records meet federal elec
 
 ### Provenance Blockchain
 
-Provenance is a proof-of-stake blockchain designed for financial products. [Figure's major systems](https://provenance.io/) use Provenance as the record, settlement, and tokenization layer. Sensitive personal information like borrower PII is not posted on-chain directly.
+Provenance is a proof-of-stake blockchain built on the Cosmos SDK and designed specifically for financial products. It supports custom modules for KYC/AML-linked account metadata and financial transaction workflows. Figure was a founding contributor to the chain. [Figure's major systems](https://provenance.io/) use Provenance as the record, settlement, and tokenization layer. Sensitive personal information like borrower PII is not posted on-chain directly.
 
 ### Figure Connect: Consumer Loan Marketplace
 
