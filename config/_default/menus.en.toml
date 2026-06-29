@@ -1,0 +1,50 @@
+############# English navigation ##############
+
+[[main]]
+name = "Home"
+url = "/"
+weight = 1
+
+[[main]]
+name = "About"
+url = "/about"
+weight = 2
+
+[[main]]
+name = "Blog"
+weight = 3
+
+[[main]]
+parent = "Blog"
+name = "All posts"
+url = "/blog"
+weight = 1
+
+[[main]]
+parent = "Blog"
+name = "AI"
+url = "/categories/ai"
+weight = 2
+
+[[main]]
+parent = "Blog"
+name = "Blockchain"
+url = "/categories/blockchain"
+weight = 3
+
+[[main]]
+parent = "Blog"
+name = "Local LLM"
+url = "/categories/local-llm"
+weight = 4
+
+[[main]]
+parent = "Blog"
+name = "Physical AI"
+url = "/categories/physical-ai"
+weight = 5
+
+[[footer]]
+name = "About"
+url = "/about"
+weight = 1

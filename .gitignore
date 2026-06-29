@@ -1,0 +1,49 @@
+# ---- Agent tooling (local paths / usernames — keep out of a public repo) ----
+.atl/
+.claude/
+
+# ---- Local-only Claude Code memory (personal notes, never shared) ----
+CLAUDE.local.md
+*.local.md
+
+# ---- Hugo build output ----
+/public/
+/resources/
+/.hugo_build.lock
+hugo_stats.json
+
+# ---- OS files ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Editor / IDE ----
+.idea/
+*.swp
+*.swo
+*~
+
+# ---- Node tooling (if added later: postcss, tailwind, etc.) ----
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# =====================================================================
+#  SECRETS — this is a PUBLIC repo. Never commit credentials.
+#  (Hugo itself needs no secrets; these guard future integrations
+#   such as analytics, comment systems, or deploy tokens.)
+# =====================================================================
+.env
+.env.*
+!.env.example
+*.local
+secrets.*
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+credentials.json
+service-account*.json
+config.private.*

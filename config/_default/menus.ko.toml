@@ -1,0 +1,50 @@
+############# Korean navigation ##############
+
+[[main]]
+name = "홈"
+url = "/"
+weight = 1
+
+[[main]]
+name = "소개"
+url = "/about"
+weight = 2
+
+[[main]]
+name = "블로그"
+weight = 3
+
+[[main]]
+parent = "블로그"
+name = "전체 글"
+url = "/blog"
+weight = 1
+
+[[main]]
+parent = "블로그"
+name = "AI"
+url = "/categories/ai"
+weight = 2
+
+[[main]]
+parent = "블로그"
+name = "Blockchain"
+url = "/categories/blockchain"
+weight = 3
+
+[[main]]
+parent = "블로그"
+name = "Local LLM"
+url = "/categories/local-llm"
+weight = 4
+
+[[main]]
+parent = "블로그"
+name = "Physical AI"
+url = "/categories/physical-ai"
+weight = 5
+
+[[footer]]
+name = "소개"
+url = "/about"
+weight = 1
