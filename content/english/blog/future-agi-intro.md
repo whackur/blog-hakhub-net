@@ -5,7 +5,7 @@ description: "Future AGI is an open-source platform that closes the feedback loo
 date: 2026-06-29T10:00:00+09:00
 image: ""
 categories: ["AI"]
-author: "hakhub"
+author: "whackur"
 tags: ["ai-agent", "llm", "observability", "evals", "open-source"]
 draft: false
 translationKey: "future-agi-intro"

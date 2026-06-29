@@ -7,7 +7,7 @@ lastmod: 2026-06-30T02:00:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["lerobot", "robot-learning", "imitation-learning", "diffusion-policy", "act", "vla", "smolvla", "physical-ai"]
-author: "hakhub"
+author: "whackur"
 translationKey: "lerobot-robot-learning-tutorial"
 draft: false
 ---

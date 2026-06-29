@@ -7,7 +7,7 @@ lastmod: 2026-06-30T07:00:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-blockchain", "bittensor", "depin", "agent-finance", "akash", "render", "x402", "decentralized-compute"]
-author: "hakhub"
+author: "whackur"
 translationKey: "ai-blockchain-2026-bittensor-depin-agent-finance"
 draft: false
 ---

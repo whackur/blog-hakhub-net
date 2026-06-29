@@ -7,7 +7,7 @@ lastmod: 2026-06-30T07:00:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["agentic-payments", "x402", "ucp", "mpp", "stablecoin"]
-author: "hakhub"
+author: "whackur"
 translationKey: "agentic-payments-june-2026-x402-ucp-mpp"
 draft: false
 ---
