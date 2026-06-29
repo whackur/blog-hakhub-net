@@ -3,7 +3,7 @@ title: "에이전트 결제 2026년 6월 동향: x402, UCP, MPP 구현 진전"
 meta_title: ""
 description: "2026년 6월 x402 auth-capture와 builder-code attribution, UCP idempotency 강화, MPP 구독형 결제 실험, ERC-8126 Final 이동 등 에이전트 결제 스택의 주요 변화를 정리합니다."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-06-30T07:00:00+09:00
+lastmod: 2026-06-30T08:07:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["agentic-payments", "x402", "ucp", "mpp", "stablecoin"]
@@ -115,7 +115,7 @@ Ethereum ERC 쪽에서는 두 신호가 있었다.
 
 [ERC-8273](https://github.com/ethereum/ercs/blob/master/ERCS/erc-8273.md) (Attestation-Gated Agentic Actions) 초안이 추가됐다. 장기 신원 registry만으로는 "이번 특정 action이 허용됐는가"를 답하기 어렵다는 문제를 겨냥한다. `attestAndCall()` 패턴으로 authorization-and-action을 같은 transaction에서 atomic하게 실행하고, EIP-1153 transient storage(트랜잭션 종료 시 자동 삭제되는 임시 저장소)에 일회성 권한을 써서 transaction이 끝나면 자동 소멸시킨다. Draft이므로 interface와 보안 모델이 변경될 가능성이 높다.
 
-ERC-8004 자체는 6월 한 달간 공식 변경이 없었고 Draft 상태를 유지했다.
+ERC-8004 자체는 6월 한 달간 ethereum/ercs 표준 프로세스 상태 변경이 없었다. 다만 이는 배포 여부와는 다른 이야기다. ERC-8004 레지스트리는 2026년 1월 29일 이더리움 메인넷에 배포된 상태에서 6월을 맞았다.
 
 ## 전체 흐름
 

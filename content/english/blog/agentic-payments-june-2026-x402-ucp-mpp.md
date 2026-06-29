@@ -3,7 +3,7 @@ title: "Agentic Payments in June 2026: x402, UCP, and MPP Implementation Progres
 meta_title: ""
 description: "A month's worth of implementation changes across x402, UCP, MPP/pay.sh, and ACP: auth-capture, builder-code attribution, idempotency hardening, and ERC-8126 going Final."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-06-30T07:00:00+09:00
+lastmod: 2026-06-30T08:07:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["agentic-payments", "x402", "ucp", "mpp", "stablecoin"]
@@ -93,7 +93,7 @@ On the Ethereum ERC side:
 
 [ERC-8273](https://github.com/ethereum/ercs/blob/master/ERCS/erc-8273.md) (Attestation-Gated Agentic Actions) was added as a Draft. It proposes `attestAndCall()`: an authorized attestor creates an attestation, the registry logs a persistent audit record, and EIP-1153 transient storage holds a one-shot authorization that's used and discarded within the same transaction. The motivation is that a long-lived identity (ERC-8004) doesn't answer "is this specific action authorized right now", which is what you need at the moment of a swap, payment, or escrow release. Draft status; interface and security model may change.
 
-ERC-8004 itself had no official changes in June and remains Draft.
+ERC-8004 itself had no ethereum/ercs process-status change in June. That is separate from deployment status: the ERC-8004 registries were already live on Ethereum mainnet as of 2026-01-29.
 
 ## Where this leaves things
 
