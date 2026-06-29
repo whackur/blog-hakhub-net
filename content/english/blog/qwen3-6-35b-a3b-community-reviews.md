@@ -5,7 +5,7 @@ description: "From the 1.2M-download uncensored variant to real MTP acceleration
 date: 2026-06-30T02:00:00+09:00
 lastmod: 2026-06-30T02:00:00+09:00
 image: ""
-categories: ["Local LLM"]
+categories: ["AI"]
 tags: ["qwen", "local-llm", "moe", "mtp", "uncensored", "llama-cpp"]
 author: "hakhub"
 translationKey: "qwen3-6-35b-a3b-community-reviews"

@@ -32,17 +32,6 @@ name = "Blockchain"
 url = "/categories/blockchain"
 weight = 3
 
-[[main]]
-parent = "Blog"
-name = "Local LLM"
-url = "/categories/local-llm"
-weight = 4
-
-[[main]]
-parent = "Blog"
-name = "Physical AI"
-url = "/categories/physical-ai"
-weight = 5
 
 [[footer]]
 name = "About"

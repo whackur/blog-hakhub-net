@@ -34,12 +34,10 @@
 
 IT 기술 블로그입니다. 주력 주제:
 
-- **AI** — 모델, 도구, 활용, 동향
+- **AI** — 모델, 도구, 활용, 동향, Local LLM(온디바이스/셀프호스팅), Physical AI(로보틱스·임베디드 AI)
 - **Blockchain / Web3** — Solidity, 스마트 컨트랙트, 프로토콜
-- **Local LLM** — 온디바이스/셀프호스팅 LLM, 추론, 양자화
-- **Physical AI** — 로보틱스, 임베디드 AI, 센서/액추에이터
 
-카테고리(`categories`)는 위 4개를 기본 축으로, 세부는 `tags`로.
+카테고리(`categories`)는 **AI / Blockchain** 2개로 운영한다. 세부 주제(local-llm, physical-ai 등)는 `tags`로.
 
 ## 글 발행 — `docs/publishing/` 참조
 

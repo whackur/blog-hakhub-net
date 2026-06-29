@@ -2,14 +2,14 @@
 title: "Robot Learning: A Tutorial (From Classical Robotics to Generalist Policies)"
 meta_title: "Robot Learning: A Tutorial (arXiv:2510.12403)"
 description: "A summary of the LeRobot tutorial paper by Capuano et al., covering the full arc from classical robotics through reinforcement learning, ACT, Diffusion Policy, and generalist VLA models including pi0 and SmolVLA."
-date: 2026-06-30T10:00:00+09:00
-lastmod: 2026-06-30T10:00:00+09:00
+date: 2026-06-30T02:00:00+09:00
+lastmod: 2026-06-30T02:00:00+09:00
 image: ""
-categories: ["Physical AI"]
-tags: ["lerobot", "robot-learning", "imitation-learning", "diffusion-policy", "act", "vla", "smolvla"]
+categories: ["AI"]
+tags: ["lerobot", "robot-learning", "imitation-learning", "diffusion-policy", "act", "vla", "smolvla", "physical-ai"]
 author: "hakhub"
 translationKey: "lerobot-robot-learning-tutorial"
-draft: true
+draft: false
 ---
 
 "Robot Learning: A Tutorial" ([arXiv:2510.12403](https://arxiv.org/abs/2510.12403)) is a paper-length tutorial by Francesco Capuano, Caroline Pascal, Adil Zouitine, Thomas Wolf, and Michel Aractingi, from the University of Oxford and Hugging Face. It covers the full arc of robot learning methods, from classical dynamics-based control through reinforcement learning, imitation learning, and generalist vision-language-action models, using the Hugging Face LeRobot library throughout.
