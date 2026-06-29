@@ -3,7 +3,7 @@ title: "The AI Agent Trust Stack: ERC-8004, ERC-8126, and ERC-8196"
 meta_title: ""
 description: "How three Ethereum standards work together to handle AI agent identity, security verification, and policy-bound wallet execution."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-06-30T07:00:00+09:00
+lastmod: 2026-06-30T08:07:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "wallet", "erc-8004", "erc-8126", "erc-8196"]
@@ -12,7 +12,7 @@ translationKey: "ai-agent-wallet-trust-stack-erc-8004-8126-8196"
 draft: false
 ---
 
-When an AI agent acts on behalf of a user (spending funds, calling contracts, accessing paid APIs), the obvious question is: how do you know this agent is safe? The Ethereum community has three draft or finalized standards that address different layers of that question. They don't solve the whole problem, but they're building toward a coherent stack.
+When an AI agent acts on behalf of a user (spending funds, calling contracts, accessing paid APIs), the obvious question is: how do you know this agent is safe? The Ethereum community has three standards that address different layers of that question. They don't solve the whole problem, but they're building toward a coherent stack.
 
 ## The trust problem with autonomous agents
 
@@ -24,11 +24,11 @@ When a person signs a transaction in MetaMask, the signing party is unambiguous.
 
 **Execution scope.** Giving an agent a private key means unconstrained access. Owners need to express delegation boundaries: this agent can swap up to $100 per day on these contracts, and nothing else. Those constraints need to be enforced at execution time, not just agreed upon informally.
 
-Ethereum addresses these three problems with separate ERC standards. ERC-8004 (Draft) handles identity. ERC-8126 (Final) handles verification. ERC-8196 (Draft) handles execution policy. Each can be used independently, but high-value automated transactions benefit from all three.
+Ethereum addresses these three problems with separate ERC standards. ERC-8004 handles identity. ERC-8126 (Final) handles verification. ERC-8196 (Review) handles execution policy. Each can be used independently, but high-value automated transactions benefit from all three.
 
 ## ERC-8004: Trustless Agents
 
-[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) (Draft) provides a common registry for discovering and interacting with agents across organizational boundaries. Authors: Marco De Rossi, Davide Crapis, Jordan Ellis, Erik Reppel. It builds on ERC-721, EIP-712, EIP-155, and ERC-1271.
+[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) provides a common registry for discovering and interacting with agents across organizational boundaries. It deployed on Ethereum mainnet on 2026-01-29 and has since been studied across Ethereum, BSC, and Base. The ethereum/ercs process status is Draft. Authors: Marco De Rossi, Davide Crapis, Jordan Ellis, Erik Reppel. It builds on ERC-721, EIP-712, EIP-155, and ERC-1271.
 
 Three registries form the core:
 
@@ -72,7 +72,7 @@ Final status means the spec is stable enough to implement against. It doesn't me
 
 Having an agent's identity (ERC-8004) and risk score (ERC-8126) still leaves the execution scope problem open. A private key gives an agent unconstrained access to all funds in the wallet. ERC-8196 defines a policy structure that sits in front of execution: the owner registers permitted actions, a contract allowlist, per-transaction and daily spending limits, and an expiry time. The smart wallet checks the active policy before executing any agent request. The agent receives a scoped delegation, not a key.
 
-[ERC-8196](https://eips.ethereum.org/EIPS/eip-8196) (Draft) defines this execution layer. Author: Leigh Cronian. Instead of handing an agent a private key, the owner registers a policy that constrains what the agent can do.
+[ERC-8196](https://eips.ethereum.org/EIPS/eip-8196) (Review) defines this execution layer. Author: Leigh Cronian. Instead of handing an agent a private key, the owner registers a policy that constrains what the agent can do.
 
 **Policy fields:**
 
@@ -113,7 +113,8 @@ Each layer is independent. You can use ERC-8004 without ERC-8196. But for high-v
 
 ## Honest caveats
 
-- ERC-8004 and ERC-8196 are still Draft. Interfaces and security models may change.
+- ERC-8004 is deployed on mainnet but its ethereum/ercs process status remains Draft; the interface specification may still change.
+- ERC-8196 is in Review; its interface and security model may change.
 - A low ERC-8126 risk score reflects verification at a point in time, not a guarantee of good intentions.
 - Reputation is Sybil-attackable without careful client filtering.
 - Host manipulation isn't fully eliminated by ERC-8196. The paper recommends multiple independent hosts for high-value agents.
@@ -121,14 +122,17 @@ Each layer is independent. You can use ERC-8004 without ERC-8196. But for high-v
 
 ## Further reading
 
-- [ERC-8004 spec](https://eips.ethereum.org/EIPS/eip-8004) — Draft
+- [ERC-8004 spec](https://eips.ethereum.org/EIPS/eip-8004) — Draft (process); deployed on Ethereum mainnet 2026-01-29
+- [ERC-8004.org launch](https://www.8004.org/blog/welcome-to-8004) — official site; 2026-01-29
 - [ERC-8126 spec](https://eips.ethereum.org/EIPS/eip-8126) — Final
-- [ERC-8196 spec](https://eips.ethereum.org/EIPS/eip-8196) — Draft
+- [ERC-8196 spec](https://eips.ethereum.org/EIPS/eip-8196) — Review
 - [ERC-8126 Ethereum Magicians discussion](https://ethereum-magicians.org/t/erc-8126-ai-agent-verification/27445)
 
 ## References
 
-- [ERC-8004: Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004) — ethereum.org, Draft; accessed 2026-06-30
+- [ERC-8004: Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004) — ethereum.org, Draft (process); deployed mainnet 2026-01-29; accessed 2026-06-30
 - [ERC-8126: AI Agent Verification](https://eips.ethereum.org/EIPS/eip-8126) — ethereum.org, Final (2026-06-02); accessed 2026-06-30
-- [ERC-8196: AI Agent Authenticated Wallet](https://eips.ethereum.org/EIPS/eip-8196) — ethereum.org, Draft; accessed 2026-06-30
+- [ERC-8196: AI Agent Authenticated Wallet](https://eips.ethereum.org/EIPS/eip-8196) — ethereum.org, Review; accessed 2026-06-30
 - [ethereum/ercs GitHub](https://github.com/ethereum/ercs) — source repository; accessed 2026-06-30
+- [8004.org launch post](https://www.8004.org/blog/welcome-to-8004) — ERC-8004 official site, launched 2026-01-29; accessed 2026-06-30
+- [arXiv 2606.26028v1](https://arxiv.org/abs/2606.26028) — cross-chain deployment study (Ethereum, BSC, Base); accessed 2026-06-30
