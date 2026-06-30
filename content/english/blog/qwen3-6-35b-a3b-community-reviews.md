@@ -7,7 +7,7 @@ lastmod: 2026-06-30T02:00:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["qwen", "local-llm", "moe", "mtp", "uncensored", "llama-cpp"]
-author: "hakhub"
+author: "whackur"
 translationKey: "qwen3-6-35b-a3b-community-reviews"
 draft: false
 ---

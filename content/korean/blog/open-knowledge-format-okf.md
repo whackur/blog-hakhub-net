@@ -7,7 +7,7 @@ lastmod: 2026-06-30T02:00:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["ai-agent", "knowledge-management", "metadata", "open-standard", "okf", "google-cloud", "mcp"]
-author: "hakhub"
+author: "whackur"
 translationKey: "open-knowledge-format-okf"
 draft: false
 ---

@@ -7,7 +7,7 @@ lastmod: 2026-06-30T02:00:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["benchmark", "coding-agent", "swe-bench", "llm", "evaluation"]
-author: "hakhub"
+author: "whackur"
 translationKey: "deepswe-coding-agent-benchmark"
 draft: false
 ---
