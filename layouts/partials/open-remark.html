@@ -3,3 +3,104 @@
   data-site-key="cmr01bbey000304le7fs7amgt"
 ></div>
 <script async src="https://open-remark.zeon.studio/embed.js"></script>
+<script>
+/* hakhub-or-theme: palette override for OpenRemark shadow DOM */
+(function () {
+  var STYLE_ID = 'hakhub-or-theme';
+
+  function isDark() {
+    return document.documentElement.classList.contains('dark');
+  }
+
+  function buildCSS(dark) {
+    var bg     = dark ? '#1c1c1c' : '#ffffff';
+    var subtle = dark ? '#222222' : '#f6f6f6';
+    var border = dark ? '#3E3E3E' : '#eaeaea';
+    var text   = dark ? '#B4AFB6' : '#444444';
+    var prim   = dark ? '#ffffff' : '#121212';
+    var primFg = dark ? '#121212' : '#ffffff';
+    var focus  = dark ? '#ffffff' : '#121212';
+    return ':host{' +
+      '--z-bg:'         + bg     + ';' +
+      '--z-subtle:'     + subtle + ';' +
+      '--z-accent:'     + subtle + ';' +
+      '--z-border:'     + border + ';' +
+      '--z-muted:'      + border + ';' +
+      '--z-text:'       + text   + ';' +
+      '--z-primary:'    + prim   + ';' +
+      '--z-primary-fg:' + primFg + '}' +
+      '*:focus-visible{outline-color:' + focus + '!important}';
+  }
+
+  function patchShadow(shadow) {
+    var style = shadow.getElementById(STYLE_ID);
+    if (!style) {
+      style = document.createElement('style');
+      style.id = STYLE_ID;
+    }
+    style.textContent = buildCSS(isDark());
+    /* Keep this override last, because OpenRemark appends its own theme style asynchronously. */
+    shadow.appendChild(style);
+  }
+
+  var patchedHosts = [];
+
+  function scan() {
+    var container = document.querySelector('[data-open-remark]');
+    if (!container) return;
+    var nodes = [container].concat(Array.prototype.slice.call(container.querySelectorAll('*')));
+    nodes.forEach(function (el) {
+      if (el.shadowRoot) {
+        patchShadow(el.shadowRoot);
+        if (patchedHosts.indexOf(el) === -1) patchedHosts.push(el);
+      }
+    });
+  }
+
+  function repatch() {
+    patchedHosts.forEach(function (el) {
+      if (el.shadowRoot) patchShadow(el.shadowRoot);
+    });
+  }
+
+  var widgetObs = new MutationObserver(scan);
+
+  function init() {
+    var container = document.querySelector('[data-open-remark]');
+    if (container) {
+      scan();
+      widgetObs.observe(container, { childList: true, subtree: true });
+    } else {
+      var bodyObs = new MutationObserver(function () {
+        var c = document.querySelector('[data-open-remark]');
+        if (c) {
+          bodyObs.disconnect();
+          scan();
+          widgetObs.observe(c, { childList: true, subtree: true });
+        }
+      });
+      bodyObs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+    }
+  }
+
+  new MutationObserver(repatch).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  var retryCount = 0;
+  var retryTimer = window.setInterval(function () {
+    scan();
+    retryCount += 1;
+    if (patchedHosts.length > 0 || retryCount >= 100) {
+      window.clearInterval(retryTimer);
+    }
+  }, 100);
+}());
+</script>
