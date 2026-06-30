@@ -1,9 +1,9 @@
 ---
 title: "ERC-8004 Agent Reputation: On-Chain Registration and Lookup"
 meta_title: ""
-description: "How to register agent feedback on-chain using ERC-8004's giveFeedback(), query it with getSummary() against a trusted client set, and which services exist today to browse registered agents and their reputation data."
+description: "ERC-8004 is a set of three registries, not a single contract. How to register feedback using giveFeedback(), aggregate it with getSummary() against a trusted client set, and what services exist today to browse ERC-8004 data."
 date: 2026-06-30T15:00:00+09:00
-lastmod: 2026-06-30T15:00:00+09:00
+lastmod: 2026-06-30T15:45:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "erc-8004", "reputation", "smart-contract", "onchain"]
@@ -16,19 +16,40 @@ A [prior post on this blog](../ai-agent-wallet-trust-stack-erc-8004-8126-8196) c
 
 ERC-8004 is currently a Draft standard, authored by Marco De Rossi, Davide Crapis, Jordan Ellis, and Erik Reppel. Payment is explicitly out of scope. The spec fills a gap that A2A and MCP don't address: discovery and trust.
 
+## Registry set architecture
+
+ERC-8004 is not a single router contract. It is a set of three independent contracts: Identity Registry, Reputation Registry, and Validation Registry. Each has its own address, and calls go directly to the target contract.
+
+The Reputation Registry is initialized with an Identity Registry address via `initialize(address identityRegistry_)`. It stores this address internally and exposes it through `getIdentityRegistry()`. This link is how `giveFeedback()` verifies that the target `agentId` exists in the Identity Registry and rejects calls from the agent's owner or authorized operators.
+
+`giveFeedback()` takes no registry address parameter. You register feedback by sending a transaction directly to the Reputation Registry contract (`tx.to` is the registry address). Which Reputation Registry to use for a given network is an application-level decision. Feedback is stored in Reputation Registry storage; it does not route through the Identity Registry.
+
 ## The Reputation Registry
 
-The Reputation Registry is a permissionless on-chain bulletin board. Any address can post feedback about any registered agent. The registry imposes no access control and makes no judgment about whether a submission is accurate.
+The Reputation Registry is a permissionless on-chain bulletin board. Any address except the agent's owner and operators can post feedback about any registered agent. The registry makes no judgment about whether a submission is accurate.
 
-Sybil resistance is the application's job, not the registry's. When querying, callers must supply a non-empty set of trusted client addresses. The registry returns a filtered aggregate over that set. An empty client set is rejected by the contract. This design shifts the question from "what is this agent's score?" to "which raters do I trust?" Each application answers that differently.
+Sybil resistance is the application's job, not the registry's. When querying, callers must supply a non-empty set of trusted client addresses. The registry returns a filtered aggregate over that set. An empty client set reverts with `clientAddresses required`. This design shifts the question from "what is this agent's score?" to "which raters do I trust?" Each application answers that differently.
 
 ## What gets stored
 
-The on-chain `Feedback` struct holds four fields:
+The on-chain `Feedback` struct holds five fields:
 
-- `score` (uint8, 0-100): the fixed-point `value`/`valueDecimals` input, normalized to a 0-100 integer for storage.
-- `tag1`, `tag2` (bytes32): classification tags, indexed as keccak256 hash topics for efficient log filtering.
+```solidity
+struct Feedback {
+    int128 value;
+    uint8 valueDecimals;
+    bool isRevoked;
+    string tag1;
+    string tag2;
+}
+```
+
+- `value` (int128): the score as an integer. Negative values are permitted (range `[-1e38, 1e38]`).
+- `valueDecimals` (uint8): decimal position, 0 through 18. `value=9950, valueDecimals=2` means 99.50 when interpreted by consumers.
 - `isRevoked` (bool): whether this feedback entry has been revoked.
+- `tag1`, `tag2` (string): free-form classification tags.
+
+The contract stores `value` and `valueDecimals` directly. It does not normalize the input to a 0-100 integer on write.
 
 `feedbackURI` and `feedbackHash` are not stored in the struct. They are emitted as events. This keeps on-chain storage costs down while allowing off-chain indexers to reconstruct the full record.
 
@@ -41,10 +62,10 @@ function giveFeedback(
     uint256 agentId,
     int128 value,
     uint8 valueDecimals,
-    string tag1,
-    string tag2,
-    string endpoint,
-    string feedbackURI,
+    string calldata tag1,
+    string calldata tag2,
+    string calldata endpoint,
+    string calldata feedbackURI,
     bytes32 feedbackHash
 ) external;
 ```
@@ -52,13 +73,13 @@ function giveFeedback(
 Field by field:
 
 - **agentId**: the ERC-721 token ID of the target agent in the Identity Registry.
-- **value, valueDecimals**: fixed-point score. For a quality score of 85, use `value=85, valueDecimals=0` (85 / 10^0 = 85). For 99.5% uptime, use `value=9950, valueDecimals=2`. The contract normalizes this to a uint8 score (0-100) for storage.
+- **value, valueDecimals**: fixed-point score, with `valueDecimals <= 18`. For a quality score of 85, use `value=85, valueDecimals=0`. For 99.5% uptime, use `value=9950, valueDecimals=2` (consumers interpret this as 99.50).
 - **tag1, tag2**: free-form string tags. Empty strings are valid.
 - **endpoint**: the specific agent endpoint this feedback applies to. Use an empty string for feedback about the agent in general.
 - **feedbackURI**: off-chain URI for the full feedback payload. IPFS is preferred for content-addressability; HTTPS works but is less durable.
 - **feedbackHash**: keccak256 of the content at `feedbackURI`. Lets consumers detect tampering without fetching the URI.
 
-The wallet sending the transaction (`msg.sender`) becomes the `clientAddress` in the emitted event. One feedback entry = one transaction. No gating, no approval required at the registry layer.
+The wallet sending the transaction (`msg.sender`) becomes the `clientAddress` in the emitted event. One feedback entry = one transaction. The contract rejects calls from the agent's owner or authorized operators.
 
 **Example.** Registering a quality score of 85 for agent ID 42:
 
@@ -73,7 +94,7 @@ feedbackURI    = "ipfs://Qm..."
 feedbackHash   = 0xabc123...
 ```
 
-The contract stores `score = 85` as a uint8. Tag indexing uses the keccak256 of the tag string as an event topic. With viem, pass the human-readable string; viem handles the encoding.
+The contract stores `value=85` and `valueDecimals=0` directly. A consumer reads this as 85.0.
 
 ## Querying reputation
 
@@ -83,21 +104,38 @@ function getSummary(
     address[] calldata clientAddresses,
     string calldata tag1,
     string calldata tag2
-) external view returns (...);
+) external view returns (uint64 count, int128 summaryValue, uint8 summaryValueDecimals);
 ```
 
-The return value is a tuple containing the aggregated score and feedback count across the trusted set. Check the current ABI for exact field names and types.
+Return tuple:
 
-`clientAddresses` must be non-empty. This is the Sybil-resistance mechanism, not a validation quirk. Anyone can post feedback, including an agent's operators. A raw aggregate across all submitters is trivially manipulable. Callers must supply a set of addresses they trust, and the contract aggregates only from that set.
+- `count`: number of feedback entries included in the aggregate.
+- `summaryValue`: the averaged score as an integer.
+- `summaryValueDecimals`: decimal position for the result.
 
-What goes into `clientAddresses` is the application's call. Options include a curated list of known clients in your ecosystem, a set validated by a third-party attestation service, or addresses derived from your own user base.
+How the average works: the contract normalizes each included entry to 18 decimal places internally, averages them, then scales the result back to the most frequent `valueDecimals` value (the mode) among the included entries.
 
-Other read functions:
+`clientAddresses` must be non-empty. This is the Sybil-resistance mechanism. Anyone can post feedback; a raw aggregate across all submitters is trivially manipulable. Callers must supply a set of addresses they trust, and the contract aggregates only from that set.
 
-- `getClients(agentId)`: returns all client addresses that have posted at least one feedback entry for the agent. Useful for building or checking a trusted set.
-- `getResponseCount(...)`: called with `feedbackIndex == 0`, returns the total count of feedback entries from a specific client for a given agent.
+## Two trust decisions
 
-For reading a single entry directly, verify the index is in range: `index >= 1 && index <= _lastIndex[agentId][clientAddress]`.
+Using the Reputation Registry in practice involves two separate decisions:
+
+1. **Which Reputation Registry contract address to trust for a given network.** The widely-used mainnet address is `0x8004BAa17C55a88189AE136b182e5fdA19dE9b63`. Testnet addresses differ.
+2. **Which client addresses to include in `getSummary()`.** Once you've chosen a registry, you still need to decide which feedback submitters to trust within it. Options include a curated list of known clients in your ecosystem, a set validated by a third-party attestation service, or addresses derived from your own user base.
+
+## Other read functions
+
+For reading individual entries or batching across multiple clients:
+
+```solidity
+function getLastIndex(uint256 agentId, address clientAddress) external view returns (uint64)
+function readFeedback(uint256 agentId, address clientAddress, uint64 feedbackIndex)
+    external view returns (int128 value, uint8 valueDecimals, string memory tag1, string memory tag2, bool isRevoked)
+function readAllFeedback(uint256 agentId, address[] calldata clientAddresses, string calldata tag1, string calldata tag2, bool includeRevoked) external view returns (...)
+```
+
+To read one client's entries in order: call `getLastIndex(agentId, clientAddress)` first, then `readFeedback(agentId, clientAddress, i)` for `i = 1..lastIndex`.
 
 ## Deployed contract addresses
 
@@ -146,9 +184,11 @@ Tags are free-form strings. Any value is valid, but only entries sharing the exa
 
 ## Takeaway
 
-The Reputation Registry's architecture is intentionally simple: permissionless writes, application-filtered reads. `giveFeedback()` records one entry per transaction; `getSummary()` aggregates only over the client set the caller specifies. The same contracts run at the same addresses across 10+ chains, thanks to CREATE2 deterministic deployment. Agentscan and QuickNode's explorer are the main places to browse that data today.
+The Reputation Registry is one of three independent contracts in the ERC-8004 registry set. Feedback is stored as fixed-point `value`/`valueDecimals` pairs, not normalized to a 0-100 score. `giveFeedback()` records one entry per transaction sent directly to the Reputation Registry address. `getSummary()` returns `(uint64 count, int128 summaryValue, uint8 summaryValueDecimals)`, averaging over the caller-specified client set after normalizing to 18 decimal places internally.
 
-The standing limitation is that the standard is still a Draft, actual reputation data is thin, and Sybil resistance depends entirely on how well applications curate their trusted client sets. Those are tractable problems, but unsolved in mid-2026.
+Choosing a Reputation Registry address and choosing which clients to include in `getSummary()` are two separate decisions. The same contracts run at the same addresses across 10+ chains via CREATE2 deterministic deployment. Agentscan and QuickNode's explorer are the main places to browse that data today.
+
+The standard is still a Draft, actual reputation data is thin, and Sybil resistance depends entirely on how well applications curate their trusted client sets. Those are tractable problems, but unsolved in mid-2026.
 
 ## Further reading
 
