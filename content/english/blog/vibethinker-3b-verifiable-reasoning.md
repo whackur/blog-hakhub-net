@@ -3,7 +3,7 @@ title: "VibeThinker-3B: Packing Verifiable Reasoning into 3 Billion Parameters"
 meta_title: ""
 description: "WeiboAI's VibeThinker-3B applies multi-stage RL and self-distillation to a 3B base model, claiming frontier-level results on math and coding benchmarks. A look at what it achieves and where it falls short."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-06-30T02:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["AI"]
 tags: ["small-language-model", "reasoning", "reinforcement-learning", "math", "coding"]
@@ -44,7 +44,7 @@ Rather than learning one correct solution path, the distillation preserves multi
 
 ### 2. Multi-domain reasoning RL
 
-Reuses **MGPO (MaxEnt-Guided Policy Optimization)** from VibeThinker-1.5B. Samples where rollouts include both correct and incorrect answers get higher training weight than samples at the extremes (always right or always wrong). Training runs Math RL, then Code RL, then STEM RL. A single 64K context window preserves long reasoning trajectories without truncation.
+Reuses **MGPO (MaxEnt-Guided Policy Optimization)** from VibeThinker-1.5B. Samples where rollouts include both correct and incorrect answers get higher training weight than samples at the extremes (always right or always wrong). The intuition is that problems the model always solves or always fails carry almost no learning signal; the boundary problems carry the most. Training runs Math RL, then Code RL, then STEM RL. A single 64K context window preserves long reasoning trajectories without truncation.
 
 ### 3. Long2Short Math RL
 
@@ -106,7 +106,7 @@ The model card explicitly states the model was not trained on tool-calling or ag
 
 ## Caveats
 
-Math evaluation mixes automated verifiers with LLM-as-judge, which means the choice of judge can affect reported numbers. Comparison scores are not from a unified re-evaluation harness. The strong results apply to verifiable reasoning domains; treating them as evidence that a 3B model is a general frontier replacement would be overreading the paper.
+Math evaluation mixes automated verifiers with LLM-as-judge, which means the choice of judge can affect reported numbers. Comparison scores are not from a unified re-evaluation harness. The math scores are also averages over 64 independent generations, which can differ from what a single call feels like in practice. The strong results apply to verifiable reasoning domains; treating them as evidence that a 3B model is a general frontier replacement would be overreading the paper.
 
 ## Further reading
 

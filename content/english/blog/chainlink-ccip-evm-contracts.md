@@ -3,7 +3,7 @@ title: "Chainlink CCIP EVM Contracts: Architecture from Source Code"
 meta_title: ""
 description: "A source-code walkthrough of Chainlink CCIP: how Router, OnRamp, OffRamp, TokenPool, FeeQuoter, and RMN fit together to move messages and tokens across EVM chains."
 date: 2026-06-30T17:30:00+09:00
-lastmod: 2026-06-30T17:30:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["chainlink", "ccip", "cross-chain", "solidity", "smart-contract"]
@@ -60,7 +60,7 @@ struct GenericExtraArgsV2 {
 }
 ```
 
-Set `gasLimit` too low and the execution reverts on the destination chain. Use `GenericExtraArgsV2` explicitly rather than relying on defaults; the default can change across versions.
+Set `gasLimit` too low and the execution reverts on the destination chain. Set it far higher than needed and you overpay, since the fee scales with the gas limit. Use `GenericExtraArgsV2` explicitly rather than relying on defaults; the default can change across versions.
 
 ### Receiving: Any2EVMMessage
 
@@ -192,7 +192,7 @@ A cross-chain fee has three parts:
 - **Destination gas cost**: `extraArgs.gasLimit × destination gas price`, converted into the source chain's fee token.
 - **Token transfer fee**: per-token fee based on amount and token configuration.
 
-The DON updates price data periodically. FeeQuoter 2.0.0 removed the stale price revert check — price freshness is now the DON's responsibility rather than a hard on-chain guard.
+The DON updates price data periodically. FeeQuoter 2.0.0 removed the stale price revert check. Price freshness is now the DON's responsibility rather than a hard on-chain guard.
 
 ## RMN: Risk Management Network
 

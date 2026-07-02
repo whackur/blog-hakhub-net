@@ -3,7 +3,7 @@ title: "Mixture of Agents: How Layering Open-Source LLMs Beat GPT-4 Omni"
 meta_title: ""
 description: "MoA stacks multiple LLMs in layers, each refining the previous layer's outputs. Here's the architecture, benchmark results, variants, and how Hermes Agent integrates it."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-06-30T02:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["AI"]
 tags: ["moa", "llm", "multi-agent", "ensemble", "ai-architecture"]
@@ -12,7 +12,9 @@ translationKey: "mixture-of-agents-moa"
 draft: false
 ---
 
-Instead of scaling a single model up, what happens when you stack multiple models in layers and have each one refine the previous layer's output? Together AI's research team answered that in June 2024 with [arXiv:2406.04692](https://arxiv.org/abs/2406.04692). Using only open-source models, their Mixture of Agents (MoA) configuration scored 65.1% on AlpacaEval 2.0, versus 57.5% for GPT-4 Omni.
+Instead of scaling a single model up, you can stack multiple models in layers and have each one refine the previous layer's output. Together AI's research team formalized that approach in June 2024 as Mixture of Agents (MoA) in [arXiv:2406.04692](https://arxiv.org/abs/2406.04692). Using only open-source models, their MoA configuration scored 65.1% on AlpacaEval 2.0, versus 57.5% for GPT-4 Omni.
+
+The starting observation is what the paper calls the collaborativeness of LLMs: a model tends to produce a better answer when it is given other models' answers as reference material, even when those reference answers are worse than what it would have produced on its own. MoA turns that property into an architecture.
 
 ## Architecture
 
@@ -24,6 +26,8 @@ Each MoA layer runs multiple LLMs in parallel. Every agent receives the full out
 | Aggregator | Merges each layer's outputs into the next input |
 | Judge agent | Selects top-k responses when roles are split |
 | Moderator | Handles consensus-based early stopping |
+
+Cost and latency grow with the structure. Every layer adds one inference call per agent, and a layer cannot start until all outputs from the previous layer are in, so delay stacks with depth. That is also why the paper includes MoA-Lite, a lighter configuration with fewer layers.
 
 Together Computer's reference implementation is on GitHub ([togethercomputer/moa](https://github.com/togethercomputer/moa), Apache 2.0). The core `moa.py` is 50 lines; `advanced-moa.py` handles three or more layers; `bot.py` is an interactive CLI.
 
@@ -55,7 +59,7 @@ Several papers since the original have proposed changes to the architecture.
 
 ## Quality versus diversity
 
-One finding from MoA research goes against the obvious expectation. Self-MoA, where you combine outputs from a single high-quality model multiple times, often outperforms a mix of diverse heterogeneous models. The paper models performance as `t = αq + βd + γ` (q = quality, d = diversity), and in practice α >> β: quality dominates diversity by a wide margin.
+One finding from follow-up research goes against the obvious expectation. Self-MoA, where you combine multiple sampled outputs from a single high-quality model, often outperforms a mix of diverse heterogeneous models. The study that proposed Self-MoA models performance as `t = αq + βd + γ` (q = response quality, d = diversity), and in practice α >> β: quality dominates diversity by a wide margin.
 
 Diversity helps when individual agents' characteristics align with the task's heterogeneity. Mixing models without considering that fit often doesn't pay off.
 

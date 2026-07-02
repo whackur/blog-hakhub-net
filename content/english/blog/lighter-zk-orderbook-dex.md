@@ -3,7 +3,7 @@ title: "Lighter: A ZK-SNARK Orderbook DEX on Ethereum"
 meta_title: ""
 description: "Lighter is an application-specific zk-rollup on Ethereum that uses SNARK-based execution proofs to deliver a CEX-style orderbook experience without custodial risk. This post covers its architecture, MEV reduction approach, and how it compares to Hyperliquid."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-06-30T07:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["zk-rollup", "orderbook", "dex", "mev", "ethereum", "snark"]
@@ -74,20 +74,20 @@ The official site claims tens of thousands of orders and cancels per second with
 
 ## Open Questions
 
-Lighter's design is coherent, but several things need independent verification: trading volume, open interest, active user counts, and market depth. The gap between soft finality and Ethereum proof finality is a real operational consideration. Data availability is also worth watching: Lighter compresses blob data to reduce costs, posting only what is needed for state reconstruction rather than full transaction detail.
+Lighter's design is coherent, but several things need independent verification: trading volume, open interest, active user counts, and market depth. The gap between soft finality and Ethereum proof finality is a real operational consideration. By construction, canonical state only settles after proof verification, so fills that exist only at soft finality are not yet backed by Ethereum. Data availability is also worth watching: Lighter compresses blob data to reduce costs, posting only what is needed for state reconstruction rather than full transaction detail.
 
 ## Further Reading
 
-- [Hyperliquid Docs](https://hyperliquid.gitbook.io/hyperliquid-docs) — the L1-based orderbook approach for comparison
-- [Lighter Whitepaper](https://assets.lighter.xyz/whitepaper.pdf) — full zk-rollup orderbook design
-- [Lighter Technical Architecture](https://docs.lighter.xyz/about-lighter/technical-architecture-lighter-core) — sequencer, prover, and contract structure
+- [Hyperliquid Docs](https://hyperliquid.gitbook.io/hyperliquid-docs): the L1-based orderbook approach for comparison
+- [Lighter Whitepaper](https://assets.lighter.xyz/whitepaper.pdf): full zk-rollup orderbook design
+- [Lighter Technical Architecture](https://docs.lighter.xyz/about-lighter/technical-architecture-lighter-core): sequencer, prover, and contract structure
 
 ## References
 
-- [Lighter Official Site](https://lighter.xyz/) — lighter.xyz, accessed 2026-06-30
-- [Lighter Docs](https://docs.lighter.xyz/) — official technical documentation, accessed 2026-06-30
-- [Lighter Technical Architecture](https://docs.lighter.xyz/about-lighter/technical-architecture-lighter-core) — accessed 2026-06-30
-- [Order Types & Matching](https://docs.lighter.xyz/trading/order-types-and-matching) — accessed 2026-06-30
-- [Lighter API Account Types](https://apidocs.lighter.xyz/docs/account-types) — accessed 2026-06-30
-- [Lighter Whitepaper](https://assets.lighter.xyz/whitepaper.pdf) — accessed 2026-06-30
-- [Hyperliquid Docs](https://hyperliquid.gitbook.io/hyperliquid-docs) — accessed 2026-06-30
+- [Lighter Official Site](https://lighter.xyz/): lighter.xyz, accessed 2026-06-30
+- [Lighter Docs](https://docs.lighter.xyz/): official technical documentation, accessed 2026-06-30
+- [Lighter Technical Architecture](https://docs.lighter.xyz/about-lighter/technical-architecture-lighter-core): accessed 2026-06-30
+- [Order Types & Matching](https://docs.lighter.xyz/trading/order-types-and-matching): accessed 2026-06-30
+- [Lighter API Account Types](https://apidocs.lighter.xyz/docs/account-types): accessed 2026-06-30
+- [Lighter Whitepaper](https://assets.lighter.xyz/whitepaper.pdf): accessed 2026-06-30
+- [Hyperliquid Docs](https://hyperliquid.gitbook.io/hyperliquid-docs): accessed 2026-06-30

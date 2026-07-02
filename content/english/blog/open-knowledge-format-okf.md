@@ -3,7 +3,7 @@ title: "Open Knowledge Format: A Shared Vocabulary for Agent Knowledge"
 meta_title: ""
 description: "OKF v0.1 is Google Cloud's proposed open format for AI agent knowledge sharing: YAML-frontmattered Markdown files in a directory tree, no central registry or required runtime."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-06-30T02:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["AI"]
 tags: ["ai-agent", "knowledge-management", "metadata", "open-standard", "okf", "google-cloud", "mcp"]
@@ -30,7 +30,7 @@ Each of these lives in a different system with a different API. Agents either ge
 
 ## Connection to LLM Wiki
 
-Andrej Karpathy's [LLM Wiki idea](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) argues against RAG-on-demand retrieval in favor of maintaining a steadily-refined Markdown knowledge library alongside an agent. His core observation is that LLMs do not get bored, do not forget to update a cross-reference, and can touch many files in a single pass — making them well-suited for the bookkeeping work humans tend to abandon in personal wikis: updating cross-references, merging duplicates, and restructuring directories. OKF tries to formalize that pattern into a spec that works across organizations, tools, and agents.
+Andrej Karpathy's [LLM Wiki idea](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) argues against RAG-on-demand retrieval in favor of maintaining a steadily-refined Markdown knowledge library alongside an agent. His core observation is that LLMs do not get bored, do not forget to update a cross-reference, and can touch many files in a single pass. That makes them well-suited for the bookkeeping work humans tend to abandon in personal wikis: updating cross-references, merging duplicates, and restructuring directories. OKF tries to formalize that pattern into a spec that works across organizations, tools, and agents.
 
 ## OKF v0.1 specification
 

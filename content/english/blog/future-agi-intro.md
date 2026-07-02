@@ -3,6 +3,7 @@ title: "Future AGI: Evaluate, Observe, and Improve AI Agents in One Place"
 meta_title: ""
 description: "Future AGI is an open-source platform that closes the feedback loop for AI agents that break in production. Here's how it works, and how it stacks up against the alternatives."
 date: 2026-06-29T10:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["AI"]
 author: "whackur"
@@ -26,18 +27,20 @@ A typical LLM stack ends up scattered:
 
 Because each piece is a different tool, the data doesn't move. Production traces never come back as a signal for the next version, so the agent gets watched but never gets better. Future AGI merges those flows. Every trace becomes input for the next iteration.
 
+Closing the loop means something concrete here: catch a failing trace in production, add it to an eval dataset, run prompt optimization against that dataset, ship the improved prompt, and confirm the fix in fresh traces. With separate tools, every step of that cycle needs a manual export and import, and that's usually where the loop dies.
+
 ## Six features
 
 It's built on six pillars, and each one stands in for a tool you'd otherwise run on its own.
 
 | Feature | What it does |
 |---------|--------------|
-| 🧪 Simulate | Multi-turn conversations against personas, adversarial inputs, and edge cases, run before launch (text and voice: LiveKit, VAPI) |
-| 📊 Evaluate | 50-odd metrics in one `evaluate()` call: groundedness, hallucination, tool-use correctness, PII, tone. LLM-as-judge plus heuristics plus ML |
-| 🛡️ Protect | 18 built-in scanners (PII, jailbreak, injection) and 15 vendor adapters (Lakera, Presidio, Llama Guard) |
-| 👁️ Monitor | OpenTelemetry tracing, wired into 50-odd frameworks (LangChain, LlamaIndex, CrewAI) with no config |
-| 🎛️ Agent Command Center | OpenAI-compatible gateway. 100-odd providers, semantic caching. ~29k req/s, P99 under 21ms with guardrails on |
-| 🔁 Optimize | Six prompt-optimization algorithms (GEPA, PromptWizard, ProTeGi). Production traces feed back as training data |
+| Simulate | Multi-turn conversations against personas, adversarial inputs, and edge cases, run before launch (text and voice: LiveKit, VAPI) |
+| Evaluate | 50-odd metrics in one `evaluate()` call: groundedness, hallucination, tool-use correctness, PII, tone. LLM-as-judge plus heuristics plus ML |
+| Protect | 18 built-in scanners (PII, jailbreak, injection) and 15 vendor adapters (Lakera, Presidio, Llama Guard) |
+| Monitor | OpenTelemetry tracing, wired into 50-odd frameworks (LangChain, LlamaIndex, CrewAI) with no config |
+| Agent Command Center | OpenAI-compatible gateway. 100-odd providers, semantic caching. ~29k req/s, P99 under 21ms with guardrails on |
+| Optimize | Six prompt-optimization algorithms (GEPA, PromptWizard, ProTeGi). Production traces feed back as training data |
 
 The gateway is written in Go, and the performance numbers ship with a benchmark harness you can rerun. That's more convincing than the word "fast."
 
@@ -74,9 +77,11 @@ OpenAIInstrumentor().instrument()
 
 This space already has strong players. LangSmith is great at tracing inside the LangChain world. Arize came from ML observability, so its stats run deep. Braintrust is built around prompt experiments, and Langfuse is the open-source self-hosting favorite. Future AGI plays a different angle: don't stitch a separate vendor onto every stage, do the whole lifecycle in one place. Pricing is flat rather than per-seat (free tier, then Pro at $50/month), and it leans on the fact that your data never leaves your network.
 
+Maturity is the thing to weigh. By GitHub stars, Langfuse sits around 28.7k and Opik around 19.5k, against Future AGI's 1.2k. That gap shows up in practice as community size, accumulated documentation, and the number of production stories you can learn from.
+
 Being honest about it: the all-in-one bet cuts both ways. A team that only needs one stage done really well may be better off with a specialist tool. Future AGI fits the team that's tired of gluing five vendors together.
 
-## Worth reading alongside
+## Further reading
 
 - [Langfuse](https://langfuse.com): the open-source observability favorite, self-hostable
 - [Arize Phoenix](https://phoenix.arize.com): evals and drift analysis with an ML-observability backbone

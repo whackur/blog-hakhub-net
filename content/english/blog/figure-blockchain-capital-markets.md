@@ -3,7 +3,7 @@ title: "Figure: From HELOC Lender to Blockchain-Native Capital Markets"
 meta_title: ""
 description: "Figure Technology Solutions started as a consumer HELOC lender and has since built a blockchain-native capital markets platform on Provenance Blockchain, integrating loan origination, the DART ownership registry, tokenized lending markets, and the YLDS yield-bearing security."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-06-30T07:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["rwa", "provenance", "capital-markets", "tokenization", "heloc", "ylds"]
@@ -14,7 +14,7 @@ draft: false
 
 Two companies go by the name Figure. One is Figure AI, the humanoid robotics company. The other is [Figure Technology Solutions](https://www.figure.com/), which is what this post is about. They are unrelated.
 
-Figure Technology Solutions started as a consumer home equity lender and has built out a system that connects loan origination, on-chain ownership recording, a tokenized loan marketplace, and a yield-bearing settlement asset into one platform, all running on Provenance Blockchain. The company trades on Nasdaq as FIGR.
+Figure Technology Solutions started as a consumer home equity lender. Founded in 2018 by SoFi co-founder Mike Cagney and June Ou, it listed on Nasdaq in September 2025 under the ticker FIGR. The company has since built out a system that connects loan origination, on-chain ownership recording, a tokenized loan marketplace, and a yield-bearing settlement asset into one platform, all running on Provenance Blockchain.
 
 ## The Closed-Loop Thesis
 
@@ -40,7 +40,7 @@ One caveat: ESIGN/UETA compliance means the electronic records meet federal elec
 
 ### Provenance Blockchain
 
-Provenance is a proof-of-stake blockchain built on the Cosmos SDK and designed specifically for financial products. It supports custom modules for KYC/AML-linked account metadata and financial transaction workflows. Figure was a founding contributor to the chain. [Figure's major systems](https://provenance.io/) use Provenance as the record, settlement, and tokenization layer. Sensitive personal information like borrower PII is not posted on-chain directly.
+Provenance is a proof-of-stake blockchain built on the Cosmos SDK and designed specifically for financial products. It supports custom modules for KYC/AML-linked account metadata and financial transaction workflows. Figure was a founding contributor to the chain. The native token, HASH, is used for transaction fees and staking. [Figure's major systems](https://provenance.io/) use Provenance as the record, settlement, and tokenization layer. Sensitive personal information like borrower PII is not posted on-chain directly.
 
 ### Figure Connect: Consumer Loan Marketplace
 

@@ -3,7 +3,7 @@ title: "Qwen3.6-35B-A3B: Community Reviews, Uncensored Variants, and MTP Benchma
 meta_title: ""
 description: "From the 1.2M-download uncensored variant to real MTP acceleration numbers on 12 GB and 16 GB VRAM. What the community has found running Qwen3.6-35B-A3B locally."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-06-30T02:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["AI"]
 tags: ["qwen", "local-llm", "moe", "mtp", "uncensored", "llama-cpp"]
@@ -14,7 +14,7 @@ draft: false
 
 Alibaba released Qwen3.6-35B-A3B in April 2026: a 35B-parameter MoE model with around 3B active per token, a 262K native context, and an official SWE-bench score of 73.4%. Two months in, it's the most widely tested 35B-class model in the local LLM community.
 
-This post compiles what people have found on Reddit, HackerNews, and personal blogs. These are individual experiences; results depend heavily on hardware, driver version, and settings. Independent replication is needed before drawing firm conclusions.
+This post compiles what people have found on Reddit, Hacker News, and personal blogs. These are individual experiences; results depend heavily on hardware, driver version, and settings. Independent replication is needed before drawing firm conclusions.
 
 ## Specs
 
@@ -30,13 +30,13 @@ Official benchmarks (Alibaba-reported): SWE-bench 73.4%, GPQA 86.0, LiveCodeBenc
 
 ## Uncensored variants
 
-The base model has significant refusal behavior on certain topics. Several community variants strip or reduce that.
+The base model has significant refusal behavior on certain topics. Several community variants strip or reduce that. The most common technique, abliteration, locates the direction in the model's activations that mediates refusal and removes it. It cuts refusals through weight edits alone, no fine-tuning, but it can damage other capabilities along the way, which is why quality varies so much between variants.
 
 ### HauhauCS Aggressive
 
 According to the [r/hermesagent definitive variant guide](https://www.reddit.com/r/hermesagent/comments/1tmp2qy/qwen3635ba3b_community_variants_the_definitive/), by June 2026 the HauhauCS Aggressive variant had over 1.22 million downloads and 761 likes, making it the most tested uncensored option. The creator reports 0 refusals across 465 tests with no capability loss. VRAM requirements are roughly 22 GB for Q4_K_P and 20 GB for IQ4_XS. The creator acknowledges sporadic topic drift in long agentic loops.
 
-The community consensus from that guide is that the model answers exactly what it is asked and produces unusual outputs only when given unusual inputs — in short, behavior tracks the user's prompts rather than the model's own tendencies (see [r/hermesagent guide](https://www.reddit.com/r/hermesagent/comments/1tmp2qy/qwen3635ba3b_community_variants_the_definitive/)).
+The community consensus from that guide is that the model answers exactly what it is asked and produces unusual outputs only when given unusual inputs. In short, behavior tracks the user's prompts rather than the model's own tendencies (see [r/hermesagent guide](https://www.reddit.com/r/hermesagent/comments/1tmp2qy/qwen3635ba3b_community_variants_the_definitive/)).
 
 ### Other variants
 
@@ -45,6 +45,8 @@ The community consensus from that guide is that the model answers exactly what i
 | Wasserstein (LuffyTheFox) | Embedding-space Wasserstein distance | 455K | Different uncensoring path; edge-case behavior may differ |
 | heretic (llmfan46) | Abliteration + decensor hybrid | 53K | KL divergence 0.0015, 88% fewer refusals |
 | huihui-ai Abliterated | Pure abliteration | 19K | Creator describes it as "crude, proof-of-concept" |
+
+The KL divergence figure measures how far the variant's output distribution drifted from the base model. Smaller means more of the original model's behavior survived the uncensoring.
 
 ## Hermes Agent compatibility
 
@@ -78,7 +80,7 @@ enable_thinking: false  # if it interferes with tool call parsing
 
 ## MTP acceleration benchmarks
 
-Multi-Token Prediction (MTP) predicts multiple tokens at once to increase generation speed. Enable it in llama.cpp with `--spec-type draft-mtp`. Results differ substantially based on available VRAM.
+Multi-Token Prediction (MTP) predicts multiple tokens at once to increase generation speed. The acceptance rate is the share of drafted tokens the main model accepts; the higher it is, the bigger the speedup. Enable MTP in llama.cpp with `--spec-type draft-mtp`. Results differ substantially based on available VRAM.
 
 ### 12 GB VRAM (RTX 4070 Super)
 

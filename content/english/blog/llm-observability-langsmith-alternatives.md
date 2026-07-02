@@ -3,7 +3,7 @@ title: "LLM Observability Without LangSmith: Five Open-Source Tools Compared"
 meta_title: ""
 description: "A practical comparison of Langfuse, Opik, Laminar/LMNR, Arize Phoenix, and Helicone as self-hostable LangSmith alternatives for LLM and agent debugging."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-06-30T07:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["AI"]
 tags: ["llm-observability", "evals", "tracing", "langfuse", "opik"]
@@ -12,7 +12,7 @@ translationKey: "llm-observability-langsmith-alternatives"
 draft: false
 ---
 
-At some point in building LLM applications or agents, you need to know why a call failed, what the tool invocation looked like, or why the agent got stuck in a loop. LangSmith, LangChain's commercial observability platform, has been the default answer for this: it covers trace visualization, prompt versioning, and evaluation in one place. Its usage-based pricing and cloud-hosted architecture are where teams start looking for alternatives.
+At some point in building LLM applications or agents, you need to know why a call failed, what the tool invocation looked like, or why the agent got stuck in a loop. LangSmith, LangChain's commercial observability platform, has been the default answer for this: it covers trace visualization, prompt versioning, and evaluation in one place. Its usage-based pricing and cloud-hosted architecture are where teams start looking for alternatives. Traces carry raw user inputs and internal prompts, so shipping that data to an external SaaS is itself a problem for plenty of organizations.
 
 Five tools are worth knowing. They cover different parts of the space, and picking the right one depends on what you're actually trying to observe.
 
@@ -115,15 +115,15 @@ Langfuse sees the most consistent Reddit and Hacker News mentions as a LangSmith
 
 ## Further reading
 
-- [Langfuse LangSmith comparison](https://langfuse.com/faq/all/langsmith-alternative) — official Langfuse comparison page
-- [Opik self-host overview](https://www.comet.com/docs/opik/self-host/overview) — what's available in OSS
-- [Laminar docs](https://docs.lmnr.ai/) — agent observability features
+- [Langfuse LangSmith comparison](https://langfuse.com/faq/all/langsmith-alternative): official Langfuse comparison page
+- [Opik self-host overview](https://www.comet.com/docs/opik/self-host/overview): what's available in OSS
+- [Laminar docs](https://docs.lmnr.ai/): agent observability features
 
 ## References
 
-- [Langfuse self-hosted pricing](https://langfuse.com/pricing-self-host) — Langfuse, accessed 2026-06-30
-- [Opik documentation](https://www.comet.com/docs/opik/) — Comet ML, accessed 2026-06-30
-- [Laminar/LMNR GitHub](https://github.com/lmnr-ai/lmnr) — lmnr-ai, accessed 2026-06-30
-- [Arize Phoenix self-hosting](https://arize.com/docs/phoenix/self-hosting) — Arize, accessed 2026-06-30
-- [Helicone self-hosting](https://docs.helicone.ai/getting-started/self-host/overview) — Helicone, accessed 2026-06-30
-- [Phoenix license](https://github.com/Arize-ai/phoenix/blob/main/LICENSE) — GitHub, accessed 2026-06-30
+- [Langfuse self-hosted pricing](https://langfuse.com/pricing-self-host): Langfuse, accessed 2026-06-30
+- [Opik documentation](https://www.comet.com/docs/opik/): Comet ML, accessed 2026-06-30
+- [Laminar/LMNR GitHub](https://github.com/lmnr-ai/lmnr): lmnr-ai, accessed 2026-06-30
+- [Arize Phoenix self-hosting](https://arize.com/docs/phoenix/self-hosting): Arize, accessed 2026-06-30
+- [Helicone self-hosting](https://docs.helicone.ai/getting-started/self-host/overview): Helicone, accessed 2026-06-30
+- [Phoenix license](https://github.com/Arize-ai/phoenix/blob/main/LICENSE): GitHub, accessed 2026-06-30

@@ -3,7 +3,7 @@ title: "Harness-1: Teaching Search Agents to Offload State"
 meta_title: ""
 description: "How the 20B Harness-1 search subagent externalizes working memory to a stateful harness, stabilizes RL training, and achieves 0.730 average curated recall across eight benchmarks."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-06-30T07:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["AI"]
 tags: ["search-agent", "retrieval", "rl", "rag", "agent-harness"]
@@ -38,7 +38,7 @@ The harness handles:
 - `P_t`: the candidate document pool after compression/dedup
 - `C_t, I_t`: the curated evidence set with importance tags (very_high/high/fair/low). This is not the raw list of retrieved documents; it's the subset the model has explicitly chosen as relevant to the answer, with importance labels attached. Only documents the model curated end up here.
 - `D_t`: full-text store of every document seen during the episode. Documents stay retrievable without a new search call.
-- `G_t`: an evidence graph connecting entities (company names, dates, figures) and documents. This lets the model reference relationships across multiple sources without re-fetching them — useful for multi-hop questions where the answer requires connecting information from several documents.
+- `G_t`: an evidence graph connecting entities (company names, dates, figures) and documents. This lets the model reference relationships across multiple sources without re-fetching them, which helps on multi-hop questions where the answer requires connecting information from several documents.
 - `V_t`: per-claim verification records. Each entry is the result of asking "does this document actually support this claim?" Once a claim is verified, it doesn't need to be re-checked. RL can use the verification sequence as part of its reward computation.
 - `H_t`: search history and result summaries
 - `B_t`: context budget marker
@@ -97,17 +97,17 @@ The paper is transparent about what Harness-1 doesn't do:
 
 The stronger reading of Harness-1 isn't "this is a good retrieval model" but "the interface the model operates over matters as much as the model itself." Externalizing candidate pools, verification records, and importance tags into structured state gives RL a cleaner signal and gives the model a less cluttered context.
 
-For anyone building long-horizon research agents or modular RAG pipelines, the implication is that transcript-based memory is architecturally weak for retrieval tasks. Explicit state for candidates, curated evidence, and claim verification status seems worth the engineering complexity.
+For anyone building long-horizon research agents or modular RAG pipelines, the implication is that transcript-based memory is architecturally weak for retrieval tasks. Explicit state for candidates, curated evidence, and claim verification status seems worth the engineering complexity. Harness-1 is also a retrieval subagent decoupled from the final answering model, so the curated evidence set stays reusable and auditable even if you swap the downstream answerer.
 
 ## Further reading
 
-- [arXiv:2606.02373v1](https://arxiv.org/abs/2606.02373v1) — the paper
-- [pat-jj/harness-1 (GitHub)](https://github.com/pat-jj/harness-1) — harness code and training pipeline
-- [pat-jj/harness-1 (Hugging Face)](https://huggingface.co/pat-jj/harness-1) — public checkpoint
+- [arXiv:2606.02373v1](https://arxiv.org/abs/2606.02373v1): the paper
+- [pat-jj/harness-1 (GitHub)](https://github.com/pat-jj/harness-1): harness code and training pipeline
+- [pat-jj/harness-1 (Hugging Face)](https://huggingface.co/pat-jj/harness-1): public checkpoint
 
 ## References
 
-- [Harness-1: Reinforcement Learning for Search Agents with State-Externalizing Harnesses](https://arxiv.org/abs/2606.02373v1) — arXiv, June 9, 2026; accessed 2026-06-30
-- [GitHub — pat-jj/harness-1](https://github.com/pat-jj/harness-1) — accessed 2026-06-30
-- [Hugging Face — pat-jj/harness-1](https://huggingface.co/pat-jj/harness-1) — accessed 2026-06-30
-- [AI Times (Korean coverage)](https://www.aitimes.com/news/articleView.html?idxno=211522) — AI Times, Park Chan, June 9, 2026; accessed 2026-06-30
+- [Harness-1: Reinforcement Learning for Search Agents with State-Externalizing Harnesses](https://arxiv.org/abs/2606.02373v1): arXiv, June 9, 2026; accessed 2026-06-30
+- [GitHub: pat-jj/harness-1](https://github.com/pat-jj/harness-1): accessed 2026-06-30
+- [Hugging Face: pat-jj/harness-1](https://huggingface.co/pat-jj/harness-1): accessed 2026-06-30
+- [AI Times (Korean coverage)](https://www.aitimes.com/news/articleView.html?idxno=211522): AI Times, Park Chan, June 9, 2026; accessed 2026-06-30

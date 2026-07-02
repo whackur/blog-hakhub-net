@@ -3,7 +3,7 @@ title: "ERC-8004 Agent Reputation: On-Chain Registration and Lookup"
 meta_title: ""
 description: "ERC-8004 is a set of three registries, not a single contract. How to register feedback using giveFeedback(), aggregate it with getSummary() against a trusted client set, and what services exist today to browse ERC-8004 data."
 date: 2026-06-30T15:00:00+09:00
-lastmod: 2026-06-30T15:45:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "erc-8004", "reputation", "smart-contract", "onchain"]

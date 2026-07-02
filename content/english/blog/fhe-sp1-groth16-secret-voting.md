@@ -3,7 +3,7 @@ title: "Secret Voting Architecture with FHE, SP1, and Groth16"
 meta_title: ""
 description: "How to design on-chain secret voting using FHE for encrypted tallying, SP1 for execution proofs, and Groth16 for EVM-friendly verification, with a full security assumptions checklist."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-06-30T02:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["fhe", "zk-proof", "groth16", "sp1", "voting", "privacy", "zero-knowledge", "maci", "semaphore"]

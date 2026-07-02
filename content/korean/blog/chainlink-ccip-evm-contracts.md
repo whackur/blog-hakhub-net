@@ -3,7 +3,7 @@ title: "Chainlink CCIP EVM 컨트랙트 구조 분석"
 meta_title: ""
 description: "Chainlink CCIP의 Router, OnRamp, OffRamp, TokenPool, FeeQuoter, RMN이 어떻게 맞물려 체인 간 메시지와 토큰을 이동시키는지 소스 코드 기준으로 정리합니다."
 date: 2026-06-30T17:30:00+09:00
-lastmod: 2026-06-30T17:30:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["chainlink", "ccip", "cross-chain", "solidity", "smart-contract"]
@@ -12,7 +12,7 @@ translationKey: "chainlink-ccip-evm-contracts"
 draft: false
 ---
 
-Ethereum Mainnet에서 Arbitrum으로 USDC를 보내거나, Polygon 컨트랙트가 Base 컨트랙트를 트리거하는 작업은 EVM 자체로는 불가능합니다. 체인은 기본적으로 서로 격리되어 있습니다. 크로스체인 브릿지가 이 공백을 메워 왔지만, 보안 사고가 반복됐습니다. 크로스체인 브릿지는 구조적으로 공격 표면이 넓고, 업계 전반에 걸쳐 반복적인 보안 사고가 발생해 왔습니다.
+Ethereum Mainnet에서 Arbitrum으로 USDC를 보내거나, Polygon 컨트랙트가 Base 컨트랙트를 트리거하는 작업은 EVM 자체로는 불가능합니다. 체인은 기본적으로 서로 격리되어 있습니다. 크로스체인 브릿지가 이 공백을 메워 왔지만, 브릿지는 구조적으로 공격 표면이 넓어 업계 전반에서 보안 사고가 반복됐습니다.
 
 Chainlink CCIP(Cross-Chain Interoperability Protocol)는 이 문제에 Chainlink의 DON(탈중앙화 오라클 네트워크)과 별도 위험 관리 네트워크(RMN)를 적용한 프로토콜입니다. 단순 토큰 전송뿐 아니라 임의 데이터를 함께 보낼 수 있고, 하나의 트랜잭션에서 토큰 이동과 컨트랙트 호출을 묶는 것도 가능합니다. 이 글은 CCIP EVM 컨트랙트의 각 구성 요소가 어떤 역할을 하는지, 그리고 그것들이 어떻게 맞물려 동작하는지를 소스 코드 기준으로 설명합니다.
 
@@ -180,7 +180,7 @@ function releaseOrMint(Pool.ReleaseOrMintInV1 calldata releaseOrMintIn)
 
 **속도 제한(Rate Limiting)**
 
-TokenPool은 체인별로 아웃바운드·인바운드 속도 제한을 각각 설정할 수 있습니다. 토큰 버킷 알고리즘으로 단위 시간당 최대 이동 금액을 제한합니다. 한도를 초과하면 트랜잭션이 revert됩니다.
+TokenPool은 체인별로 아웃바운드·인바운드 속도 제한을 각각 설정할 수 있습니다. 토큰 버킷 알고리즘으로 단위 시간당 최대 이동 금액을 제한합니다. 한도를 초과하면 트랜잭션이 revert됩니다. 한도 값은 풀 관리자가 온체인에서 조정할 수 있습니다.
 
 ## FeeQuoter: 수수료 산정 구조
 
@@ -215,7 +215,7 @@ interface IRMNRemote {
 
 `isCursed(bytes16 subject)`에서 `subject`는 소스 체인 셀렉터와 레인 식별자의 조합입니다. OffRamp는 실행 진입 시 저주 여부를 확인해, true이면 즉시 실행을 거부합니다.
 
-`verify`는 OffRamp가 메시지 검증(`verifyMessage`) 과정에서 CCV를 통해 내부적으로 호출합니다. Router, OnRamp, OffRamp, TokenPool은 모두 `isCursed` 호출로 RMN 커스 상태를 직접 확인하며, 커스 상태이면 즉시 실행을 거부합니다. DON이 손상되더라도 RMN이 독립적으로 실행을 차단할 수 있다는 점이 이 구조의 의의입니다.
+`verify`는 OffRamp가 메시지 검증(`verifyMessage`) 과정에서 CCV를 통해 내부적으로 호출합니다. Router, OnRamp, OffRamp, TokenPool은 모두 `isCursed` 호출로 RMN 커스 상태를 직접 확인하며, 커스 상태이면 즉시 실행을 거부합니다. DON이 손상되더라도 RMN이 독립적으로 실행을 차단할 수 있다는 뜻입니다.
 
 CCIP v2에서는 각 체인에 `RMNRemote`를 배포해 로컬에서 서명을 검증하고, 원격 `RMNHome`이 RMN 노드 집합 설정을 관리합니다.
 
@@ -258,7 +258,7 @@ abstract contract CCIPReceiver is IAny2EVMMessageReceiver {
 
 메시지 순서는 OnRamp의 `DestChainConfig.messageNumber`(대상 체인별 단조 증가)와 OffRamp의 `s_executionStates`(messageId 기반 상태 추적)로 관리합니다. v2에서는 별도의 NonceManager 컨트랙트가 없습니다.
 
-`allowOutOfOrderExecution`과 순서 정책은 `extraArgs`와 레인 설정에 인코딩됩니다. 레인별 실제 동작은 Chainlink 공식 문서와 CCIP 디렉터리에서 확인하세요. `allowOutOfOrderExecution = false`로 설정된 경우, 동일 발신자가 동일 대상 체인에 보낸 메시지는 순서대로 실행됩니다. 앞 메시지가 `FAILURE`이면 뒤 메시지는 실행 대기 상태가 됩니다.
+`allowOutOfOrderExecution`과 순서 정책은 `extraArgs`와 레인 설정에 인코딩됩니다. 레인별 실제 동작은 Chainlink 공식 문서와 CCIP 디렉터리에서 확인하세요. `allowOutOfOrderExecution = false`로 설정된 경우, 동일 발신자가 동일 대상 체인에 보낸 메시지는 순서대로 실행됩니다. 앞 메시지가 `FAILURE`이면 뒤 메시지는 앞 메시지가 해결될 때까지 `UNTOUCHED` 상태로 대기합니다.
 
 `allowOutOfOrderExecution = true`로 설정하면 순서 검사를 건너뜁니다. 단순 토큰 전송이나 메시지 순서가 중요하지 않은 경우에 씁니다.
 
@@ -286,7 +286,7 @@ abstract contract CCIPReceiver is IAny2EVMMessageReceiver {
 
 **오류 복구**
 - [ ] `FAILURE` 메시지에 대한 `manuallyExecute` 권한 보유자(EOA 또는 다중서명) 지정
-- [ ] 실행 실패 시 TokenPool에서 토큰이 묶이는 케이스 대응 방안
+- [ ] `lockOrBurn` 이후 `releaseOrMint` 전에 실행이 실패해 토큰이 묶이는 케이스 대응 방안
 
 **테스트**
 - [ ] Chainlink 제공 `CCIP-BnM` 테스트 토큰으로 테스트넷 E2E 완료

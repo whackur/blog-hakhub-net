@@ -3,7 +3,7 @@ title: "Agentic Payments in June 2026: x402, UCP, and MPP Implementation Progres
 meta_title: ""
 description: "A month's worth of implementation changes across x402, UCP, MPP/pay.sh, and ACP: auth-capture, builder-code attribution, idempotency hardening, and ERC-8126 going Final."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-06-30T08:07:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["agentic-payments", "x402", "ucp", "mpp", "stablecoin"]
@@ -43,9 +43,9 @@ What follows covers the concrete implementation changes each protocol made in Ju
 
 ## x402: auth-capture, attribution, usage-based settlement
 
-Development on x402 is concentrated in `x402-foundation/x402`. The `coinbase/x402` fork saw near-zero activity in June.
+Development on x402 is concentrated in `x402-foundation/x402`. The `coinbase/x402` repository saw near-zero activity in June.
 
-**Auth-capture flow.** The TypeScript `@x402/evm` client added support for detecting auth-capture payment requirements and signing a payer-agnostic `PaymentInfo` hash using ERC-3009 (a meta-transaction token transfer authorization standard) by default, or Permit2 (Uniswap's one-shot signature delegation standard) as fallback. This extends x402 beyond immediate settlement toward split authorization-and-capture, which is standard in e-commerce. Server and facilitator support was left for follow-up PRs.
+**Auth-capture flow.** The TypeScript `@x402/evm` client added support for detecting auth-capture payment requirements and signing a payer-agnostic `PaymentInfo` hash using ERC-3009 (a meta-transaction token transfer authorization standard) by default, or Permit2 (Uniswap's one-shot signature delegation standard) as fallback. Splitting authorization from capture is standard in e-commerce: authorize at order time, capture at shipment or after inventory confirmation. This change lets x402 express those flows instead of only immediate settlement. Server and facilitator support was left for follow-up PRs.
 
 **Builder-code attribution.** x402's builder-code extension embeds ERC-8021 Schema 2 attribution codes in settlement transaction calldata as a CBOR suffix. Three codes: `a` for the application exposing the paid API, `s` for the client or intermediate service, `w` for the settlement facilitator wallet.
 
@@ -89,17 +89,19 @@ Agentic Commerce Protocol added `feed_update_id` and `last_update_id` to the Fee
 
 On the Ethereum ERC side:
 
-[ERC-8126](https://eips.ethereum.org/EIPS/eip-8126) (AI Agent Verification) moved to Final status on June 2. It defines the interface for security verification providers that assess ERC-8004 registered agents across wallet history, contract code, web endpoints, media, and Solidity code, outputting a 0–100 risk score. Final means the spec is stable enough to implement against.
+[ERC-8126](https://eips.ethereum.org/EIPS/eip-8126) (AI Agent Verification) moved to Final status on June 2. It defines the interface for security verification providers that assess ERC-8004 registered agents across wallet history, contract code, web endpoints, media, and Solidity code, outputting a 0-100 risk score. Final means the spec is stable enough to implement against.
 
 [ERC-8273](https://github.com/ethereum/ercs/blob/master/ERCS/erc-8273.md) (Attestation-Gated Agentic Actions) was added as a Draft. It proposes `attestAndCall()`: an authorized attestor creates an attestation, the registry logs a persistent audit record, and EIP-1153 transient storage holds a one-shot authorization that's used and discarded within the same transaction. The motivation is that a long-lived identity (ERC-8004) doesn't answer "is this specific action authorized right now", which is what you need at the moment of a swap, payment, or escrow release. Draft status; interface and security model may change.
 
 ERC-8004 itself had no ethereum/ercs process-status change in June. That is separate from deployment status: the ERC-8004 registries were already live on Ethereum mainnet as of 2026-01-29.
 
-## Where this leaves things
+## The layer split
 
 The June changes show agentic payments splitting across layers rather than converging on one protocol. x402 handles HTTP 402 payment challenges and facilitator settlement. UCP covers cart/checkout consent, identity, and order evidence. ERC-8004/8126/8273 handle agent identity and action-level authorization. pay.sh handles execution-surface tooling.
 
 The practical implication is that building a complete agentic payment flow requires decisions across all four layers, and they don't yet talk to each other in a standardized way.
+
+If you're evaluating an integration now, it helps to mark what is unfinished. x402 auth-capture landed client-side signing only; server and facilitator support is pending. MPP subscriptions still have server-side activation verification and the on-chain `create_plan` broadcast as TODOs. ERC-8273 is a Draft whose interface can change. As of this month, the changes you can put into production directly are the UCP idempotency contract and the x402 security patches. The rest are directional signals.
 
 ## Further reading
 

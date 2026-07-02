@@ -3,7 +3,7 @@ title: "VibeThinker-3B: 검증 가능한 추론을 3B 모델에 압축한 실험
 meta_title: ""
 description: "Sina Weibo의 WeiboAI가 발표한 VibeThinker-3B. Qwen2.5-Coder-3B 기반 3B 모델에 다단계 RL과 자기증류를 집중 적용해 수학·코딩 벤치마크에서 frontier급 결과를 주장하는 기술 보고서입니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-06-30T02:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["AI"]
 tags: ["small-language-model", "reasoning", "reinforcement-learning", "math", "coding"]
@@ -19,7 +19,7 @@ draft: false
 - arXiv ID: [2606.16140](https://arxiv.org/abs/2606.16140)
 - 베이스 모델: [Qwen/Qwen2.5-Coder-3B](https://huggingface.co/Qwen/Qwen2.5-Coder-3B)
 - 파라미터: 약 3,085,938,688 (BF16 safetensors 기준)
-- 소속: Sina Weibo Inc.
+- 저자: Sen Xu 외, Sina Weibo Inc.
 - 라이선스: MIT
 - GitHub/HuggingFace: [WeiboAI/VibeThinker](https://github.com/WeiboAI/VibeThinker), [WeiboAI/VibeThinker-3B](https://huggingface.co/WeiboAI/VibeThinker-3B)
 
@@ -44,7 +44,7 @@ draft: false
 
 ### 2. 다중 도메인 추론 RL
 
-VibeThinker-1.5B에서 쓰인 **MGPO(MaxEnt-Guided Policy Optimization)**를 재사용합니다. 프롬프트별 그룹 정확도가 0이나 1에 가까운 샘플보다, 정답/오답 rollout이 공존하는 경계 샘플에 더 큰 학습 가중치를 줍니다. Math RL → Code RL → STEM RL 순서로 진행하며, 64K long-context window를 단일 컨텍스트로 사용해 긴 추론 trajectory를 보존합니다.
+VibeThinker-1.5B에서 쓰인 **MGPO(MaxEnt-Guided Policy Optimization)**를 재사용합니다. 프롬프트별 그룹 정확도가 0이나 1에 가까운 샘플보다, 정답/오답 rollout이 공존하는 경계 샘플에 더 큰 학습 가중치를 줍니다. 항상 맞히거나 항상 틀리는 문제에는 학습 신호가 거의 없고, 맞기도 틀리기도 하는 경계 문제에 신호가 가장 많이 담겨 있다는 발상입니다. Math RL → Code RL → STEM RL 순서로 진행하며, 64K long-context window를 단일 컨텍스트로 사용해 긴 추론 trajectory를 보존합니다.
 
 ### 3. Long2Short Math RL
 
@@ -85,7 +85,7 @@ LeetCode OOD(2026년 4월 25일~5월 31일 신규 문제, Python one-shot)는 12
 
 기존 self-verification은 긴 추론 trace 전체를 한 번에 검증합니다. CLR은 trace를 중요한 claim이나 논리적 앵커 단위로 쪼개 각각의 신뢰도를 평가합니다. 정확도를 올리는 방향으로 작동하며, answer-verifiable 수학 벤치마크에서 Pass@1을 끌어올렸다고 보고합니다.
 
-CLR 개선폭을 보면: AIME26은 94.3에서 97.1로, HMMT25는 89.3에서 95.4로, BruMO25는 93.8에서 99.2로 올라갑니다.
+개선폭은 벤치마크별로 이렇습니다. AIME26은 94.3에서 97.1로, HMMT25는 89.3에서 95.4로, BruMO25는 93.8에서 99.2로, IMO-AnswerBench는 76.4에서 80.6으로 올라갑니다.
 
 ## 적합한 용도와 제한 사항
 
@@ -108,7 +108,7 @@ CLR 개선폭을 보면: AIME26은 94.3에서 97.1로, HMMT25는 89.3에서 95.4
 
 ## 한계와 주의점
 
-수학 평가에 LLM-as-judge를 함께 쓰므로, 어떤 judge를 쓰느냐에 따라 결과가 달라질 수 있습니다. 비교 모델 점수가 동일 harness 재평가가 아닌 공개 리포트에서 수집한 것이라는 점도 기억해야 합니다. "3B가 frontier generalist를 대체한다"는 식으로 읽으면 과장입니다. 성능은 verifiable reasoning 도메인에 한정됩니다.
+수학 평가에 LLM-as-judge를 함께 쓰므로, 어떤 judge를 쓰느냐에 따라 결과가 달라질 수 있습니다. 비교 모델 점수가 동일 harness 재평가가 아닌 공개 리포트에서 수집한 것이라는 점도 기억해야 합니다. 수학 점수가 64회 독립 생성의 평균이라는 점 역시 단일 호출에서 체감하는 성능과는 차이를 만들 수 있습니다. "3B가 frontier generalist를 대체한다"는 식으로 읽으면 과장입니다. 성능은 verifiable reasoning 도메인에 한정됩니다.
 
 ## 함께 보면 좋을 자료
 

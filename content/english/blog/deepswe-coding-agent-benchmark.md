@@ -3,7 +3,7 @@ title: "DeepSWE: A Benchmark for Long-Horizon Coding Agents"
 meta_title: ""
 description: "DeepSWE from DataCurve AI evaluates coding agents on 113 original long-horizon tasks using behavior-based verification, not patch matching. Here is what it measures and how the leaderboard should be read."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-06-30T02:00:00+09:00
+lastmod: 2026-07-02T11:47:08+09:00
 image: ""
 categories: ["AI"]
 tags: ["benchmark", "coding-agent", "swe-bench", "llm", "evaluation"]
@@ -18,7 +18,7 @@ SWE-bench has been the default coding-agent leaderboard for a while, but it has 
 
 ## Task composition
 
-DeepSWE has 113 tasks across five languages: TypeScript (35), Go (34), Python (34), JavaScript (5), Rust (5). The official site lists 91 source repositories. Most tasks (106 of 113) are classified as feature requests rather than bug fixes. That is a meaningful difference from SWE-bench Verified, which skews toward bug fixes.
+DeepSWE has 113 tasks across five languages: TypeScript (35), Go (34), Python (34), JavaScript (5), Rust (5). The official site lists 91 source repositories. Most tasks (106 of 113) are classified as feature requests; the rest are 4 bug fixes and 3 enhancements. That is a meaningful difference from SWE-bench Verified, which skews toward bug fixes.
 
 ## Harbor task format
 
@@ -42,6 +42,8 @@ One example task gives a sense of the difficulty level. `happy-dom-abort-pending
 ### Behavior-based verification
 
 This is the sharpest departure from SWE-bench. DeepSWE's verifier does not compare the submitted patch against a reference solution. It runs tests in a separate container to check whether the agent's changes produce the behavior described in the instruction. A solution with a different internal structure still passes if the observable behavior is correct.
+
+The grading tests are held out from the agent. It sees only the instruction and has to infer what behavior will be verified, which closes off the shortcut of shaping an implementation around visible test code.
 
 The `solution/` reference answer is never shown to the agent and is not used during grading. It exists for offline correctness spot-checks by reviewers.
 
@@ -121,6 +123,10 @@ pier run -p deep-swe/tasks/<task-id> --agent mini-swe-agent
 # Parallel run via Modal
 pier run -p deep-swe/tasks --agent mini-swe-agent --model <provider/model> --env modal
 ```
+
+## Takeaways
+
+Three things to keep in mind when reading DeepSWE scores. First, every score comes from the same mini-swe-agent scaffold, so the leaderboard is a model comparison, not a prediction of how finished products like Claude Code or Codex perform end to end. Second, because grading is behavior-based, having memorized the reference solution barely helps; the agent still has to implement the behavior the held-out tests demand. Third, 106 of the 113 tasks are feature requests, so DeepSWE measures a different capability than the bug-fix-heavy SWE-bench Verified. The two scores do not belong on the same axis.
 
 ## Further reading
 
