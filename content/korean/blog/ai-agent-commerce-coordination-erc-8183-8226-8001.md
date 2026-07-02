@@ -3,13 +3,13 @@ title: "AI 에이전트 상거래와 조율: ERC-8183, ERC-8226, ERC-8001, ERC-8
 meta_title: ""
 description: "ERC-8004/8126/8196 신뢰 스택 위에 올라가는 응용 계층. 작업 에스크로(ERC-8183), 규제 자산 준수 위임(ERC-8226), 다자 조율(ERC-8001·Final), 고정 공급 컬렉션(ERC-8041)을 실무 관점에서 정리한다."
 date: 2026-07-01T09:00:00+09:00
-lastmod: 2026-07-02T15:08:14+09:00
+lastmod: 2026-07-02T15:22:09+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "ethereum", "eip", "erc-8183", "erc-8226", "erc-8001", "erc-8041"]
 author: "whackur"
 translationKey: "ai-agent-commerce-coordination-erc-8183-8226-8001"
-draft: true
+draft: false
 ---
 
 [이전 글](../ai-agent-wallet-trust-stack-erc-8004-8126-8196)에서 다룬 ERC-8004/8126/8196은 AI 에이전트의 신원 등록, 보안 검증, 정책 실행이라는 세 계층을 정의한다. 에이전트를 식별하고, 위험도를 평가하고, 소유자가 허용한 범위 안에서만 거래를 실행하게 만드는 기반이다. 여기까지가 답하는 질문은 하나다. "이 에이전트를 믿고 내 대신 움직이게 해도 되는가."

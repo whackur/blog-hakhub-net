@@ -3,13 +3,13 @@ title: "AI Agent Commerce and Coordination: ERC-8183, ERC-8226, ERC-8001, ERC-80
 meta_title: ""
 description: "The application layer above the ERC-8004/8126/8196 trust stack: job escrow (ERC-8183), regulated-asset compliance delegation (ERC-8226), multi-agent coordination (ERC-8001, Final), and fixed-supply agent collections (ERC-8041), with a builder's view of what is usable now."
 date: 2026-07-01T09:00:00+09:00
-lastmod: 2026-07-02T15:08:14+09:00
+lastmod: 2026-07-02T15:22:09+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "ethereum", "eip", "erc-8183", "erc-8226", "erc-8001", "erc-8041"]
 author: "whackur"
 translationKey: "ai-agent-commerce-coordination-erc-8183-8226-8001"
-draft: true
+draft: false
 ---
 
 The [ERC-8004/8126/8196 trust stack](../ai-agent-wallet-trust-stack-erc-8004-8126-8196) defines three layers: agent identity, security verification, and policy-constrained execution. It identifies an agent, scores its risk, and keeps it acting within the limits an owner has set. All of that answers one question: can I trust this agent to act on my behalf?
