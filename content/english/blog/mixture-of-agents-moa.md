@@ -1,9 +1,9 @@
 ---
 title: "Mixture of Agents: How Layering Open-Source LLMs Beat GPT-4 Omni"
 meta_title: ""
-description: "MoA stacks multiple LLMs in layers, each refining the previous layer's outputs. Here's the architecture, benchmark results, variants, and how Hermes Agent integrates it."
+description: "MoA stacks multiple LLMs in layers, each refining the previous layer's outputs. Here's the architecture, benchmark results, variants, and the quality-versus-diversity tradeoff."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
+lastmod: 2026-07-03T17:45:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["moa", "llm", "multi-agent", "ensemble", "ai-architecture"]
@@ -63,51 +63,17 @@ One finding from follow-up research goes against the obvious expectation. Self-M
 
 Diversity helps when individual agents' characteristics align with the task's heterogeneity. Mixing models without considering that fit often doesn't pay off.
 
-## Hermes Agent MoA 2.0
+## MoA productized in Hermes Agent
 
-Nous Research documented MoA 2.0 in Hermes Agent on June 26, 2026 ([official docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/mixture-of-agents/)). It's exposed as a `moa` virtual model provider, with presets appearing as selectable model options. Default preset:
+MoA didn't stay a research pattern. Nous Research's open-source agent Hermes Agent turns it into a `moa` virtual model provider rather than a separate pipeline, folding multiple models' perspectives into the agent's existing loop while keeping its tool calls, memory, and prompt cache intact.
 
-| Role | Model |
-|---|---|
-| Reference 1 | GPT-5.5 (openai-codex) |
-| Reference 2 | DeepSeek-V4-Pro (openrouter) |
-| Aggregator | Claude Opus 4.8 (openrouter) |
-
-The flow: reference models run first without tool schemas (system prompts and tool transcripts stripped to reduce cost). Their outputs go into the aggregator's private context, then the aggregator runs with the full Hermes tool schema and writes the final response. Tool execution and subsequent iterations follow the same pattern.
-
-On Nous Research's internal HermesBench (not a third-party benchmark), the MoA configuration scored 0.8202, against 0.7607 for Claude Opus 4.8 alone and 0.7412 for GPT-5.5 alone. On SWE-bench Pro, Hermes MoA presets reportedly outperformed Claude Opus 4.8 (69.2%) and GPT-5.5 (58.6%); a specific MoA score wasn't published. Both figures are Nous Research's own measurements.
-
-A few design decisions stand out. Reference outputs are appended at the end of the user turn, so the stable-prefix cache isn't invalidated. Credential failures in reference models don't crash the run; the failure message goes into context instead. Recursive MoA (aggregator pointing to another MoA preset) is blocked.
-
-```yaml
-# config.yaml example
-moa:
-  default_preset: default
-  presets:
-    default:
-      reference_models:
-        - provider: openai-codex
-          model: gpt-5.5
-        - provider: openrouter
-          model: deepseek/deepseek-v4-pro
-      aggregator:
-        provider: openrouter
-        model: anthropic/claude-opus-4.8
-      reference_temperature: 0.6
-      aggregator_temperature: 0.4
-      max_tokens: 4096
-      enabled: true
-```
-
-The `/moa` slash command switches to the default preset; `hermes moa configure [name]` builds a custom one; `hermes moa list` shows what's available.
-
-The cost tradeoff is concrete: every iteration runs N reference calls plus one aggregator call, so token costs scale linearly with the number of reference models. This is also a new feature, documented in June 2026, so behavior may shift as usage patterns emerge.
+Hermes Agent itself is also a self-improving agent with memory, skills, and session recall. The reference-and-aggregator setup, the `/moa` command, configuration, HermesBench numbers, and community reaction are covered in depth in [Hermes Agent v0.18: When a Self-Improving Agent Gets MoA](/en/blog/hermes-agent-self-improving-agent-moa/).
 
 ## Further reading
 
 - [arXiv:2406.04692](https://arxiv.org/abs/2406.04692): the original MoA paper
 - [togethercomputer/moa](https://github.com/togethercomputer/moa): reference implementation (Apache 2.0)
-- [Hermes Agent MoA docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/mixture-of-agents/): Hermes integration details
+- [Hermes Agent v0.18: When a Self-Improving Agent Gets MoA](/en/blog/hermes-agent-self-improving-agent-moa/): Hermes Agent's MoA product integration in depth
 - [Emergent Mind: Mixture of Agents](https://www.emergentmind.com/topics/mixture-of-agents): related papers and community coverage
 
 ## References
@@ -115,5 +81,3 @@ The cost tradeoff is concrete: every iteration runs N reference calls plus one a
 - [arXiv:2406.04692: Mixture-of-Agents Enhances Large Language Model Capabilities](https://arxiv.org/abs/2406.04692): Together AI et al., 2024
 - [togethercomputer/moa](https://github.com/togethercomputer/moa): GitHub, Apache 2.0, accessed 2026-06-30
 - [Hermes Agent MoA documentation](https://hermes-agent.nousresearch.com/docs/user-guide/features/mixture-of-agents/): Nous Research, accessed 2026-06-30
-- [Tony Reviews Things: MoA 2.0 review](https://www.tonyreviewsthings.com/hermes-agent-mixture-of-agents-20/): community review, accessed 2026-06-30
-- [Crypto Briefing: Hermes MoA benchmarks](https://cryptobriefing.com/hermes-agent-moa-beats-claude-opus-gpt-benchmarks/): accessed 2026-06-30
