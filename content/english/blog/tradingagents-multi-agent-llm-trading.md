@@ -3,7 +3,7 @@ title: "TradingAgents: Reading the Paper and Code Behind an LLM Trading Desk"
 meta_title: ""
 description: "A look at TradingAgents, a multi-agent trading framework that splits work across analysts, a bull/bear debate, a trader, and a risk team. We read the paper against the code and ask how far the backtest numbers can be trusted."
 date: 2026-07-03T14:30:00+09:00
-lastmod: 2026-07-03T14:30:00+09:00
+lastmod: 2026-07-03T15:10:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["multi-agent", "llm-agents", "trading", "langgraph", "fintech", "agent-debate"]
@@ -105,7 +105,9 @@ A backtest is not live trading. Slippage, transaction costs, live data variance,
 
 ## Community reaction
 
-The GitHub issues show where people actually get stuck. The signals below come from public issues. (Searches turned up related Reddit posts, but the originals could not be retrieved, so they are left out here.)
+A Reddit post in r/AI_Agents framed TradingAgents as closer to a hedge fund made of agents than a simple trading wrapper. The visible discussion is small, though, and reads more like a project introduction than an independent review, so the more concrete signals still come from GitHub issues.
+
+The GitHub issues show where people actually get stuck. The signals below come from public issues.
 
 Extension draws a lot of interest. [#82](https://github.com/TauricResearch/TradingAgents/issues/82) asks about extending to crypto trading. Cutting the per-run cost is an active theme too. [#750](https://github.com/TauricResearch/TradingAgents/issues/750) reports that the prompt construction leaves the LLM API's prompt cache hit rate at essentially zero, and [#1032](https://github.com/TauricResearch/TradingAgents/issues/1032) is a PR that uses a local LLM response cache to reduce API cost. Given that a single prediction fans out to more than ten LLM calls, cost is a core community concern.
 

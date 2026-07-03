@@ -3,7 +3,7 @@ title: "TradingAgents: LLM 에이전트로 만든 트레이딩 회사, 논문과
 meta_title: ""
 description: "애널리스트, 리서처 토론, 트레이더, 리스크 팀으로 역할을 나눈 멀티 에이전트 트레이딩 프레임워크 TradingAgents를 논문과 코드로 뜯어봤습니다. 백테스트 수치를 어디까지 믿을 수 있는지도 함께 짚습니다."
 date: 2026-07-03T14:30:00+09:00
-lastmod: 2026-07-03T14:30:00+09:00
+lastmod: 2026-07-03T15:10:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["multi-agent", "llm-agents", "trading", "langgraph", "fintech", "agent-debate"]
@@ -105,7 +105,9 @@ Sharpe Ratio가 이례적으로 높습니다. 보통 SR이 2를 넘으면 매우
 
 ## 커뮤니티 반응
 
-GitHub 이슈를 보면 사람들이 실제로 어디서 막히는지 드러납니다. 아래는 공개된 이슈에서 확인한 흐름입니다. (검색상 Reddit에도 관련 게시물이 있었지만 원문 확보에 실패해 여기서는 다루지 않습니다.)
+Reddit r/AI_Agents에도 TradingAgents를 소개하는 글이 하나 보입니다. 이 프레임워크를 단순한 트레이딩 wrapper가 아니라 여러 역할을 가진 에이전트로 이뤄진 hedge fund에 가깝게 소개하는 시각입니다. 다만 공개적으로 확인되는 반응 규모는 크지 않고, 독립적인 사용 후기보다는 프로젝트 소개에 가까워 보입니다. 그래서 실제 사용자가 부딪히는 지점은 GitHub 이슈에서 더 구체적으로 드러납니다.
+
+GitHub 이슈를 보면 사람들이 실제로 어디서 막히는지 드러납니다. 아래는 공개된 이슈에서 확인한 흐름입니다.
 
 관심이 많은 방향은 확장입니다. [#82](https://github.com/TauricResearch/TradingAgents/issues/82)는 크립토 트레이딩으로 넓힐 수 있는지 묻습니다. 반복 비용을 줄이려는 시도도 활발합니다. [#750](https://github.com/TauricResearch/TradingAgents/issues/750)은 프롬프트 구성 방식 탓에 LLM API의 prompt cache 적중률이 사실상 0이라는 문제를 제기하고, [#1032](https://github.com/TauricResearch/TradingAgents/issues/1032)는 로컬 LLM 응답 캐시로 API 비용을 줄이려는 PR입니다. 예측 하나에 열 번 넘는 LLM 호출이 든다는 구조를 생각하면, 비용은 커뮤니티의 핵심 관심사입니다.
 
