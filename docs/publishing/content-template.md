@@ -23,7 +23,7 @@ description: "목록·검색·SNS 미리보기용 한 줄 설명"
 date: 2026-06-30T10:00:00+09:00        # 작성일(최초 발행). 고정. 한/영 동일.
 lastmod: 2026-06-30T10:00:00+09:00     # 최종 수정일. 수정 시 갱신(또는 git 자동).
 image: "/images/posts/<slug>/cover.png"  # 대표 이미지 (static/ 기준 경로)
-categories: ["AI"]                     # AI / Blockchain (subtopics go in tags, e.g. local-llm, physical-ai)
+categories: ["AI"]                     # AI / Blockchain / Security (subtopics go in tags, e.g. local-llm, physical-ai)
 tags: ["llm", "quantization"]
 author: "whackur"                        # content/<lang>/authors/ 의 작성자 페이지
 translationKey: "<slug>"               # 한/영을 묶는 키 — 양쪽 동일! (안전장치)

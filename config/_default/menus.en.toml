@@ -32,6 +32,12 @@ name = "Blockchain"
 url = "/categories/blockchain"
 weight = 3
 
+[[main]]
+parent = "Blog"
+name = "Security"
+url = "/categories/security"
+weight = 4
+
 
 [[footer]]
 name = "About"

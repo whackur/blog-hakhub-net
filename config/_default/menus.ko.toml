@@ -32,6 +32,12 @@ name = "Blockchain"
 url = "/categories/blockchain"
 weight = 3
 
+[[main]]
+parent = "블로그"
+name = "Security"
+url = "/categories/security"
+weight = 4
+
 
 [[footer]]
 name = "소개"
