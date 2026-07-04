@@ -3,7 +3,7 @@ title: "AI Agent Commerce and Coordination: ERC-8183, ERC-8226, ERC-8001, ERC-80
 meta_title: ""
 description: "The application layer above the ERC-8004/8126/8196 trust stack: job escrow (ERC-8183), regulated-asset compliance delegation (ERC-8226), multi-agent coordination (ERC-8001, Final), and fixed-supply agent collections (ERC-8041), with a builder's view of what is usable now."
 date: 2026-07-01T09:00:00+09:00
-lastmod: 2026-07-02T15:22:09+09:00
+lastmod: 2026-07-04T09:35:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "ethereum", "eip", "erc-8183", "erc-8226", "erc-8001", "erc-8041"]
@@ -27,7 +27,7 @@ This post looks at four ERC proposals that try to standardize that application l
 | ERC-8183 | Agentic Commerce | Job escrow with evaluator attestation | Draft | 2026-02-25 |
 | ERC-8226 | Regulated Agent Mandate | Compliance delegation for regulated tokenized assets | Draft | 2026-04-12 |
 
-For the status and role of the underlying ERC-8004 (Draft), ERC-8126 (Final), and ERC-8196 (Review), see the previous post.
+For the status and role of the underlying ERC-8004 (Draft), ERC-8126 (Final), and ERC-8196 (Last Call, deadline 2026-07-14), see the previous post. ERC-8196 is not Final yet; it is still in peer review.
 
 ## The trust stack and the application layer
 
@@ -72,6 +72,12 @@ The allowed transitions are:
 
 A Completed job pays the provider from escrow. A Rejected or Expired job refunds the client.
 
+### Optional provider, negotiable budget, and fees
+
+A client can create a job before deciding who will do the work. Passing `provider = address(0)` to `createJob` leaves the job Open with no provider; the client must call `setProvider` before `fund` will accept it. That supports flows like bidding or assigning the job after the fact. The price is just as flexible: either the client or the provider can call `setBudget` to propose or negotiate an amount, and `fund` takes an `expectedBudget` argument so the caller can guard against front-running.
+
+On a Completed job, the contract can optionally deduct a platform fee (in basis points) to a treasury before paying the provider the rest. The spec does not require a fee, but if one exists it applies only on completion, never on a refund.
+
 ### Three roles: client, provider, evaluator
 
 Three parties appear in ERC-8183.
@@ -87,6 +93,12 @@ That pre-commitment is what makes the commerce trustless. Both client and provid
 ### Attestation, audit, and reputation
 
 An evaluator's ruling can optionally carry a reason and a hash. Those values support audit trails, and they compose with a reputation registry like ERC-8004 to build a signal of what a provider has completed and how. The commerce record itself becomes source data for reputation.
+
+### Extending it with hooks
+
+ERC-8183 lets each job carry an optional hook contract. A hook-free implementation (the reference `AgenticCommerce` contract) is fully spec-compliant on its own, and a hook only needs to implement `IACPHook`, two functions: `beforeAction` and `afterAction`. The core functions `setProvider`, `setBudget`, `fund`, `submit`, `complete`, and `reject` all call the hook before and after execution, but `claimRefund` cannot be hooked at all. That closes off the one path a malicious hook could otherwise use to block refunds after expiry.
+
+Hook calls should carry a gas limit so a hook cannot stall a job by burning unbounded gas. The spec also flags that "advanced hooks" (ones that custody extra tokens, like a two-phase escrow) carry more revert paths and tighter coupling to external logic than a plain, hook-free job, and recommends reserving them for agents and users who understand and accept that trade-off. A simple job is usually better off with no hook, or a hook that only enforces policy checks.
 
 ### What it does not cover
 
@@ -122,6 +134,14 @@ The spec is agnostic to agent identity systems (such as ERC-8004), token standar
 The implementation splits into two interfaces. `IComplianceProvider` verifies a principal's eligibility, identity, reason codes, and expiry. `IAgentMandate` manages the mandate records. The two should deploy separately by default, though they may be combined into one contract. Both must implement ERC-165.
 
 `IComplianceProvider` carries one firm requirement: a binary oracle that returns only true or false is non-conformant. It has to verify principal eligibility and return structured data, so downstream logic can see why a principal passed and which constraints apply, rather than only whether it passed.
+
+### Revocation, freezing, and what's still exposed
+
+A principal can call `revokeMandate` with a signature to end a mandate at any time, and an authorized enforcer role can call `freezeAgent` to halt every mandate held by a given agent at once. But there can be a gap between the moment a compliance provider emits `PrincipalRevoked` and the moment the RAMS registry actually freezes the agent. For high-sensitivity deployments, the spec recommends an automated freeze relay that watches for that event and calls `freezeAgent` immediately. It also requires that the admin role never be the same address as an enforcer, closing off a self-escalation path.
+
+The mandate's `metadata` field is non-normative. It is a human-readable pointer (for example, a hash of the legal text behind the delegation) and cannot be verified on-chain, so implementations and integrators must not use it in enforcement decisions.
+
+On the account-side execution path (an EIP-7702 delegate or a standalone executor), `IAgentExecutor` keeps a mapping from each action selector to the position of its amount argument, and reads the gated value from that position at execution time. That mapping is itself a trusted surface: get a position wrong and a cap silently stops applying to the right value, so whoever maintains it needs the same scrutiny as an enforcer.
 
 ### Relation to ERC-8196
 
@@ -162,7 +182,7 @@ Signature verification supports several schemes: ECDSA signatures from EOAs, con
 
 ### What it does not cover
 
-ERC-8001 deliberately omits privacy, reputation, threshold policies, bonding and slashing, and cross-chain semantics. It records coordination agreements and their acceptance. It does not verify that agents actually performed their roles correctly; that requires a separate mechanism, such as ERC-8183's evaluator attestation.
+ERC-8001 deliberately omits privacy, reputation, threshold policies, bonding and slashing, and cross-chain semantics. It records coordination agreements and their acceptance. It does not verify that agents actually performed their roles correctly; that requires a separate mechanism, such as ERC-8183's evaluator attestation. If `coordinationData` reveals the underlying strategy, the coordination is exposed to MEV; the spec recommends layering on a separate privacy module using commit-reveal or encryption in that case.
 
 **Status**: Final (created 2025-08-02, requires EIP-712, EIP-1271, EIP-2098, EIP-5267). Author: Kwame Bryan. Official page: [eips.ethereum.org/EIPS/eip-8001](https://eips.ethereum.org/EIPS/eip-8001).
 
@@ -183,6 +203,10 @@ If a collection promises 100 agents and no more, buyers and integrators need an 
 - **Required events**: `CollectionUpdated` when collection parameters are created or updated, and `AgentMinted` when an agent is minted.
 
 Combined with ERC-8119's parameterized metadata keys, a single agent can belong to multiple collections. That opens up collection metadata, mint-number tracking, time-gated releases, and curated drops.
+
+### Don't trust the metadata alone for membership
+
+An ERC-8004 agent's owner can modify or remove the collection metadata attached to it (`agent-collection`, `agent-collection:dev-team`, and so on) at any time. The spec is explicit that clients must not rely on that metadata alone to verify collection membership. A client should query the collection contract's `getAgentMintNumber(agentId)` directly, using the metadata only as a convenience pointer to which collection to check. A mint number of 0 is definitive proof the agent is not in that collection.
 
 ### Relation to ERC-8004
 
@@ -244,8 +268,8 @@ The direction is clear. As AI agents take on more substantive on-chain roles as 
 
 ## References
 
-- [ERC-8183: Agentic Commerce](https://eips.ethereum.org/EIPS/eip-8183): ethereum.org, accessed 2026-07-02
-- [ERC-8226: Regulated Agent Mandate](https://eips.ethereum.org/EIPS/eip-8226): ethereum.org, accessed 2026-07-02
-- [ERC-8001: Agent Coordination Framework](https://eips.ethereum.org/EIPS/eip-8001): ethereum.org, accessed 2026-07-02
-- [ERC-8041: Fixed-Supply Agent NFT Collections](https://eips.ethereum.org/EIPS/eip-8041): ethereum.org, accessed 2026-07-02
-- [ERC-8004: Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004): ethereum.org, accessed 2026-07-02 (trust stack context)
+- [ERC-8183: Agentic Commerce](https://eips.ethereum.org/EIPS/eip-8183): ethereum.org, accessed 2026-07-04
+- [ERC-8226: Regulated Agent Mandate](https://eips.ethereum.org/EIPS/eip-8226): ethereum.org, accessed 2026-07-04
+- [ERC-8001: Agent Coordination Framework](https://eips.ethereum.org/EIPS/eip-8001): ethereum.org, accessed 2026-07-04
+- [ERC-8041: Fixed-Supply Agent NFT Collections](https://eips.ethereum.org/EIPS/eip-8041): ethereum.org, accessed 2026-07-04
+- [ERC-8004: Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004): ethereum.org, accessed 2026-07-04 (trust stack context)
