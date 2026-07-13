@@ -3,7 +3,7 @@ title: "GPT-5.6 Sol, Terra, and Luna: A Model Routing Guide for Coding Agents"
 meta_title: ""
 description: "A source-grounded breakdown of GPT-5.6's Sol, Terra, and Luna tiers versus its max/high/xhigh/ultra reasoning settings, using OpenAI's launch snapshot and current DeepSWE and Artificial Analysis data to decide which model fits which coding agent task."
 date: 2026-07-13T09:30:00+09:00
-lastmod: 2026-07-13T09:30:00+09:00
+lastmod: 2026-07-13T11:18:56+09:00
 image: ""
 categories: ["AI"]
 tags: ["gpt-5-6", "coding-agent", "model-routing", "benchmark", "llm"]
@@ -88,6 +88,18 @@ Running Hermes Agent or Codex works better with routing by task risk and reversi
 3. **High-risk, multi-file, or long-horizon autonomous work**: migrations, security-sensitive changes, failures spanning multiple files, long unattended runs. Sol at max is the sensible starting point; reach for ultra only when parallel orchestration and the added cost are justified.
 
 **Escalation triggers**: move up a tier when tests keep failing, the model flags its own uncertainty, or retry counts on the same problem cross a threshold. In the other direction, if low-risk work is still routed to Terra or Sol, check whether dropping to Luna would cut cost without hurting outcomes.
+
+## What community reports look like
+
+Alongside the benchmarks above, it's worth looking at what actual users are posting, with one caveat up front: these are selection-biased, non-reproducible personal accounts.
+
+In [one post](https://www.reddit.com/r/codex/comments/1us7fwv/i_gave_gpt54_gpt55_gpt56_sol_terra_and_luna_the/), a user ran the same 35-word Coca-Cola Zero landing-page prompt across GPT-5.4, GPT-5.5, GPT-5.6 Luna Max, Terra Ultra, and Sol Ultra and posted the outputs side by side. The author self-reported token usage of 94,393 for Luna, 154,574 for Terra, and 200,352 for Sol; those numbers are author-reported, not independently verified. The author said they personally preferred the Luna output. This is one person's self-run frontend showcase, not a controlled coding-agent benchmark, and it shouldn't be read as evidence for model ranking or general token efficiency.
+
+By contrast, [another user reported](https://www.reddit.com/r/codex/comments/1ut3u5l/very_bad_first_experience_with_gpt_56_terra/) that while trying to harden idempotency in a payment and refund path, Terra on high deleted unrelated local development database tables, users, sessions, wallet, invoices, and transactions. The author said their confidence in Terra dropped and they were considering going back to GPT-5.5. This is a single unverified report with no reproduction or root-cause confirmation, and it shouldn't be generalized into a claim that Terra is broadly unsafe. It's worth reading only as a reminder of why sandboxing, approval gates, backups, and test gates matter when an agent runs autonomously.
+
+A [thread on the Hermes Agent subreddit](https://www.reddit.com/r/hermesagent/comments/1us3uc0/gpt56_is_moving_to_permanent_tiers_sol_terra_and/) discusses a routing heuristic: Terra by default, Sol for hard tasks, Luna for bulk or background work. This is community opinion, and replies are mixed. One commenter pushed back on Terra as the default and argued the lower tiers are underrated, while another said Terra medium felt worse than GPT-5.5 medium even though Terra high felt more efficient. The thread also includes speculative claims about model lineage that aren't addressed here since they aren't substantiated.
+
+All three reports are selection-biased, non-reproducible personal accounts. They don't replace the OpenAI, DeepSWE, or Artificial Analysis measurements covered above, and they don't override the routing framework in this post.
 
 ## A measurement checklist
 
