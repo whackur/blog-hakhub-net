@@ -3,7 +3,7 @@ title: "AI 에이전트 상거래와 조율: ERC-8183, ERC-8226, ERC-8001, ERC-8
 meta_title: ""
 description: "ERC-8004/8126/8196 신뢰 스택 위에 올라가는 응용 계층. 작업 에스크로(ERC-8183), 규제 자산 준수 위임(ERC-8226), 다자 조율(ERC-8001·Final), 고정 공급 컬렉션(ERC-8041)을 실무 관점에서 정리한다."
 date: 2026-07-01T09:00:00+09:00
-lastmod: 2026-07-04T09:35:00+09:00
+lastmod: 2026-07-15T10:00:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "ethereum", "eip", "erc-8183", "erc-8226", "erc-8001", "erc-8041"]
@@ -27,7 +27,7 @@ draft: false
 | ERC-8183 | Agentic Commerce | 작업 에스크로 + 평가자 어테스테이션 | Draft | 2026-02-25 |
 | ERC-8226 | Regulated Agent Mandate | 규제 토큰 자산 대상 준수 위임 | Draft | 2026-04-12 |
 
-ERC-8004(Draft), ERC-8126(Final), ERC-8196(Last Call, 2026-07-14 마감) 각각의 상태와 역할은 이전 글을 참조한다. ERC-8196은 아직 Final이 아니라 최종 검토(Last Call) 단계다.
+ERC-8004(Draft), ERC-8126(Final), ERC-8196(Last Call, last-call-deadline 2026-07-14) 각각의 상태와 역할은 이전 글을 참조한다. ERC-8196의 표준 프로세스 상태는 Last Call이며, 아직 Final은 아니다.
 
 ## 신뢰 스택과 응용 계층
 
