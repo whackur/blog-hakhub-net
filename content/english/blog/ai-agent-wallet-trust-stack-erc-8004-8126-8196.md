@@ -3,7 +3,7 @@ title: "The AI Agent Trust Stack: ERC-8004, ERC-8126, and ERC-8196"
 meta_title: ""
 description: "How three Ethereum standards work together to handle AI agent identity, security verification, and policy-bound wallet execution."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-04T09:25:00+09:00
+lastmod: 2026-07-15T10:00:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "wallet", "erc-8004", "erc-8126", "erc-8196"]
@@ -72,24 +72,29 @@ Final status means the spec is stable enough to implement against. It doesn't me
 
 Having an agent's identity (ERC-8004) and risk score (ERC-8126) still leaves the execution scope problem open. A private key gives an agent unconstrained access to all funds in the wallet. ERC-8196 defines a policy structure that sits in front of execution: the owner registers permitted actions, a contract allowlist, per-transaction and daily spending limits, and an expiry time. The smart wallet checks the active policy before executing any agent request. The agent receives a scoped delegation, not a key.
 
-[ERC-8196](https://eips.ethereum.org/EIPS/eip-8196) moved to Last Call, with a deadline of 2026-07-14. Last Call is still peer review, not Final: the interface and security model can still change before the deadline or if issues turn up. Authors: Leigh Cronian and Chris Johnson.
+[ERC-8196](https://eips.ethereum.org/EIPS/eip-8196)'s process status is Last Call, with a last-call-deadline of 2026-07-14. Last Call is still peer review, not Final, so the interface and security model can still change during review. Authors: Leigh Cronian and Chris Johnson.
 
 **Policy fields:**
 
 ```
 agentAddress    → the authorized AI agent
+agentId         → the agent's tokenId in the ERC-8004 Identity Registry
 ownerAddress    → the asset owner / delegator
 allowedActions  → ["transfer", "swap", ...]
 allowedContracts → address[] allowlist
 blockedContracts → address[] blocklist
 maxValuePerTx   → per-transaction ceiling
-maxValuePerDay  → daily spending limit
+maxValuePerDay  → daily spending limit (optional)
 validAfter      → policy start time
 validUntil      → policy expiry
 minVerificationScore → max allowable ERC-8126 risk score
 ```
 
-The `minVerificationScore` name is confusing. In ERC-8126, lower score means safer. So this field is actually a ceiling on acceptable risk. Set it to 20, and only Low Risk agents (score 0-20) can execute automatically.
+`agentId` is a required field. It's registered alongside the agent address in `registerPolicy` and carried through to the ERC-8126 check at execution time. Implementations MUST call `getLatestRiskScore` with the policy's `agentId` before processing `executeAction`.
+
+The `minVerificationScore` name is confusing. In ERC-8126, lower score means safer. So this field is actually a ceiling on acceptable risk: execution is rejected once the retrieved score exceeds it. Set it to 20, and only Low Risk agents (score 0-20) can execute automatically.
+
+**Interface.** Four core functions: `registerPolicy` registers the agent address and `agentId` along with action/contract allowlists, limits, a validity window, and `minVerificationScore`. `executeAction` takes `policyHash`, a target address, value, calldata, a nonce, an entropy commitment, and a signature, and returns `(bool success, bytes32 auditEntryId)`. `revokePolicy` and `getPolicy` round out the interface. Events: `PolicyRegistered`, `ActionExecuted`, `PolicyRevoked`, `AuditEntryLogged`. Errors: `PolicyExpired`, `ValueExceedsLimit`, `InvalidSignature`, `EntropyVerificationFailed`, `PolicyViolation`.
 
 **Audit trail.** Each audit entry includes `previousHash`, forming a hash chain. Entries can live on IPFS with periodic Merkle roots posted to ERC-8004's Validation Registry. The chain detects tampering: delete or alter any entry and the subsequent hashes break.
 
@@ -115,7 +120,7 @@ Each layer is independent. You can use ERC-8004 without ERC-8196. But for high-v
 
 - A registration file provides discoverability only. It does not vouch for the agent's safety.
 - ERC-8004 is deployed on mainnet but its ethereum/ercs process status remains Draft; the interface specification may still change.
-- ERC-8196 is in Last Call, with a 2026-07-14 deadline. That's still peer review, not Final, so the interface and security model can still change before the deadline or if issues turn up.
+- ERC-8196's process status is Last Call (last-call-deadline: 2026-07-14). That's still peer review, not Final, so the interface and security model can still change during review.
 - A low ERC-8126 risk score reflects verification at a point in time, not a guarantee of good intentions.
 - Reputation is Sybil-attackable without careful client filtering.
 - Host manipulation isn't fully eliminated by ERC-8196. The paper recommends multiple independent hosts for high-value agents.
@@ -134,7 +139,7 @@ Each layer is independent. You can use ERC-8004 without ERC-8196. But for high-v
 
 - [ERC-8004: Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004) — ethereum.org, Draft (process); deployed mainnet 2026-01-29; accessed 2026-07-04
 - [ERC-8126: AI Agent Verification](https://eips.ethereum.org/EIPS/eip-8126) — ethereum.org, Final (2026-06-02); accessed 2026-07-04
-- [ERC-8196: AI Agent Authenticated Wallet](https://eips.ethereum.org/EIPS/eip-8196) — ethereum.org, Last Call (deadline 2026-07-14); accessed 2026-07-04
+- [ERC-8196: AI Agent Authenticated Wallet](https://eips.ethereum.org/EIPS/eip-8196) — ethereum.org, Last Call (last-call-deadline 2026-07-14); accessed 2026-07-15
 - [ethereum/ercs GitHub](https://github.com/ethereum/ercs) — source repository; accessed 2026-07-04
 - [8004.org launch post](https://www.8004.org/blog/welcome-to-8004) — ERC-8004 official site, launched 2026-01-29; accessed 2026-06-30
 - [arXiv 2606.26028v1](https://arxiv.org/abs/2606.26028) — cross-chain deployment study (Ethereum, BSC, Base); accessed 2026-06-30

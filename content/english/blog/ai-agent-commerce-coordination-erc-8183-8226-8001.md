@@ -3,7 +3,7 @@ title: "AI Agent Commerce and Coordination: ERC-8183, ERC-8226, ERC-8001, ERC-80
 meta_title: ""
 description: "The application layer above the ERC-8004/8126/8196 trust stack: job escrow (ERC-8183), regulated-asset compliance delegation (ERC-8226), multi-agent coordination (ERC-8001, Final), and fixed-supply agent collections (ERC-8041), with a builder's view of what is usable now."
 date: 2026-07-01T09:00:00+09:00
-lastmod: 2026-07-04T09:35:00+09:00
+lastmod: 2026-07-15T10:00:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "ethereum", "eip", "erc-8183", "erc-8226", "erc-8001", "erc-8041"]
@@ -27,7 +27,7 @@ This post looks at four ERC proposals that try to standardize that application l
 | ERC-8183 | Agentic Commerce | Job escrow with evaluator attestation | Draft | 2026-02-25 |
 | ERC-8226 | Regulated Agent Mandate | Compliance delegation for regulated tokenized assets | Draft | 2026-04-12 |
 
-For the status and role of the underlying ERC-8004 (Draft), ERC-8126 (Final), and ERC-8196 (Last Call, deadline 2026-07-14), see the previous post. ERC-8196 is not Final yet; it is still in peer review.
+For the status and role of the underlying ERC-8004 (Draft), ERC-8126 (Final), and ERC-8196 (Last Call, last-call-deadline 2026-07-14), see the previous post. ERC-8196's process status is Last Call, not yet Final.
 
 ## The trust stack and the application layer
 
