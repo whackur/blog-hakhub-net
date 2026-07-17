@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1040" role="img" aria-labelledby="erc8183-title erc8183-desc">
+  <title id="erc8183-title">ERC-8183 job lifecycle state machine</title>
+  <desc id="erc8183-desc">Diagram of the ERC-8183 Agentic Commerce job lifecycle: six states (Open, Funded, Submitted, Completed, Rejected, Expired) connected by the eight transitions the draft spec allows, showing that Completed jobs release escrow to the provider while Rejected and Expired jobs refund the client.</desc>
+  <style>
+    .bg { fill:#f8fafc; }
+    .frame { fill:none; stroke:#e2e8f0; stroke-width:1; }
+    .node-flow { fill:#eef2ff; stroke:#4338ca; stroke-width:2.5; }
+    .node-complete { fill:#dcfce7; stroke:#16a34a; stroke-width:2.5; }
+    .node-refund { fill:#fee2e2; stroke:#dc2626; stroke-width:2.5; }
+    .node-title { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size:30px; font-weight:700; fill:#0f172a; text-anchor:middle; }
+    .outcome-title { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size:22px; font-weight:700; text-anchor:middle; }
+    .node-sub { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size:15px; fill:#475569; text-anchor:middle; }
+    .heading { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size:30px; font-weight:700; fill:#0f172a; text-anchor:middle; }
+    .edge { fill:none; stroke:#64748b; stroke-width:3; }
+    .edge-complete { fill:none; stroke:#16a34a; stroke-width:3; }
+    .edge-refund { fill:none; stroke:#dc2626; stroke-width:3; }
+    .edge-label { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size:19px; font-style:italic; fill:#334155; }
+    .edge-label-outcome { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size:17px; font-weight:600; text-anchor:start; }
+    .legend-text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size:16px; fill:#334155; }
+    .arrow-neutral { fill:#64748b; }
+    .arrow-complete { fill:#16a34a; }
+    .arrow-refund { fill:#dc2626; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill:#0f172a; }
+      .frame { stroke:#1e293b; }
+      .node-flow { fill:#1e293b; stroke:#818cf8; }
+      .node-complete { fill:#052e1c; stroke:#4ade80; }
+      .node-refund { fill:#3f1212; stroke:#f87171; }
+      .node-title { fill:#f1f5f9; }
+      .node-sub { fill:#cbd5e1; }
+      .heading { fill:#f1f5f9; }
+      .edge { stroke:#94a3b8; }
+      .edge-complete { stroke:#4ade80; }
+      .edge-refund { stroke:#f87171; }
+      .edge-label { fill:#cbd5e1; }
+      .legend-text { fill:#cbd5e1; }
+      .arrow-neutral { fill:#94a3b8; }
+      .arrow-complete { fill:#4ade80; }
+      .arrow-refund { fill:#f87171; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arrow-neutral" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="arrow-neutral" />
+    </marker>
+    <marker id="arrow-complete" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="arrow-complete" />
+    </marker>
+    <marker id="arrow-refund" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="arrow-refund" />
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1000" height="1040" />
+  <rect class="frame" x="1" y="1" width="998" height="1038" />
+
+  <text class="heading" x="500" y="40">ERC-8183 job lifecycle (state machine, Draft)</text>
+
+  <!-- Lifecycle transitions (8 total) -->
+  <!-- 1. Open -> Funded (client) : spine -->
+  <path class="edge" d="M500,152 L500,248" marker-end="url(#arrow-neutral)" />
+  <text class="edge-label" x="515" y="205">client</text>
+
+  <!-- 2. Open -> Rejected (unspecified actor) : left lane -->
+  <path class="edge" d="M390,110 L90,110 L90,428" marker-end="url(#arrow-neutral)" />
+
+  <!-- 3. Funded -> Submitted (provider) : spine -->
+  <path class="edge" d="M500,332 L500,428" marker-end="url(#arrow-neutral)" />
+  <text class="edge-label" x="515" y="385">provider</text>
+
+  <!-- 4. Funded -> Rejected (evaluator) : left lane -->
+  <path class="edge" d="M390,290 L130,290 L130,428" marker-end="url(#arrow-neutral)" />
+  <text class="edge-label" x="260" y="280" text-anchor="middle">evaluator</text>
+
+  <!-- 5. Funded -> Expired (unspecified actor) : direct -->
+  <path class="edge" d="M610,290 L740,290" marker-end="url(#arrow-neutral)" />
+
+  <!-- 6. Submitted -> Completed (evaluator) : spine -->
+  <path class="edge" d="M500,512 L500,608" marker-end="url(#arrow-neutral)" />
+  <text class="edge-label" x="515" y="565">evaluator</text>
+
+  <!-- 7. Submitted -> Rejected (evaluator) : direct -->
+  <path class="edge" d="M390,470 L260,470" marker-end="url(#arrow-neutral)" />
+  <text class="edge-label" x="325" y="460" text-anchor="middle">evaluator</text>
+
+  <!-- 8. Submitted -> Expired (unspecified actor) : outer right lane -->
+  <path class="edge" d="M610,470 L980,470 L980,290 L960,290" marker-end="url(#arrow-neutral)" />
+
+  <!-- Terminal outcome arrows (not lifecycle transitions) -->
+  <path class="edge-complete" d="M500,692 L500,838" marker-end="url(#arrow-complete)" />
+  <text class="edge-label-outcome" x="515" y="775" fill="#16a34a">payout</text>
+  <path class="edge-refund" d="M150,512 L150,838" marker-end="url(#arrow-refund)" />
+  <text class="edge-label-outcome" x="165" y="685" fill="#dc2626">refund</text>
+  <path class="edge-refund" d="M850,332 L850,838" marker-end="url(#arrow-refund)" />
+  <text class="edge-label-outcome" x="865" y="595" fill="#dc2626">refund</text>
+
+  <!-- States -->
+  <g>
+    <rect class="node-flow" x="390" y="68" width="220" height="84" rx="14" />
+    <text class="node-title" x="500" y="118">Open</text>
+  </g>
+  <g>
+    <rect class="node-flow" x="390" y="248" width="220" height="84" rx="14" />
+    <text class="node-title" x="500" y="298">Funded</text>
+  </g>
+  <g>
+    <rect class="node-flow" x="390" y="428" width="220" height="84" rx="14" />
+    <text class="node-title" x="500" y="478">Submitted</text>
+  </g>
+  <g>
+    <rect class="node-complete" x="390" y="608" width="220" height="84" rx="14" />
+    <text class="node-title" x="500" y="658">Completed</text>
+  </g>
+  <g>
+    <rect class="node-refund" x="40" y="428" width="220" height="84" rx="14" />
+    <text class="node-title" x="150" y="478">Rejected</text>
+  </g>
+  <g>
+    <rect class="node-refund" x="740" y="248" width="220" height="84" rx="14" />
+    <text class="node-title" x="850" y="298">Expired</text>
+  </g>
+
+  <!-- Outcome boxes -->
+  <g>
+    <rect class="node-complete" x="380" y="838" width="240" height="84" rx="14" />
+    <text class="outcome-title" x="500" y="874" fill="#0f172a">Provider payout</text>
+    <text class="node-sub" x="500" y="896">escrow released</text>
+  </g>
+  <g>
+    <rect class="node-refund" x="30" y="838" width="240" height="84" rx="14" />
+    <text class="outcome-title" x="150" y="874" fill="#0f172a">Client refund</text>
+    <text class="node-sub" x="150" y="896">escrow returned</text>
+  </g>
+  <g>
+    <rect class="node-refund" x="730" y="838" width="240" height="84" rx="14" />
+    <text class="outcome-title" x="850" y="874" fill="#0f172a">Client refund</text>
+    <text class="node-sub" x="850" y="896">escrow returned</text>
+  </g>
+
+  <!-- Legend -->
+  <g>
+    <rect x="40" y="960" width="18" height="18" class="node-flow" />
+    <text class="legend-text" x="66" y="975">In-progress state</text>
+    <rect x="40" y="988" width="18" height="18" class="node-complete" />
+    <text class="legend-text" x="66" y="1003">Completed → provider payout</text>
+    <rect x="330" y="988" width="18" height="18" class="node-refund" />
+    <text class="legend-text" x="356" y="1003">Rejected / Expired → client refund</text>
+  </g>
+</svg>

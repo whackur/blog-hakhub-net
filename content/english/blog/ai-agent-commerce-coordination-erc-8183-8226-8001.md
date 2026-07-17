@@ -3,7 +3,7 @@ title: "AI Agent Commerce and Coordination: ERC-8183, ERC-8226, ERC-8001, ERC-80
 meta_title: ""
 description: "The application layer above the ERC-8004/8126/8196 trust stack: job escrow (ERC-8183), regulated-asset compliance delegation (ERC-8226), multi-agent coordination (ERC-8001, Final), and fixed-supply agent collections (ERC-8041), with a builder's view of what is usable now."
 date: 2026-07-01T09:00:00+09:00
-lastmod: 2026-07-15T10:00:00+09:00
+lastmod: 2026-07-17T17:50:08+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "ethereum", "eip", "erc-8183", "erc-8226", "erc-8001", "erc-8041"]
@@ -71,6 +71,10 @@ The allowed transitions are:
 | Submitted → Expired | No ruling before the deadline |
 
 A Completed job pays the provider from escrow. A Rejected or Expired job refunds the client.
+
+![ERC-8183 job state machine: the six states (Open, Funded, Submitted, Completed, Rejected, Expired) and the eight allowed transitions between them. Completed resolves to a provider payout; Rejected and Expired both resolve to a client refund.](/images/posts/ai-agent-commerce-coordination-erc-8183-8226-8001/erc8183-job-lifecycle.svg "ERC-8183 job lifecycle state machine")
+
+*The diagram maps the Draft lifecycle defined in the [official ERC-8183 spec](https://eips.ethereum.org/EIPS/eip-8183): the same eight transitions from the table above, nothing more. Since the spec is still Draft, treat this as the current design, not a finalized interface.*
 
 ### Optional provider, negotiable budget, and fees
 
