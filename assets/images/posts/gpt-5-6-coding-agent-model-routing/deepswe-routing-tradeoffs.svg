@@ -3,6 +3,28 @@
   <title id="figTitle">DeepSWE v1.1 snapshot: GPT-5.6 Sol, Terra, and Luna versus 12 other coding models</title>
   <desc id="figDesc">Two stacked sections. Top: scatter plot of DeepSWE v1.1 Pass@1 versus average cost per attempt for 15 models on the best-view leaderboard, updated 2026-07-16. GPT-5.6 Sol scores 73% plus or minus 3% at 8.39 dollars, GPT-5.6 Terra scores 70% plus or minus 3% at 4.95 dollars, and GPT-5.6 Luna scores 67% plus or minus 4% at 3.03 dollars; these three are called out in color-matched stat tiles above the chart, with dots and error bars on the chart showing their confidence ranges. The other 12 models on the leaderboard - Claude Fable 5, GPT-5.5, Claude Opus 4.8, Claude Sonnet 5, Grok 4.5, Muse Spark 1.1, GPT-5.4, GLM-5.2, Gemini 3.5 Flash, Kimi K2.7 Code, Claude Sonnet 4.6, and Gemini 3.1 Pro - appear as unlabeled subdued gray dots for context only. Bottom: paired bar charts comparing GPT-5.6 Sol, Terra, and Luna on mean output tokens (60k, 72k, 73k) and mean agent steps (61, 76, 102), using two independent scales. Source: DeepSWE official leaderboard, v1.1, updated 2026-07-16, accessed 2026-07-17; values are means over scored attempts, not totals.</desc>
 
+  <style>
+    @media (prefers-color-scheme: dark) {
+      rect[fill="#F7F7F5"] { fill:#0F172A; }
+      rect[stroke="#E2E2DE"] { stroke:#1E293B; }
+      rect[fill="#FFFFFF"] { fill:#111827; }
+      rect[stroke="#E5E7EB"] { stroke:#1E293B; }
+      line[stroke="#E5E7EB"] { stroke:#1E293B; }
+      g[stroke="#EDEDEC"] { stroke:#1E293B; }
+      g[stroke="#F3F3F2"] { stroke:#182234; }
+      text[fill="#1F2430"] { fill:#F1F5F9; }
+      text[fill="#5B6472"] { fill:#CBD5E1; }
+      text[fill="#4B5563"] { fill:#CBD5E1; }
+      text[fill="#6B7280"] { fill:#94A3B8; }
+      text[fill="#374151"] { fill:#E2E8F0; }
+      text[fill="#8A8F98"] { fill:#94A3B8; }
+      text[fill="#B8790A"] { fill:#FBBF24; }
+      rect[fill="#0072B2"][fill-opacity="0.08"] { fill-opacity:0.22; }
+      rect[fill="#009E73"][fill-opacity="0.08"] { fill-opacity:0.22; }
+      rect[fill="#E69F00"][fill-opacity="0.10"] { fill-opacity:0.24; }
+    }
+  </style>
+
   <rect x="0" y="0" width="980" height="1000" rx="16" fill="#F7F7F5" stroke="#E2E2DE" stroke-width="1"/>
 
   <text x="40" y="42" font-size="28" font-weight="bold" fill="#1F2430">GPT-5.6 routing trade-offs: DeepSWE snapshot</text>
@@ -10,7 +32,7 @@
 
   <!-- ===================== TOP: SCATTER ===================== -->
   <rect x="20" y="86" width="940" height="500" rx="10" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
-  <text x="40" y="118" font-size="22" font-weight="bold" fill="#1F2430">DeepSWE Pass&#64;1 vs. average cost &#8212; 15 models</text>
+  <text x="40" y="118" font-size="22" font-weight="bold" fill="#1F2430">DeepSWE Pass&#64;1 vs. average cost: 15 models</text>
 
   <!-- stat tiles: Sol / Terra / Luna -->
   <g>
@@ -151,7 +173,7 @@
     <text x="835" y="928" fill="#B8790A">Luna</text>
   </g>
 
-  <text x="40" y="948" font-size="18" fill="#4B5563">Separate scales &#8212; tokens and steps aren&#8217;t directly comparable.</text>
+  <text x="40" y="948" font-size="18" fill="#4B5563">Separate scales. Tokens and steps aren&#8217;t directly comparable.</text>
 
   <!-- footer -->
   <line x1="20" y1="968" x2="960" y2="968" stroke="#E5E7EB" stroke-width="1"/>

@@ -62,8 +62,9 @@
   <path class="edge" d="M500,152 L500,248" marker-end="url(#arrow-neutral)" />
   <text class="edge-label" x="515" y="205">client</text>
 
-  <!-- 2. Open -> Rejected (unspecified actor) : left lane -->
+  <!-- 2. Open -> Rejected (client) : left lane -->
   <path class="edge" d="M390,110 L90,110 L90,428" marker-end="url(#arrow-neutral)" />
+  <text class="edge-label" x="240" y="100" text-anchor="middle">client</text>
 
   <!-- 3. Funded -> Submitted (provider) : spine -->
   <path class="edge" d="M500,332 L500,428" marker-end="url(#arrow-neutral)" />
@@ -73,8 +74,9 @@
   <path class="edge" d="M390,290 L130,290 L130,428" marker-end="url(#arrow-neutral)" />
   <text class="edge-label" x="260" y="280" text-anchor="middle">evaluator</text>
 
-  <!-- 5. Funded -> Expired (unspecified actor) : direct -->
+  <!-- 5. Funded -> Expired (deadline) : direct -->
   <path class="edge" d="M610,290 L740,290" marker-end="url(#arrow-neutral)" />
+  <text class="edge-label" x="675" y="280" text-anchor="middle">deadline</text>
 
   <!-- 6. Submitted -> Completed (evaluator) : spine -->
   <path class="edge" d="M500,512 L500,608" marker-end="url(#arrow-neutral)" />
@@ -84,8 +86,9 @@
   <path class="edge" d="M390,470 L260,470" marker-end="url(#arrow-neutral)" />
   <text class="edge-label" x="325" y="460" text-anchor="middle">evaluator</text>
 
-  <!-- 8. Submitted -> Expired (unspecified actor) : outer right lane -->
+  <!-- 8. Submitted -> Expired (deadline) : outer right lane -->
   <path class="edge" d="M610,470 L980,470 L980,290 L960,290" marker-end="url(#arrow-neutral)" />
+  <text class="edge-label" x="790" y="460" text-anchor="middle">deadline</text>
 
   <!-- Terminal outcome arrows (not lifecycle transitions) -->
   <path class="edge-complete" d="M500,692 L500,838" marker-end="url(#arrow-complete)" />
