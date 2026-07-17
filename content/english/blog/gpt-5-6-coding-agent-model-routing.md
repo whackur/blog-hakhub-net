@@ -3,7 +3,7 @@ title: "GPT-5.6 Sol, Terra, and Luna: A Model Routing Guide for Coding Agents"
 meta_title: ""
 description: "A source-grounded breakdown of GPT-5.6's Sol, Terra, and Luna tiers versus its max/high/xhigh/ultra reasoning settings, using OpenAI's launch snapshot and current DeepSWE and Artificial Analysis data to decide which model fits which coding agent task."
 date: 2026-07-13T09:30:00+09:00
-lastmod: 2026-07-13T11:18:56+09:00
+lastmod: 2026-07-17T15:27:11+09:00
 image: ""
 categories: ["AI"]
 tags: ["gpt-5-6", "coding-agent", "model-routing", "benchmark", "llm"]
@@ -14,7 +14,7 @@ draft: false
 
 A claim like "Luna Max beats Terra High" circulates around GPT-5.6 discussions, and it does not hold up. Sol, Terra, and Luna are separate models, each a different capability tier. Max, high, xhigh, and ultra are settings within a given model that control how much reasoning time it uses and how many agents run in parallel. Collapsing a tier name and a settings name into one ranking compares two different axes as if they were one.
 
-This post uses [OpenAI's announcement](https://openai.com/index/gpt-5-6/), the [official DeepSWE leaderboard](https://deepswe.datacurve.ai/), and [Artificial Analysis](https://artificialanalysis.ai/) model pages (checked July 13, 2026) to lay out what actually differs between the three models, then gives a routing framework for coding agents like Hermes Agent or Codex.
+This post uses [OpenAI's announcement](https://openai.com/index/gpt-5-6/), the [official DeepSWE leaderboard](https://deepswe.datacurve.ai/) (updated July 16, 2026, checked July 17), and [Artificial Analysis](https://artificialanalysis.ai/) model pages (checked July 13, 2026) to lay out what actually differs between the three models, then gives a routing framework for coding agents like Hermes Agent or Codex.
 
 ## Tiers are not reasoning settings
 
@@ -38,19 +38,41 @@ This is a snapshot at launch, not a fixed leaderboard. OpenAI's own text says So
 
 ## DeepSWE's current leaderboard snapshot
 
-The [official DeepSWE site](https://deepswe.datacurve.ai/), updated July 9, 2026 and checked July 13, covers 113 tasks across 91 repositories in five languages, run through a fixed `mini-swe-agent` scaffold to keep conditions consistent across models. It uses original long-horizon tasks, behavior-based and held-out verification, and a separate verifier environment. It's a benchmark and leaderboard, not a model.
+The [official DeepSWE site](https://deepswe.datacurve.ai/), updated July 16, 2026 and checked July 17, covers 113 tasks across 91 repositories in five languages and 15 models. All 15 run through a fixed `mini-swe-agent` scaffold to keep conditions consistent. It uses original long-horizon tasks, behavior-based and held-out verification, and a separate verifier environment. It's a benchmark and leaderboard, not a model.
 
-| Model (config) | Pass@1 | Average cost/task | Output tokens/task | Steps |
+The leaderboard's own embedded description says `pass@1` is the attempt pass rate over scored rollout attempts, and `pass@4` is the share of attempted tasks with at least one passing rollout. Context-window failures and agent timeouts are scored as failures; provider, verifier, and network errors are excluded. The output-token and step figures in the table below are **means over every scored attempt**, not medians and not totals. Cost is also a mean per scored attempt.
+
+| Model (config) | Pass@1 | Average cost | Mean output tokens | Mean steps |
 | --- | ---: | ---: | ---: | ---: |
 | GPT-5.6 Sol [max] | 73% ± 3% | $8.39 | 60k | 61 |
+| Claude Fable 5 [max] | 70% ± 4% | $21.63 | 119k | 88 |
 | GPT-5.6 Terra [max] | 70% ± 3% | $4.95 | 72k | 76 |
 | GPT-5.6 Luna [max] | 67% ± 4% | $3.03 | 73k | 102 |
+| GPT-5.5 [xhigh] | 67% ± 6% | $7.23 | 46k | 82 |
+| Claude Opus 4.8 [max] | 59% ± 2% | $13.22 | 135k | 120 |
+| Claude Sonnet 5 [max] | 54% ± 4% | $26.40 | 214k | 268 |
+| Grok 4.5 [high] | 54% ± 2% | $2.42 | 36k | 61 |
+| Muse Spark 1.1 [xhigh] | 53% ± 3% | $2.36 | 74k | 96 |
+| GPT-5.4 [xhigh] | 52% ± 2% | $5.65 | 71k | 70 |
+| GLM-5.2 [max] | 44% ± 2% | $3.92 | 78k | 129 |
+| Gemini 3.5 Flash [medium] | 37% ± 2% | $7.34 | 276k | 86 |
+| Kimi K2.7 Code [unspecified] | 31% ± 1% | $2.82 | 59k | 149 |
+| Claude Sonnet 4.6 [high] | 30% ± 4% | $5.52 | 76k | 134 |
+| Gemini 3.1 Pro [high] | 12% ± 2% | $9.48 | 196k | 81 |
 
-Source: [DeepSWE official leaderboard](https://deepswe.datacurve.ai/), accessed July 13, 2026.
+Source: [DeepSWE official leaderboard](https://deepswe.datacurve.ai/), updated July 16, 2026, accessed July 17, 2026. Best view, all 15 models. Task and verification design is documented on the [official GitHub repo](https://github.com/datacurve-ai/deep-swe) and the [v1.1 methodology post](https://deepswe.datacurve.ai/blog/deepswe-v1-1).
 
-Sol has the highest absolute pass rate. Terra sits 3 percentage points behind Sol while costing about 41% less per task. Luna sits 6 points behind while costing about 64% less. Those percentages are derived from the table above, not an official DeepSWE "token efficiency" metric, and a lower price per task doesn't guarantee the same success probability.
+Sol has the highest pass rate of the 15 models while using fewer mean output tokens and fewer mean steps than either Terra or Luna under this fixed harness. That score isn't bought by spending more tokens, which is consistent with more direct behavior, though the table alone doesn't establish why.
 
-DeepSWE's fixed harness compares model behavior on one scaffold. It doesn't directly rank complete products like Hermes Agent, Codex, or Claude Code, each of which runs its own orchestration, tools, prompts, retry logic, and sandboxing.
+Terra sits 3 points behind Sol while its average cost is about 41.0% lower. That comes at a cost, though: mean output tokens run about 20.0% higher and mean steps about 24.6% higher. Terra isn't the best on every axis; it's a strong tradeoff on score versus cost specifically.
+
+Luna sits 3 points behind Terra with average cost about 38.8% lower. Its mean output tokens are nearly identical to Terra's (73k versus 72k, a 1.4% difference), but its mean steps run 34.2% higher. Luna's lower price mainly reflects lower model pricing, not fewer generated tokens or fewer tool-call loops.
+
+The same pattern shows up outside the GPT-5.6 family. Claude Fable 5 matches Terra's rounded 70% pass@1, but costs 4.37x as much (337.0% more), uses 65.3% more output tokens, and takes 15.8% more steps. Their confidence intervals overlap, and the [official DeepSWE v1.1 post](https://deepswe.datacurve.ai/blog/deepswe-v1-1) notes that 73 of Fable 5's 2,260 trials didn't complete because access was suspended by a US government directive partway through the sweep, so this comparison shouldn't be stretched too far. GPT-5.5 also matches Luna's rounded 67% pass@1, using 37.0% fewer output tokens and 19.6% fewer steps, yet costing 138.6% more. Token counts and dollar cost diverge here because model pricing differs. Grok 4.5 and Claude Sonnet 5 tie at 54% pass@1, but Grok costs 90.8% less, uses 83.2% fewer output tokens, and takes 77.2% fewer steps. Effort settings differ and confidence intervals overlap, so this isn't a universal ranking either, but the pattern repeats: spending more tokens or steps doesn't reliably buy a higher success rate.
+
+Mean output tokens and mean steps measure different things. Tokens estimate how much a model generates; steps estimate how many tool-call or interaction cycles it runs. Luna and Terra's near-identical tokens paired with a large step gap suggest shorter, more fragmented cycles for Luna, but that alone doesn't establish quality, latency, or root cause. The [official DeepSWE v1.1 post](https://deepswe.datacurve.ai/blog/deepswe-v1-1) says wall-clock time is no longer reported because host performance and provider load make it inconsistent across runs. Fewer steps doesn't mean a model actually finishes faster.
+
+DeepSWE's fixed harness compares 15 models' behavior on one scaffold. It doesn't directly rank complete products like Hermes Agent, Codex, or Claude Code, each of which runs its own orchestration, tools, prompts, retry logic, and sandboxing.
 
 ## Response speed versus time to a useful answer
 
@@ -84,7 +106,7 @@ All of these run one fixed harness across several models. That comparison is use
 Running Hermes Agent or Codex works better with routing by task risk and reversibility than with a single fixed model tier.
 
 1. **Low-risk, read-only, or triage work**: log inspection, code explanation, issue triage, simple formatting. Start with Luna at a low reasoning-effort setting. Failure is cheap here and easy to check.
-2. **Scoped implementation work**: a single well-defined feature, a routine bug fix, filling in test coverage. Terra at high or max is a reasonable default. The DeepSWE gap to Sol is only 3 points, and per-task cost is meaningfully lower. That gap is measured on DeepSWE tasks specifically, so validate it against your own repositories and workflows before trusting it as a general rule.
+2. **Scoped implementation work**: a single well-defined feature, a routine bug fix, filling in test coverage. Terra at high or max is a reasonable default. The DeepSWE gap to Sol is only 3 points, and average cost is about 41% lower. That comes with more mean output tokens and steps than Sol, though, so don't read Terra as the most efficient choice on every axis. The gap is also measured on DeepSWE tasks specifically, so validate it against your own repositories and workflows before trusting it as a general rule.
 3. **High-risk, multi-file, or long-horizon autonomous work**: migrations, security-sensitive changes, failures spanning multiple files, long unattended runs. Sol at max is the sensible starting point; reach for ultra only when parallel orchestration and the added cost are justified.
 
 **Escalation triggers**: move up a tier when tests keep failing, the model flags its own uncertainty, or retry counts on the same problem cross a threshold. In the other direction, if low-risk work is still routed to Terra or Sol, check whether dropping to Luna would cut cost without hurting outcomes.
@@ -113,17 +135,18 @@ Validating a model choice means looking at several numbers together, not one in 
 - Regression rate (new bugs introduced by the fix)
 - Human review time
 
-Avoid collapsing success rate and token count into one "efficiency" number across different benchmarks and tasks. Token counts shift with task difficulty, harness design, and reasoning-effort setting, so they aren't comparable across benchmarks that weren't built the same way. Even the 41% and 64% cost differences computed above from the DeepSWE table are derived values valid only within that one benchmark and that one harness.
+Avoid collapsing success rate and token count into one "efficiency" number across different benchmarks and tasks. Token counts shift with task difficulty, harness design, and reasoning-effort setting, so they aren't comparable across benchmarks that weren't built the same way. Even the cost, token, and step differences computed above from the DeepSWE table (Terra costs 41.0% less than Sol but uses 20.0% more tokens and 24.6% more steps; Luna costs 38.8% less than Terra but uses only 1.4% more tokens and 34.2% more steps) are derived values valid only within that one benchmark and that one harness.
 
 ## Takeaways
 
-Sol, Terra, and Luna are different models; max, high, xhigh, and ultra are settings that control how long a given model reasons and how it's orchestrated. A ranking that mixes the two doesn't hold up. For difficult, long-horizon work where absolute success rate matters most, start with Sol at max and reach for ultra only when parallel orchestration is worth the added spend. For routine coding-agent execution, Terra at high or max is a reasonable first candidate because the DeepSWE gap to Sol is small relative to the cost savings. For high-volume, low-risk, easy-to-verify work, Luna at a lower effort setting is a sensible first pass, though it's worth remembering that even Luna at max is not fast to a first answer in absolute terms. Whichever model you pick, validate it against success rate, cost, time, and regression rate together on your own harness rather than trusting a single benchmark score.
+Sol, Terra, and Luna are different models; max, high, xhigh, and ultra are settings that control how long a given model reasons and how it's orchestrated. A ranking that mixes the two doesn't hold up. For difficult, long-horizon work where absolute success rate matters most, start with Sol at max and reach for ultra only when parallel orchestration is worth the added spend. This snapshot confirms Sol's top score isn't bought with more tokens or steps; on the DeepSWE table it uses fewer of both than Terra or Luna. For routine coding-agent execution, Terra at high or max is a reasonable first candidate because the DeepSWE gap to Sol is small relative to the cost savings, though it isn't the best choice on every efficiency axis once output tokens and steps are counted. For high-volume, low-risk, easy-to-verify work, Luna at a lower effort setting is a sensible first pass. Its lower cost mainly reflects model pricing rather than fewer generated tokens, and it's worth remembering that even Luna at max is not fast to a first answer in absolute terms. Whichever model you pick, validate it against success rate, cost, time, tokens, steps, and regression rate together on your own harness rather than trusting a single benchmark score.
 
 ## Further reading
 
 - [OpenAI, "Previewing GPT-5.6 Sol: a next-generation model"](https://openai.com/index/previewing-gpt-5-6-sol/): the standalone Sol preview announcement.
 - [Artificial Analysis, Terminal-Bench v2.1 evaluation page](https://artificialanalysis.ai/evaluations/terminalbench-v2-1): independent methodology and cross-model comparison.
 - [DeepSWE official GitHub](https://github.com/datacurve-ai/deep-swe): task construction and verification details.
+- [DeepSWE, "DeepSWE v1.1"](https://deepswe.datacurve.ai/blog/deepswe-v1-1): leaderboard metric definitions and the Fable 5 completion-rate footnote.
 
 ## References
 
@@ -135,7 +158,9 @@ Sol, Terra, and Luna are different models; max, high, xhigh, and ultra are setti
 - [Artificial Analysis, GPT-5.6 Luna](https://artificialanalysis.ai/models/gpt-5-6-luna), accessed July 13, 2026.
 - [Artificial Analysis, performance benchmarking methodology](https://artificialanalysis.ai/methodology/performance-benchmarking), accessed July 13, 2026.
 - [Artificial Analysis, Terminal-Bench v2.1](https://artificialanalysis.ai/evaluations/terminalbench-v2-1), accessed July 13, 2026.
-- [DeepSWE official leaderboard](https://deepswe.datacurve.ai/), updated July 9, 2026, accessed July 13, 2026.
-- [DeepSWE official GitHub](https://github.com/datacurve-ai/deep-swe), accessed July 13, 2026.
+- [DeepSWE official leaderboard](https://deepswe.datacurve.ai/), updated July 16, 2026, accessed July 17, 2026.
+- [DeepSWE, "DeepSWE v1.1"](https://deepswe.datacurve.ai/blog/deepswe-v1-1), accessed July 17, 2026.
+- [DeepSWE, "DeepSWE"](https://deepswe.datacurve.ai/blog/deepswe), accessed July 17, 2026.
+- [DeepSWE official GitHub](https://github.com/datacurve-ai/deep-swe), accessed July 17, 2026.
 - [Terminal-Bench official site](https://www.tbench.ai/), accessed July 13, 2026.
 - [Terminal-Bench repository](https://github.com/laude-institute/terminal-bench), accessed July 13, 2026.
