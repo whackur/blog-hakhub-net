@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1080" width="960" height="1080" font-family="Arial, Helvetica, sans-serif" role="img" aria-labelledby="svgTitle svgDesc">
+  <title id="svgTitle">AI agent wallet trust stack: ERC-8004, ERC-8126, ERC-8196</title>
+  <desc id="svgDesc">A conceptual composition of three independent Ethereum standards forming a layered flow for AI agent wallet transactions. Layer 1, ERC-8004 Trustless Agents, provides Identity, Reputation, and Validation registries that produce an agentId and registration metadata. Layer 2, ERC-8126 AI Agent Verification, reads that agentId and runs five verification types (ETV, MCV, SCV, WAV, WV -- see article text for what each checks) to return a combined 0-100 risk score, where lower is safer. Layer 3, ERC-8196 AI Agent Authenticated Wallet, checks an owner-defined policy (allowed actions, allowed contracts, per-transaction and daily value limits, a validity window, and minVerificationScore) against that risk score before calling executeAction. If the policy check and risk score pass, the wallet executes the transaction, typically through an EIP-4337 account abstraction wallet or a policy enforcement module. Each standard can be used independently; this diagram shows how they compose for high-value automated transactions.</desc>
+
+  <defs>
+    <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <style>
+    @media (prefers-color-scheme: dark) {
+      rect[fill="#F8FAFC"] { fill:#0F172A; }
+      rect[fill="none"] { stroke:#1E293B; }
+      rect[fill="#EFF6FF"] { fill:#1E2A45; }
+      rect[fill="#FFFBEB"] { fill:#3A2E12; }
+      rect[fill="#ECFDF5"] { fill:#0F2E22; }
+      rect[fill="#F1F5F9"] { fill:#1E293B; }
+      rect[fill="#FFFFFF"] { fill:#111827; }
+      text[fill="#1E293B"] { fill:#F1F5F9; }
+      text[fill="#475569"] { fill:#CBD5E1; }
+      line[stroke="#475569"] { stroke:#94A3B8; }
+      path[fill="#475569"] { fill:#94A3B8; }
+    }
+  </style>
+
+  <rect x="0" y="0" width="960" height="1080" fill="#F8FAFC"/>
+  <rect x="1" y="1" width="958" height="1078" fill="none" stroke="#E2E8F0" stroke-width="2"/>
+
+  <!-- Layer 1: ERC-8004 -->
+  <g>
+    <rect x="40" y="30" width="880" height="210" rx="12" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5"/>
+    <circle cx="84" cy="72" r="22" fill="#3B82F6"/>
+    <text x="84" y="79" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+    <text x="122" y="68" font-size="30" font-weight="700" fill="#1E293B">ERC-8004 — Trustless Agents</text>
+    <text x="122" y="96" font-size="19" font-style="italic" fill="#475569">Identity · Reputation · Validation registries</text>
+
+    <rect x="60" y="112" width="270" height="104" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5"/>
+    <text x="195" y="152" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">Identity Registry</text>
+    <text x="195" y="180" font-size="18" fill="#475569" text-anchor="middle">agentId · agentURI</text>
+
+    <rect x="345" y="112" width="270" height="104" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5"/>
+    <text x="480" y="152" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">Reputation Registry</text>
+    <text x="480" y="180" font-size="18" fill="#475569" text-anchor="middle">feedback tags</text>
+
+    <rect x="630" y="112" width="270" height="104" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5"/>
+    <text x="765" y="152" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">Validation Registry</text>
+    <text x="765" y="180" font-size="18" fill="#475569" text-anchor="middle">validator score 0–100</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <text x="480" y="270" font-size="20" font-style="italic" fill="#475569" text-anchor="middle">agentId + registration metadata</text>
+  <line x1="480" y1="278" x2="480" y2="296" stroke="#475569" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+  <!-- Layer 2: ERC-8126 -->
+  <g>
+    <rect x="40" y="306" width="880" height="210" rx="12" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1.5"/>
+    <circle cx="84" cy="348" r="22" fill="#F59E0B"/>
+    <text x="84" y="355" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+    <text x="122" y="344" font-size="30" font-weight="700" fill="#1E293B">ERC-8126 — AI Agent Verification</text>
+    <text x="122" y="372" font-size="19" font-style="italic" fill="#475569">Security assessment providers, scoped by agentId</text>
+
+    <rect x="60" y="396" width="155" height="48" rx="8" fill="#FFFFFF" stroke="#FCD34D" stroke-width="1.5"/>
+    <text x="137" y="427" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">ETV</text>
+
+    <rect x="231" y="396" width="155" height="48" rx="8" fill="#FFFFFF" stroke="#FCD34D" stroke-width="1.5"/>
+    <text x="308" y="427" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">MCV</text>
+
+    <rect x="402" y="396" width="155" height="48" rx="8" fill="#FFFFFF" stroke="#FCD34D" stroke-width="1.5"/>
+    <text x="479" y="427" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">SCV</text>
+
+    <rect x="573" y="396" width="155" height="48" rx="8" fill="#FFFFFF" stroke="#FCD34D" stroke-width="1.5"/>
+    <text x="650" y="427" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">WAV</text>
+
+    <rect x="744" y="396" width="155" height="48" rx="8" fill="#FFFFFF" stroke="#FCD34D" stroke-width="1.5"/>
+    <text x="821" y="427" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">WV</text>
+
+    <text x="480" y="480" font-size="19" fill="#1E293B" text-anchor="middle">combined risk score 0–100 (lower = safer)</text>
+  </g>
+
+  <!-- Arrow 2 -->
+  <text x="480" y="546" font-size="20" font-style="italic" fill="#475569" text-anchor="middle">risk score 0–100</text>
+  <line x1="480" y1="554" x2="480" y2="572" stroke="#475569" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+  <!-- Layer 3: ERC-8196 -->
+  <g>
+    <rect x="40" y="582" width="880" height="270" rx="12" fill="#ECFDF5" stroke="#6EE7B7" stroke-width="1.5"/>
+    <circle cx="84" cy="624" r="22" fill="#10B981"/>
+    <text x="84" y="631" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+    <text x="122" y="620" font-size="30" font-weight="700" fill="#1E293B">ERC-8196 — Authenticated Wallet</text>
+    <text x="122" y="648" font-size="19" font-style="italic" fill="#475569">Owner-defined policy, checked before executeAction</text>
+
+    <rect x="60" y="668" width="412" height="64" rx="8" fill="#FFFFFF" stroke="#6EE7B7" stroke-width="1.5"/>
+    <text x="266" y="694" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">allowedActions</text>
+    <text x="266" y="718" font-size="18" fill="#475569" text-anchor="middle">allowedContracts</text>
+
+    <rect x="488" y="668" width="412" height="64" rx="8" fill="#FFFFFF" stroke="#6EE7B7" stroke-width="1.5"/>
+    <text x="694" y="694" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">maxValuePerTx</text>
+    <text x="694" y="718" font-size="18" fill="#475569" text-anchor="middle">maxValuePerDay</text>
+
+    <rect x="60" y="748" width="412" height="64" rx="8" fill="#FFFFFF" stroke="#6EE7B7" stroke-width="1.5"/>
+    <text x="266" y="774" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">validAfter</text>
+    <text x="266" y="798" font-size="18" fill="#475569" text-anchor="middle">validUntil</text>
+
+    <rect x="488" y="748" width="412" height="64" rx="8" fill="#FFFFFF" stroke="#6EE7B7" stroke-width="1.5"/>
+    <text x="694" y="774" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">minVerificationScore</text>
+    <text x="694" y="798" font-size="18" fill="#475569" text-anchor="middle">(risk ceiling)</text>
+
+    <text x="480" y="822" font-size="19" fill="#1E293B" text-anchor="middle">executeAction() runs only if policy + risk score pass</text>
+  </g>
+
+  <!-- Arrow 3 -->
+  <text x="480" y="882" font-size="20" font-style="italic" fill="#475569" text-anchor="middle">(bool success, bytes32 auditEntryId)</text>
+  <line x1="480" y1="890" x2="480" y2="908" stroke="#475569" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+  <!-- Execution -->
+  <g>
+    <rect x="40" y="918" width="880" height="140" rx="12" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.5"/>
+    <text x="480" y="976" font-size="32" font-weight="700" fill="#1E293B" text-anchor="middle">Wallet Transaction Execution</text>
+    <text x="480" y="1010" font-size="20" font-style="italic" fill="#475569" text-anchor="middle">EIP-4337 wallet or policy enforcement module</text>
+  </g>
+</svg>
