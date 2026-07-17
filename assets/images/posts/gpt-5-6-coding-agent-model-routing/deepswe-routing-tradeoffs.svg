@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 1000" width="980" height="1000" role="img" aria-labelledby="figTitle figDesc" font-family="Arial, Helvetica, sans-serif">
+  <title id="figTitle">DeepSWE v1.1 snapshot: GPT-5.6 Sol, Terra, and Luna versus 12 other coding models</title>
+  <desc id="figDesc">Two stacked sections. Top: scatter plot of DeepSWE v1.1 Pass@1 versus average cost per attempt for 15 models on the best-view leaderboard, updated 2026-07-16. GPT-5.6 Sol scores 73% plus or minus 3% at 8.39 dollars, GPT-5.6 Terra scores 70% plus or minus 3% at 4.95 dollars, and GPT-5.6 Luna scores 67% plus or minus 4% at 3.03 dollars; these three are called out in color-matched stat tiles above the chart, with dots and error bars on the chart showing their confidence ranges. The other 12 models on the leaderboard - Claude Fable 5, GPT-5.5, Claude Opus 4.8, Claude Sonnet 5, Grok 4.5, Muse Spark 1.1, GPT-5.4, GLM-5.2, Gemini 3.5 Flash, Kimi K2.7 Code, Claude Sonnet 4.6, and Gemini 3.1 Pro - appear as unlabeled subdued gray dots for context only. Bottom: paired bar charts comparing GPT-5.6 Sol, Terra, and Luna on mean output tokens (60k, 72k, 73k) and mean agent steps (61, 76, 102), using two independent scales. Source: DeepSWE official leaderboard, v1.1, updated 2026-07-16, accessed 2026-07-17; values are means over scored attempts, not totals.</desc>
+
+  <rect x="0" y="0" width="980" height="1000" rx="16" fill="#F7F7F5" stroke="#E2E2DE" stroke-width="1"/>
+
+  <text x="40" y="42" font-size="28" font-weight="bold" fill="#1F2430">GPT-5.6 routing trade-offs: DeepSWE snapshot</text>
+  <text x="40" y="68" font-size="18" fill="#5B6472">Pass@1 vs. cost across 15 models, plus Sol/Terra/Luna tokens and steps</text>
+
+  <!-- ===================== TOP: SCATTER ===================== -->
+  <rect x="20" y="86" width="940" height="500" rx="10" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="40" y="118" font-size="22" font-weight="bold" fill="#1F2430">DeepSWE Pass&#64;1 vs. average cost &#8212; 15 models</text>
+
+  <!-- stat tiles: Sol / Terra / Luna -->
+  <g>
+    <rect x="40" y="132" width="289" height="70" rx="8" fill="#0072B2" fill-opacity="0.08" stroke="#0072B2" stroke-opacity="0.35" stroke-width="1"/>
+    <rect x="40" y="132" width="5" height="70" fill="#0072B2"/>
+    <text x="60" y="160" font-size="23" font-weight="bold" fill="#0072B2">GPT-5.6 Sol</text>
+    <text x="60" y="188" font-size="20" fill="#374151">73% &#177; 3% &#183; $8.39</text>
+
+    <rect x="345" y="132" width="290" height="70" rx="8" fill="#009E73" fill-opacity="0.08" stroke="#009E73" stroke-opacity="0.35" stroke-width="1"/>
+    <rect x="345" y="132" width="5" height="70" fill="#009E73"/>
+    <text x="365" y="160" font-size="23" font-weight="bold" fill="#009E73">GPT-5.6 Terra</text>
+    <text x="365" y="188" font-size="20" fill="#374151">70% &#177; 3% &#183; $4.95</text>
+
+    <rect x="651" y="132" width="289" height="70" rx="8" fill="#E69F00" fill-opacity="0.10" stroke="#B8790A" stroke-opacity="0.35" stroke-width="1"/>
+    <rect x="651" y="132" width="5" height="70" fill="#E69F00"/>
+    <text x="671" y="160" font-size="23" font-weight="bold" fill="#B8790A">GPT-5.6 Luna</text>
+    <text x="671" y="188" font-size="20" fill="#374151">67% &#177; 4% &#183; $3.03</text>
+  </g>
+
+  <!-- grid: horizontal (pass@1 ticks 20,40,60,80) -->
+  <g stroke="#EDEDEC" stroke-width="1">
+    <line x1="100" y1="433" x2="920" y2="433"/>
+    <line x1="100" y1="366" x2="920" y2="366"/>
+    <line x1="100" y1="299" x2="920" y2="299"/>
+    <line x1="100" y1="232" x2="920" y2="232"/>
+  </g>
+  <!-- grid: vertical (cost ticks 5,10,15,20,25) -->
+  <g stroke="#F3F3F2" stroke-width="1">
+    <line x1="246.4" y1="232" x2="246.4" y2="500"/>
+    <line x1="392.9" y1="232" x2="392.9" y2="500"/>
+    <line x1="539.3" y1="232" x2="539.3" y2="500"/>
+    <line x1="685.7" y1="232" x2="685.7" y2="500"/>
+    <line x1="832.1" y1="232" x2="832.1" y2="500"/>
+  </g>
+
+  <!-- axes -->
+  <line x1="100" y1="232" x2="100" y2="500" stroke="#9CA3AF" stroke-width="1"/>
+  <line x1="100" y1="500" x2="920" y2="500" stroke="#9CA3AF" stroke-width="1"/>
+
+  <!-- y tick labels -->
+  <g font-size="18" fill="#6B7280" text-anchor="end">
+    <text x="90" y="506">0</text>
+    <text x="90" y="439">20</text>
+    <text x="90" y="372">40</text>
+    <text x="90" y="305">60</text>
+    <text x="90" y="238">80</text>
+  </g>
+  <!-- x tick labels -->
+  <g font-size="18" fill="#6B7280" text-anchor="middle">
+    <text x="100" y="524">$0</text>
+    <text x="246.4" y="524">$5</text>
+    <text x="392.9" y="524">$10</text>
+    <text x="539.3" y="524">$15</text>
+    <text x="685.7" y="524">$20</text>
+    <text x="832.1" y="524">$25</text>
+  </g>
+
+  <text x="510" y="550" font-size="18" fill="#4B5563" text-anchor="middle">Average cost per attempt (USD)</text>
+  <text x="55" y="366" font-size="18" fill="#4B5563" text-anchor="middle" transform="rotate(-90 55 366)">Pass&#64;1 (%)</text>
+
+  <!-- 12 other models: subdued unlabeled context dots -->
+  <g fill="#9CA3AF" fill-opacity="0.7">
+    <circle cx="733.6" cy="265.5" r="5"><title>Claude Fable 5 [max]: Pass@1 70% ± 4%, average cost $21.63</title></circle>
+    <circle cx="311.7" cy="275.55" r="5"><title>GPT-5.5 [xhigh]: Pass@1 67% ± 6%, average cost $7.23</title></circle>
+    <circle cx="487.2" cy="302.35" r="5"><title>Claude Opus 4.8 [max]: Pass@1 59% ± 2%, average cost $13.22</title></circle>
+    <circle cx="873.1" cy="319.1" r="5"><title>Claude Sonnet 5 [max]: Pass@1 54% ± 4%, average cost $26.40</title></circle>
+    <circle cx="170.9" cy="319.1" r="5"><title>Grok 4.5 [high]: Pass@1 54% ± 2%, average cost $2.42</title></circle>
+    <circle cx="169.1" cy="322.45" r="5"><title>Muse Spark 1.1 [xhigh]: Pass@1 53% ± 3%, average cost $2.36</title></circle>
+    <circle cx="265.5" cy="325.8" r="5"><title>GPT-5.4 [xhigh]: Pass@1 52% ± 2%, average cost $5.65</title></circle>
+    <circle cx="214.8" cy="352.6" r="5"><title>GLM-5.2 [max]: Pass@1 44% ± 2%, average cost $3.92</title></circle>
+    <circle cx="315.0" cy="376.05" r="5"><title>Gemini 3.5 Flash [medium]: Pass@1 37% ± 2%, average cost $7.34</title></circle>
+    <circle cx="182.6" cy="396.15" r="5"><title>Kimi K2.7 Code [unspecified]: Pass@1 31% ± 1%, average cost $2.82</title></circle>
+    <circle cx="261.6" cy="399.5" r="5"><title>Claude Sonnet 4.6 [high]: Pass@1 30% ± 4%, average cost $5.52</title></circle>
+    <circle cx="377.6" cy="459.8" r="5"><title>Gemini 3.1 Pro [high]: Pass@1 12% ± 2%, average cost $9.48</title></circle>
+  </g>
+
+  <!-- error bars for Sol / Terra / Luna -->
+  <g stroke-width="2" opacity="0.7">
+    <line x1="345.7" y1="245.4" x2="345.7" y2="265.5" stroke="#0072B2"/>
+    <line x1="339.7" y1="245.4" x2="351.7" y2="245.4" stroke="#0072B2"/>
+    <line x1="339.7" y1="265.5" x2="351.7" y2="265.5" stroke="#0072B2"/>
+
+    <line x1="245.0" y1="255.45" x2="245.0" y2="275.55" stroke="#009E73"/>
+    <line x1="239.0" y1="255.45" x2="251.0" y2="255.45" stroke="#009E73"/>
+    <line x1="239.0" y1="275.55" x2="251.0" y2="275.55" stroke="#009E73"/>
+
+    <line x1="188.7" y1="262.15" x2="188.7" y2="288.95" stroke="#E69F00"/>
+    <line x1="182.7" y1="262.15" x2="194.7" y2="262.15" stroke="#E69F00"/>
+    <line x1="182.7" y1="288.95" x2="194.7" y2="288.95" stroke="#E69F00"/>
+  </g>
+
+  <!-- highlighted dots: Sol / Terra / Luna -->
+  <circle cx="345.7" cy="255.45" r="8" fill="#0072B2" stroke="#FFFFFF" stroke-width="2"><title>GPT-5.6 Sol [max]: Pass@1 73% ± 3%, average cost $8.39</title></circle>
+  <circle cx="245.0" cy="265.5" r="8" fill="#009E73" stroke="#FFFFFF" stroke-width="2"><title>GPT-5.6 Terra [max]: Pass@1 70% ± 3%, average cost $4.95</title></circle>
+  <circle cx="188.7" cy="275.55" r="8" fill="#E69F00" stroke="#FFFFFF" stroke-width="2"><title>GPT-5.6 Luna [max]: Pass@1 67% ± 4%, average cost $3.03</title></circle>
+
+  <text x="100" y="574" font-size="18" fill="#6B7280">12 other models shown as context.</text>
+
+  <!-- ===================== BOTTOM: TOKENS / STEPS ===================== -->
+  <rect x="20" y="606" width="940" height="350" rx="10" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="40" y="638" font-size="22" font-weight="bold" fill="#1F2430">GPT-5.6 tiers: tokens and steps (mean per attempt)</text>
+
+  <text x="255" y="665" font-size="20" font-weight="bold" fill="#374151" text-anchor="middle">Mean output tokens (k)</text>
+  <text x="725" y="665" font-size="20" font-weight="bold" fill="#374151" text-anchor="middle">Mean agent steps</text>
+
+  <!-- baselines -->
+  <line x1="50" y1="900" x2="460" y2="900" stroke="#9CA3AF" stroke-width="1"/>
+  <line x1="520" y1="900" x2="930" y2="900" stroke="#9CA3AF" stroke-width="1"/>
+  <line x1="490" y1="670" x2="490" y2="925" stroke="#E5E7EB" stroke-width="1"/>
+
+  <!-- tokens bars -->
+  <rect x="110" y="753.75" width="70" height="146.25" fill="#0072B2"/>
+  <text x="145" y="735.75" font-size="26" font-weight="bold" fill="#0072B2" text-anchor="middle">60k</text>
+
+  <rect x="220" y="724.5" width="70" height="175.5" fill="#009E73"/>
+  <text x="255" y="706.5" font-size="26" font-weight="bold" fill="#009E73" text-anchor="middle">72k</text>
+
+  <rect x="330" y="722.06" width="70" height="177.94" fill="#E69F00"/>
+  <text x="365" y="704.06" font-size="26" font-weight="bold" fill="#B8790A" text-anchor="middle">73k</text>
+
+  <!-- steps bars -->
+  <rect x="580" y="791.86" width="70" height="108.14" fill="#0072B2"/>
+  <text x="615" y="773.86" font-size="26" font-weight="bold" fill="#0072B2" text-anchor="middle">61</text>
+
+  <rect x="690" y="765.27" width="70" height="134.73" fill="#009E73"/>
+  <text x="725" y="747.27" font-size="26" font-weight="bold" fill="#009E73" text-anchor="middle">76</text>
+
+  <rect x="800" y="719.18" width="70" height="180.82" fill="#E69F00"/>
+  <text x="835" y="701.18" font-size="26" font-weight="bold" fill="#B8790A" text-anchor="middle">102</text>
+
+  <!-- category labels -->
+  <g font-size="22" font-weight="bold" text-anchor="middle">
+    <text x="145" y="928" fill="#0072B2">Sol</text>
+    <text x="255" y="928" fill="#009E73">Terra</text>
+    <text x="365" y="928" fill="#B8790A">Luna</text>
+    <text x="615" y="928" fill="#0072B2">Sol</text>
+    <text x="725" y="928" fill="#009E73">Terra</text>
+    <text x="835" y="928" fill="#B8790A">Luna</text>
+  </g>
+
+  <text x="40" y="948" font-size="18" fill="#4B5563">Separate scales &#8212; tokens and steps aren&#8217;t directly comparable.</text>
+
+  <!-- footer -->
+  <line x1="20" y1="968" x2="960" y2="968" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="40" y="984" font-size="18" fill="#8A8F98">Source: DeepSWE leaderboard (deepswe.datacurve.ai), updated 2026-07-16, accessed 2026-07-17.</text>
+</svg>
