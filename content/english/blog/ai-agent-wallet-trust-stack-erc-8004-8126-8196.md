@@ -3,7 +3,7 @@ title: "The AI Agent Trust Stack: ERC-8004, ERC-8126, and ERC-8196"
 meta_title: ""
 description: "How three Ethereum standards work together to handle AI agent identity, security verification, and policy-bound wallet execution."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-15T10:00:00+09:00
+lastmod: 2026-07-17T17:50:08+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["ai-agent", "wallet", "erc-8004", "erc-8126", "erc-8196"]
@@ -104,15 +104,9 @@ The `minVerificationScore` name is confusing. In ERC-8126, lower score means saf
 
 ## How they fit together
 
-```
-ERC-8004  →  who is this agent? (identity, reputation, validation records)
-     |
-ERC-8126  →  is this agent safe? (wallet, code, web, media risk score)
-     |
-ERC-8196  →  is this specific action allowed by the owner's policy?
-     |
-     →  transaction execution
-```
+![Diagram of the AI agent wallet trust stack: ERC-8004 identity, reputation, and validation registries feed into an ERC-8126 risk score, which an ERC-8196 policy check evaluates before wallet transaction execution.](/images/posts/ai-agent-wallet-trust-stack-erc-8004-8126-8196/trust-stack-layers.svg)
+
+*This diagram is a conceptual composition of ERC-8004, ERC-8126, and ERC-8196 into one flow. It doesn't mean the three standards must be implemented as a single mandatory coupling. Each layer can also be used on its own.*
 
 Each layer is independent. You can use ERC-8004 without ERC-8196. But for high-value automated transactions, using all three gives you a traceable path from "who is this agent" through "what is its risk score" to "did the wallet authorize this specific action."
 

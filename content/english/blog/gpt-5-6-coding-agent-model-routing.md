@@ -3,7 +3,7 @@ title: "GPT-5.6 Sol, Terra, and Luna: A Model Routing Guide for Coding Agents"
 meta_title: ""
 description: "A source-grounded breakdown of GPT-5.6's Sol, Terra, and Luna tiers versus its max/high/xhigh/ultra reasoning settings, using OpenAI's launch snapshot and current DeepSWE and Artificial Analysis data to decide which model fits which coding agent task."
 date: 2026-07-13T09:30:00+09:00
-lastmod: 2026-07-17T15:27:11+09:00
+lastmod: 2026-07-17T17:50:08+09:00
 image: ""
 categories: ["AI"]
 tags: ["gpt-5-6", "coding-agent", "model-routing", "benchmark", "llm"]
@@ -73,6 +73,9 @@ The same pattern shows up outside the GPT-5.6 family. Claude Fable 5 matches Ter
 Mean output tokens and mean steps measure different things. Tokens estimate how much a model generates; steps estimate how many tool-call or interaction cycles it runs. Luna and Terra's near-identical tokens paired with a large step gap suggest shorter, more fragmented cycles for Luna, but that alone doesn't establish quality, latency, or root cause. The [official DeepSWE v1.1 post](https://deepswe.datacurve.ai/blog/deepswe-v1-1) says wall-clock time is no longer reported because host performance and provider load make it inconsistent across runs. Fewer steps doesn't mean a model actually finishes faster.
 
 DeepSWE's fixed harness compares 15 models' behavior on one scaffold. It doesn't directly rank complete products like Hermes Agent, Codex, or Claude Code, each of which runs its own orchestration, tools, prompts, retry logic, and sandboxing.
+
+![Scatter plot of DeepSWE Pass@1 versus average cost for 15 models, next to a bar comparison of GPT-5.6 Sol, Terra, and Luna's mean output tokens and mean agent steps](/images/posts/gpt-5-6-coding-agent-model-routing/deepswe-routing-tradeoffs.svg)
+*Top: Pass@1 versus average cost for all 15 models on the [DeepSWE official leaderboard](https://deepswe.datacurve.ai/)'s best view; the other 12 models are shown as unlabeled context dots. Bottom: mean output tokens and mean agent steps for the three GPT-5.6 tiers. This is the July 16, 2026 snapshot, so it won't reflect later leaderboard changes.*
 
 ## Response speed versus time to a useful answer
 
