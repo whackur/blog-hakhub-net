@@ -3,10 +3,10 @@ title: "Don't Ship Agent Skills Without Evals: Philipp Schmid's Testing Method a
 meta_title: "Agent Skills Eval Methodology and SkillsBench"
 description: "A digest of Philipp Schmid's skill eval methodology from Google DeepMind, the SkillsBench paper numbers, and open-source harnesses like skill-eval-harness you can use today."
 date: 2026-07-18T01:00:00+09:00
-lastmod: 2026-07-18T01:00:00+09:00
+lastmod: 2026-08-05T00:00:00+09:00
 image: ""
 categories: ["AI"]
-tags: ["agent-skills", "evals", "coding-agent", "llm-agents"]
+tags: ["agent-skills", "evals", "coding-agent", "llm-agents", "hermes-agent"]
 author: "whackur"
 translationKey: "agent-skills-evals-skillsbench"
 draft: false
@@ -115,6 +115,31 @@ SkillsBench sparked a large [Hacker News thread with 364 points and 171 comments
 
 Schmid's guide itself was discussed in a [separate HN thread](https://news.ycombinator.com/item?id=46822519), and OpenAI published a [similar skill-eval guide](https://developers.openai.com/blog/eval-skills) around the same time. Skill testing is settling in as an ecosystem-wide concern rather than a single vendor's topic.
 
+## Skill validation built into agent frameworks
+
+Schmid's method is an efficacy eval. You run test cases and measure the skill's contribution with an on/off ablation. But there is a second axis to check before you ship a skill: is it safe, and is it still the same skill you validated after you installed it? The finding that a large share of those 47,000 skills across 6,300 repositories are AI-generated is a quality problem and a supply-chain problem at the same time.
+
+[Hermes Agent](https://github.com/NousResearch/hermes-agent) (MIT) from Nous Research builds that second axis into the framework. Its skill system follows the agentskills.io standard and adds security validation, an approval gate, and drift detection. None of that is an efficacy eval, but it answers the same "don't ship skills without validation" concern from a different direction.
+
+According to the [Hermes skills docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills), every skill installed from the hub passes through a security scanner that checks for data exfiltration, prompt injection, destructive commands, and supply-chain signals. Installation quarantines the complete bundle, scans it, and only then places what passed. The result lands in `skills/.hub/lock.json` as a source URL, content hash, scanner version, findings, and timestamp. That is a provenance record you can go back to later when you need to answer "where did this skill come from and what did it pass?"
+
+Two operational commands connect directly to this post's ablation and retirement discussion.
+
+- `hermes skills audit`: re-scans every installed hub skill for security. When the scanner improves, skills you installed months ago get caught too.
+- `hermes skills check`: checks installed hub skills for upstream updates, comparing the stored source identifier and content hash to detect drift.
+
+Schmid asks you to keep re-testing whether a skill still earns its tokens. This side asks whether a skill is still the one you validated. Two different questions from the same refusal to ship a skill once and forget it.
+
+Policy also varies by origin. There are four trust levels: builtin, which ships with Hermes; official, from `optional-skills/` in the repo; trusted, covering sources like openai/skills, anthropics/skills, huggingface/skills, and NVIDIA/skills; and community, covering skills.sh and arbitrary GitHub repos. For community skills, non-dangerous findings can be waived with `--force`, but dangerous verdicts stay blocked. NVIDIA/skills, on the trusted list, ships a signed `skill.oms.sig` alongside a governance `skill-card.md`, which is a concrete look at what signing and governance metadata for a skill actually looks like.
+
+Skills the agent writes for itself get separate handling, and the SkillsBench result that self-generated skills were nearly useless or harmful gives that distinction some grounding. The [Hermes configuration docs](https://hermes-agent.nousresearch.com/docs/user-guide/configuration) describe `skills.guard_agent_created`, which scans skills the agent creates or edits for dangerous keyword patterns: credential harvesting, blatant prompt injection, exfiltration instructions. It defaults to off, because legitimate workflow docs mention things like `~/.ssh/` paths and API key environment variables often enough to generate plenty of false positives. It is a content scanner, not an approval gate.
+
+The approval gate is `skills.write_approval`. Turn it on and every agent skill write (create, edit, patch, delete, supporting files) is staged in a pending directory. You list them with `/skills pending`, inspect the change with `/skills diff <id>`, then approve or reject. `/skills approval on|off` toggles it mid-session. The default is off. Just as people do not merge without review, this inserts a review step when an agent edits its own instructions.
+
+Search for Hermes and the name OpenClaw comes up alongside it. OpenClaw is the earlier name in the same lineage: the repo README has a "Migrating from OpenClaw" section, and the `hermes setup` wizard detects a `~/.openclaw` directory and offers to migrate. The `hermes claw migrate` command moves settings, memories, skills, and the command allowlist across. Whether OpenClaw had a skill eval system of its own is not something public sources confirm. Everything described above comes from the current Hermes docs.
+
+One caveat is worth stating. This system does not replace Schmid's evals. The security scanner asks whether a skill does harm; drift checks ask whether it changed. Whether a skill actually makes the agent work better is still something only test cases and ablations tell you. The realistic reading is that when a framework covers the safety axis, whoever writes the skill has more room to work on the efficacy axis.
+
 ## Open source you can use today
 
 If you want to follow the talk's approach in practice, these projects are worth a look.
@@ -137,7 +162,7 @@ If you want to follow the talk's approach in practice, these projects are worth 
 
 Skills are becoming the deployment unit of the agent era, but the testing culture around them is where code was a decade ago. Three things stick from Schmid's method. First, half of skill failures are description (trigger) problems rather than content problems, so fix those first. Second, an eval can start with 10 to 20 JSON cases and regex checks; there is no reason to wait for a perfect framework. Third, keep measuring each skill's contribution with ablations and retire it without regret once the model catches up.
 
-The SkillsBench numbers add quantitative weight: well-curated skills buy 16+ percentage points of average pass rate, while carelessly made ones do nothing or cause harm. A good starting point is to pick your single most-used skill and write five test cases for it.
+The SkillsBench numbers add quantitative weight: well-curated skills buy 16+ percentage points of average pass rate, while carelessly made ones do nothing or cause harm. Layer on frameworks like Hermes shipping a security scanner and drift checks by default, and skill deployment starts to get gates that look like the ones code deployment has. A good starting point is to pick your single most-used skill and write five test cases for it.
 
 ## References
 
@@ -148,3 +173,6 @@ The SkillsBench numbers add quantitative weight: well-curated skills buy 16+ per
 - [SkillsBench Hacker News discussion](https://news.ycombinator.com/item?id=47040430): 364 points, 171 comments. Accessed 2026-07-18
 - [Testing Agent Skills Systematically with Evals](https://developers.openai.com/blog/eval-skills): OpenAI Developers
 - [Agent Skills format](https://agentskills.io/): agentskills.io
+- [Hermes Agent Skills](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills): Hermes Agent official docs. Accessed 2026-08-05
+- [Hermes Agent Configuration](https://hermes-agent.nousresearch.com/docs/user-guide/configuration): Hermes Agent official docs. Accessed 2026-08-05
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): GitHub, MIT. Accessed 2026-08-05
