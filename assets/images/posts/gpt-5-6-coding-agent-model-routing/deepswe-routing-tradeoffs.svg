@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 1000" width="980" height="1000" role="img" aria-labelledby="figTitle figDesc" font-family="Arial, Helvetica, sans-serif">
-  <title id="figTitle">DeepSWE v1.1 snapshot: GPT-5.6 Sol, Terra, and Luna versus 12 other coding models</title>
-  <desc id="figDesc">Two stacked sections. Top: scatter plot of DeepSWE v1.1 Pass@1 versus average cost per attempt for 15 models on the best-view leaderboard, updated 2026-07-16. GPT-5.6 Sol scores 73% plus or minus 3% at 8.39 dollars, GPT-5.6 Terra scores 70% plus or minus 3% at 4.95 dollars, and GPT-5.6 Luna scores 67% plus or minus 4% at 3.03 dollars; these three are called out in color-matched stat tiles above the chart, with dots and error bars on the chart showing their confidence ranges. The other 12 models on the leaderboard - Claude Fable 5, GPT-5.5, Claude Opus 4.8, Claude Sonnet 5, Grok 4.5, Muse Spark 1.1, GPT-5.4, GLM-5.2, Gemini 3.5 Flash, Kimi K2.7 Code, Claude Sonnet 4.6, and Gemini 3.1 Pro - appear as unlabeled subdued gray dots for context only. Bottom: paired bar charts comparing GPT-5.6 Sol, Terra, and Luna on mean output tokens (60k, 72k, 73k) and mean agent steps (61, 76, 102), using two independent scales. Source: DeepSWE official leaderboard, v1.1, updated 2026-07-16, accessed 2026-07-17; values are means over scored attempts, not totals.</desc>
+  <title id="figTitle">DeepSWE v1.1 snapshot: GPT-5.6 Sol, Terra, and Luna versus 15 other coding models</title>
+  <desc id="figDesc">Two stacked sections. Top: scatter plot of DeepSWE v1.1 Pass@1 versus average cost per attempt for 18 models on the best-view leaderboard, updated 2026-07-25. GPT-5.6 Sol scores 73% plus or minus 3% at 8.39 dollars, GPT-5.6 Terra scores 70% plus or minus 3% at 3.96 dollars, and GPT-5.6 Luna scores 67% plus or minus 4% at 0.61 dollars; these three are called out in color-matched stat tiles above the chart, with dots and error bars on the chart showing their confidence ranges. The other 15 models on the leaderboard - Claude Opus 5, Claude Fable 5, Kimi K3, GPT-5.5, Claude Opus 4.8, Claude Sonnet 5, Grok 4.5, Muse Spark 1.1, GPT-5.4, Gemini 3.6 Flash, GLM-5.2, Gemini 3.5 Flash, Kimi K2.7 Code, Claude Sonnet 4.6, and Gemini 3.1 Pro - appear as unlabeled subdued gray dots for context only. Claude Opus 5 leads the leaderboard at 74% for 11.84 dollars per attempt. Bottom: paired bar charts comparing GPT-5.6 Sol, Terra, and Luna on mean output tokens (60k, 72k, 73k) and mean agent steps (61, 76, 102), using two independent scales. Source: DeepSWE official leaderboard, v1.1, updated 2026-07-25, accessed 2026-08-05; values are means over scored attempts, not totals.</desc>
 
   <style>
     @media (prefers-color-scheme: dark) {
@@ -28,11 +28,11 @@
   <rect x="0" y="0" width="980" height="1000" rx="16" fill="#F7F7F5" stroke="#E2E2DE" stroke-width="1"/>
 
   <text x="40" y="42" font-size="28" font-weight="bold" fill="#1F2430">GPT-5.6 routing trade-offs: DeepSWE snapshot</text>
-  <text x="40" y="68" font-size="18" fill="#5B6472">Pass@1 vs. cost across 15 models, plus Sol/Terra/Luna tokens and steps</text>
+  <text x="40" y="68" font-size="18" fill="#5B6472">Pass@1 vs. cost across 18 models, plus Sol/Terra/Luna tokens and steps</text>
 
   <!-- ===================== TOP: SCATTER ===================== -->
   <rect x="20" y="86" width="940" height="500" rx="10" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
-  <text x="40" y="118" font-size="22" font-weight="bold" fill="#1F2430">DeepSWE Pass&#64;1 vs. average cost: 15 models</text>
+  <text x="40" y="118" font-size="22" font-weight="bold" fill="#1F2430">DeepSWE Pass&#64;1 vs. average cost: 18 models</text>
 
   <!-- stat tiles: Sol / Terra / Luna -->
   <g>
@@ -44,12 +44,12 @@
     <rect x="345" y="132" width="290" height="70" rx="8" fill="#009E73" fill-opacity="0.08" stroke="#009E73" stroke-opacity="0.35" stroke-width="1"/>
     <rect x="345" y="132" width="5" height="70" fill="#009E73"/>
     <text x="365" y="160" font-size="23" font-weight="bold" fill="#009E73">GPT-5.6 Terra</text>
-    <text x="365" y="188" font-size="20" fill="#374151">70% &#177; 3% &#183; $4.95</text>
+    <text x="365" y="188" font-size="20" fill="#374151">70% &#177; 3% &#183; $3.96</text>
 
     <rect x="651" y="132" width="289" height="70" rx="8" fill="#E69F00" fill-opacity="0.10" stroke="#B8790A" stroke-opacity="0.35" stroke-width="1"/>
     <rect x="651" y="132" width="5" height="70" fill="#E69F00"/>
     <text x="671" y="160" font-size="23" font-weight="bold" fill="#B8790A">GPT-5.6 Luna</text>
-    <text x="671" y="188" font-size="20" fill="#374151">67% &#177; 4% &#183; $3.03</text>
+    <text x="671" y="188" font-size="20" fill="#374151">67% &#177; 4% &#183; $0.61</text>
   </g>
 
   <!-- grid: horizontal (pass@1 ticks 20,40,60,80) -->
@@ -93,17 +93,20 @@
   <text x="510" y="550" font-size="18" fill="#4B5563" text-anchor="middle">Average cost per attempt (USD)</text>
   <text x="55" y="366" font-size="18" fill="#4B5563" text-anchor="middle" transform="rotate(-90 55 366)">Pass&#64;1 (%)</text>
 
-  <!-- 12 other models: subdued unlabeled context dots -->
+  <!-- 15 other models: subdued unlabeled context dots -->
   <g fill="#9CA3AF" fill-opacity="0.7">
-    <circle cx="733.6" cy="265.5" r="5"><title>Claude Fable 5 [max]: Pass@1 70% ± 4%, average cost $21.63</title></circle>
+    <circle cx="446.7" cy="252.1" r="5"><title>Claude Opus 5 [max]: Pass@1 74% ± 4%, average cost $11.84</title></circle>
+    <circle cx="733.3" cy="265.5" r="5"><title>Claude Fable 5 [max]: Pass@1 70% ± 4%, average cost $21.63</title></circle>
+    <circle cx="236.2" cy="268.85" r="5"><title>Kimi K3 [max]: Pass@1 69% ± 5%, average cost $4.65</title></circle>
     <circle cx="311.7" cy="275.55" r="5"><title>GPT-5.5 [xhigh]: Pass@1 67% ± 6%, average cost $7.23</title></circle>
-    <circle cx="487.2" cy="302.35" r="5"><title>Claude Opus 4.8 [max]: Pass@1 59% ± 2%, average cost $13.22</title></circle>
-    <circle cx="873.1" cy="319.1" r="5"><title>Claude Sonnet 5 [max]: Pass@1 54% ± 4%, average cost $26.40</title></circle>
+    <circle cx="487.1" cy="302.35" r="5"><title>Claude Opus 4.8 [max]: Pass@1 59% ± 2%, average cost $13.22</title></circle>
+    <circle cx="873.0" cy="319.1" r="5"><title>Claude Sonnet 5 [max]: Pass@1 54% ± 4%, average cost $26.40</title></circle>
     <circle cx="170.9" cy="319.1" r="5"><title>Grok 4.5 [high]: Pass@1 54% ± 2%, average cost $2.42</title></circle>
     <circle cx="169.1" cy="322.45" r="5"><title>Muse Spark 1.1 [xhigh]: Pass@1 53% ± 3%, average cost $2.36</title></circle>
-    <circle cx="265.5" cy="325.8" r="5"><title>GPT-5.4 [xhigh]: Pass@1 52% ± 2%, average cost $5.65</title></circle>
+    <circle cx="265.4" cy="325.8" r="5"><title>GPT-5.4 [xhigh]: Pass@1 52% ± 2%, average cost $5.65</title></circle>
+    <circle cx="203.4" cy="335.85" r="5"><title>Gemini 3.6 Flash [high]: Pass@1 49% ± 5%, average cost $3.53</title></circle>
     <circle cx="214.8" cy="352.6" r="5"><title>GLM-5.2 [max]: Pass@1 44% ± 2%, average cost $3.92</title></circle>
-    <circle cx="315.0" cy="376.05" r="5"><title>Gemini 3.5 Flash [medium]: Pass@1 37% ± 2%, average cost $7.34</title></circle>
+    <circle cx="314.9" cy="376.05" r="5"><title>Gemini 3.5 Flash [medium]: Pass@1 37% ± 2%, average cost $7.34</title></circle>
     <circle cx="182.6" cy="396.15" r="5"><title>Kimi K2.7 Code [unspecified]: Pass@1 31% ± 1%, average cost $2.82</title></circle>
     <circle cx="261.6" cy="399.5" r="5"><title>Claude Sonnet 4.6 [high]: Pass@1 30% ± 4%, average cost $5.52</title></circle>
     <circle cx="377.6" cy="459.8" r="5"><title>Gemini 3.1 Pro [high]: Pass@1 12% ± 2%, average cost $9.48</title></circle>
@@ -115,21 +118,21 @@
     <line x1="339.7" y1="245.4" x2="351.7" y2="245.4" stroke="#0072B2"/>
     <line x1="339.7" y1="265.5" x2="351.7" y2="265.5" stroke="#0072B2"/>
 
-    <line x1="245.0" y1="255.45" x2="245.0" y2="275.55" stroke="#009E73"/>
-    <line x1="239.0" y1="255.45" x2="251.0" y2="255.45" stroke="#009E73"/>
-    <line x1="239.0" y1="275.55" x2="251.0" y2="275.55" stroke="#009E73"/>
+    <line x1="216.0" y1="255.45" x2="216.0" y2="275.55" stroke="#009E73"/>
+    <line x1="210.0" y1="255.45" x2="222.0" y2="255.45" stroke="#009E73"/>
+    <line x1="210.0" y1="275.55" x2="222.0" y2="275.55" stroke="#009E73"/>
 
-    <line x1="188.7" y1="262.15" x2="188.7" y2="288.95" stroke="#E69F00"/>
-    <line x1="182.7" y1="262.15" x2="194.7" y2="262.15" stroke="#E69F00"/>
-    <line x1="182.7" y1="288.95" x2="194.7" y2="288.95" stroke="#E69F00"/>
+    <line x1="117.9" y1="262.15" x2="117.9" y2="288.95" stroke="#E69F00"/>
+    <line x1="111.9" y1="262.15" x2="123.9" y2="262.15" stroke="#E69F00"/>
+    <line x1="111.9" y1="288.95" x2="123.9" y2="288.95" stroke="#E69F00"/>
   </g>
 
   <!-- highlighted dots: Sol / Terra / Luna -->
   <circle cx="345.7" cy="255.45" r="8" fill="#0072B2" stroke="#FFFFFF" stroke-width="2"><title>GPT-5.6 Sol [max]: Pass@1 73% ± 3%, average cost $8.39</title></circle>
-  <circle cx="245.0" cy="265.5" r="8" fill="#009E73" stroke="#FFFFFF" stroke-width="2"><title>GPT-5.6 Terra [max]: Pass@1 70% ± 3%, average cost $4.95</title></circle>
-  <circle cx="188.7" cy="275.55" r="8" fill="#E69F00" stroke="#FFFFFF" stroke-width="2"><title>GPT-5.6 Luna [max]: Pass@1 67% ± 4%, average cost $3.03</title></circle>
+  <circle cx="216.0" cy="265.5" r="8" fill="#009E73" stroke="#FFFFFF" stroke-width="2"><title>GPT-5.6 Terra [max]: Pass@1 70% ± 3%, average cost $3.96</title></circle>
+  <circle cx="117.9" cy="275.55" r="8" fill="#E69F00" stroke="#FFFFFF" stroke-width="2"><title>GPT-5.6 Luna [max]: Pass@1 67% ± 4%, average cost $0.61</title></circle>
 
-  <text x="100" y="574" font-size="18" fill="#6B7280">12 other models shown as context.</text>
+  <text x="100" y="574" font-size="18" fill="#6B7280">15 other models shown as context. Leaderboard top score: Claude Opus 5, 74% at $11.84.</text>
 
   <!-- ===================== BOTTOM: TOKENS / STEPS ===================== -->
   <rect x="20" y="606" width="940" height="350" rx="10" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
@@ -177,5 +180,5 @@
 
   <!-- footer -->
   <line x1="20" y1="968" x2="960" y2="968" stroke="#E5E7EB" stroke-width="1"/>
-  <text x="40" y="984" font-size="18" fill="#8A8F98">Source: DeepSWE leaderboard (deepswe.datacurve.ai), updated 2026-07-16, accessed 2026-07-17.</text>
+  <text x="40" y="984" font-size="18" fill="#8A8F98">Source: DeepSWE leaderboard (deepswe.datacurve.ai), v1.1, updated 2026-07-25, accessed 2026-08-05.</text>
 </svg>
