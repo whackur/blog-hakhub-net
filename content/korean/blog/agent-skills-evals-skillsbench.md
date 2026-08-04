@@ -3,10 +3,10 @@ title: "Eval 없는 Agent Skill은 배포하지 마라: Philipp Schmid의 스킬
 meta_title: "Agent Skills Eval 방법론과 SkillsBench 정리"
 description: "Google DeepMind Philipp Schmid의 스킬 eval 방법론을 정리하고, SkillsBench 논문 수치와 skill-eval-harness 등 관련 오픈소스를 함께 살펴봅니다."
 date: 2026-07-18T01:00:00+09:00
-lastmod: 2026-07-18T01:00:00+09:00
+lastmod: 2026-08-05T00:00:00+09:00
 image: ""
 categories: ["AI"]
-tags: ["agent-skills", "evals", "coding-agent", "llm-agents"]
+tags: ["agent-skills", "evals", "coding-agent", "llm-agents", "hermes-agent"]
 author: "whackur"
 translationKey: "agent-skills-evals-skillsbench"
 draft: false
@@ -115,6 +115,31 @@ SkillsBench는 [Hacker News에서 364포인트, 댓글 171개](https://news.ycom
 
 Schmid의 원문 가이드 자체도 [별도 HN 스레드](https://news.ycombinator.com/item?id=46822519)에서 논의됐고, OpenAI 역시 같은 시기에 [유사한 스킬 eval 가이드](https://developers.openai.com/blog/eval-skills)를 냈다. 스킬 테스트가 특정 벤더가 아니라 에이전트 생태계 공통의 관심사로 자리 잡는 흐름이다.
 
+## 에이전트 프레임워크에 내장된 스킬 검증
+
+Schmid의 방법론은 스킬이 실제로 도움이 되는지를 재는 efficacy eval이다. 테스트 케이스를 돌리고 on/off ablation으로 기여도를 잰다. 그런데 스킬을 배포하기 전에 확인해야 할 축이 하나 더 있다. 이 스킬이 안전한가, 그리고 설치한 뒤에 내가 검증한 내용 그대로 남아 있는가. 6,300개 저장소에 흩어진 47,000개 스킬 중 상당수가 AI 생성물이라는 조사 결과는 품질 문제이면서 동시에 공급망 문제다.
+
+Nous Research가 만든 [Hermes Agent](https://github.com/NousResearch/hermes-agent)(MIT)가 이 두 번째 축을 프레임워크에 내장한 사례다. agentskills.io 표준을 따르는 스킬 시스템에 security validation, 승인 게이트, drift 감지를 붙였다. efficacy eval은 아니지만 "검증 없이 스킬을 배포하지 마라"라는 같은 문제의식에 다른 방향으로 답한 것이다.
+
+[Hermes 스킬 문서](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills)에 따르면 hub에서 설치하는 모든 스킬이 security scanner를 통과한다. 검사 항목은 data exfiltration, prompt injection, destructive commands, supply-chain signals다. 설치 절차는 번들 전체를 quarantine에 받아 스캔한 뒤 통과한 것만 배치하는 순서다. 결과는 `skills/.hub/lock.json`에 source URL, content hash, scanner 버전, findings, timestamp로 기록된다. 나중에 "이 스킬이 어디서 왔고 어떤 검사를 통과했나"를 되짚을 수 있는 provenance 기록이다.
+
+운영 단계 명령 두 개가 이 글의 ablation·은퇴 논의와 맞닿는다.
+
+- `hermes skills audit`: 설치된 hub 스킬 전체를 보안 관점에서 재스캔한다. scanner가 개선되면 이미 설치돼 있던 스킬도 다시 걸러진다.
+- `hermes skills check`: 설치된 hub 스킬에 upstream 변경이 있는지 확인한다. 저장해 둔 source identifier와 content hash를 비교해 drift를 잡아낸다.
+
+Schmid가 ablation으로 "이 스킬이 아직 값을 하는가"를 계속 되묻자고 했다면, 이쪽은 "이 스킬이 아직 내가 검증한 그 스킬인가"를 되묻는 장치다. 스킬을 한 번 배포하고 잊지 않겠다는 같은 태도에서 나온 서로 다른 질문이다.
+
+출처에 따라 정책도 갈린다. trust level은 네 단계다. Hermes에 기본 포함된 builtin, 저장소의 `optional-skills/`에서 오는 official, openai/skills·anthropics/skills·huggingface/skills·NVIDIA/skills 같은 trusted, 그리고 skills.sh나 임의 GitHub 저장소에서 오는 community. community 스킬은 위험하지 않은 findings라면 `--force`로 넘길 수 있지만 dangerous 판정은 넘기지 못한다. trusted 목록의 NVIDIA/skills는 서명된 `skill.oms.sig`와 governance용 `skill-card.md`를 함께 배포한다. 스킬에 서명과 governance 카드를 붙인다는 게 실제로 어떤 모습인지 보여주는 예다.
+
+에이전트가 스스로 만든 스킬은 따로 다룬다. SkillsBench에서 self-generated 스킬이 거의 효과가 없거나 오히려 해로웠다는 결과를 떠올리면 이 구분에 근거가 있다. [Hermes 설정 문서](https://hermes-agent.nousresearch.com/docs/user-guide/configuration)의 `skills.guard_agent_created`는 에이전트가 만들거나 수정한 스킬을 dangerous keyword pattern으로 스캔한다. credential harvesting, 노골적인 prompt injection, exfil 지시문 같은 것을 찾는다. 기본값은 off인데, 정상적인 워크플로우 문서도 `~/.ssh/` 경로나 API 키 환경변수를 자주 언급해 false positive가 많다는 이유다. 이건 content scanner이지 approval gate가 아니다.
+
+승인 게이트는 `skills.write_approval`이 맡는다. 켜면 에이전트의 모든 스킬 쓰기(생성, 편집, patch, 삭제, 보조 파일)가 pending 디렉토리에 staging된다. `/skills pending`으로 목록을 보고 `/skills diff <id>`로 변경 내용을 확인한 다음 approve나 reject를 결정하는 흐름이다. 세션 중에는 `/skills approval on|off`로 토글할 수 있다. 기본값은 off. 사람이 리뷰 없이 머지하지 않듯, 에이전트가 자기 지시문을 고칠 때 리뷰 단계를 끼워 넣는 구조다.
+
+Hermes를 찾아보면 OpenClaw라는 이름도 같이 나온다. Hermes의 이전 이름에 해당하는 계보로, 저장소 README에 "Migrating from OpenClaw" 섹션이 있고 `hermes setup` 위저드가 `~/.openclaw` 디렉토리를 자동으로 감지해 마이그레이션을 제안한다. `hermes claw migrate` 명령으로 설정, 메모리, 스킬, 명령 allowlist를 옮긴다. OpenClaw 쪽에 독자적인 스킬 eval 시스템이 있었는지는 공개 소스로 확인되지 않았다. 여기서 정리한 검증 기능은 모두 현재 Hermes 문서에 있는 내용이다.
+
+한 가지는 짚어 둘 필요가 있다. 이 시스템은 Schmid의 eval을 대체하지 않는다. security scanner는 스킬이 해를 끼치지 않는지 보고, drift 검사는 스킬이 바뀌었는지 본다. 스킬이 에이전트를 실제로 더 잘 일하게 만드는지는 여전히 테스트 케이스와 ablation으로만 알 수 있다. 프레임워크가 안전 축을 맡아 주면 스킬을 만드는 사람이 효과 축에 집중할 여유가 생긴다는 정도가 현실적인 정리다.
+
 ## 바로 가져다 쓸 수 있는 오픈소스
 
 강연의 접근을 실제로 따라 해 보려는 경우 참고할 만한 프로젝트들이다.
@@ -137,7 +162,7 @@ Schmid의 원문 가이드 자체도 [별도 HN 스레드](https://news.ycombina
 
 스킬은 에이전트 시대의 새로운 배포 단위가 되고 있지만, 테스트 문화는 아직 코드의 10년 전 수준이다. Schmid의 방법론에서 기억할 것은 세 가지다. 첫째, 스킬 실패의 절반은 내용이 아니라 description(트리거) 문제이므로 거기서부터 고친다. 둘째, eval은 JSON 케이스 10~20개와 regex 검사면 시작할 수 있고, 완벽한 프레임워크를 기다릴 이유가 없다. 셋째, ablation으로 스킬의 기여도를 계속 재고, 모델이 따라잡으면 미련 없이 은퇴시킨다.
 
-SkillsBench 수치는 이 조언에 정량적 근거를 더한다. 잘 다듬은 스킬은 평균 16%p 이상의 통과율 개선을 만들지만, 대충 만든 스킬은 효과가 없거나 해롭다. 지금 가장 많이 쓰는 스킬 하나를 골라 테스트 케이스 5개부터 작성해 보는 것이 시작점이다.
+SkillsBench 수치는 이 조언에 정량적 근거를 더한다. 잘 다듬은 스킬은 평균 16%p 이상의 통과율 개선을 만들지만, 대충 만든 스킬은 효과가 없거나 해롭다. 여기에 Hermes 같은 프레임워크가 security scanner와 drift 검사를 기본으로 깔아 주는 흐름이 겹치면, 스킬 배포에도 코드 배포와 비슷한 게이트가 생긴다. 지금 가장 많이 쓰는 스킬 하나를 골라 테스트 케이스 5개부터 작성해 보는 것이 시작점이다.
 
 ## 참고 자료
 
@@ -148,3 +173,6 @@ SkillsBench 수치는 이 조언에 정량적 근거를 더한다. 잘 다듬은
 - [SkillsBench Hacker News 토론](https://news.ycombinator.com/item?id=47040430): 364포인트, 댓글 171개. 조회일 2026-07-18
 - [Testing Agent Skills Systematically with Evals](https://developers.openai.com/blog/eval-skills): OpenAI Developers
 - [Agent Skills 규격](https://agentskills.io/): agentskills.io
+- [Hermes Agent Skills](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills): Hermes Agent 공식 문서. 조회일 2026-08-05
+- [Hermes Agent Configuration](https://hermes-agent.nousresearch.com/docs/user-guide/configuration): Hermes Agent 공식 문서. 조회일 2026-08-05
+- [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent): GitHub, MIT. 조회일 2026-08-05
