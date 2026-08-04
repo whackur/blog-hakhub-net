@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 580" font-family="ui-sans-serif, system-ui, sans-serif">
+  <rect width="900" height="580" rx="12" fill="#f8fafc"/>
+
+  <defs>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#475569"/>
+    </marker>
+    <marker id="arl" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- Row 1: foundation before evals -->
+  <rect x="28" y="44" width="260" height="76" rx="10" fill="#e2e8f0" stroke="#64748b"/>
+  <text x="158" y="72" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">1. Optimize the tools</text>
+  <text x="158" y="94" text-anchor="middle" font-size="12" fill="#334155">focused, LLM-friendly tool set</text>
+  <text x="158" y="111" text-anchor="middle" font-size="12" fill="#334155">fix these before measuring</text>
+
+  <rect x="310" y="44" width="260" height="76" rx="10" fill="#e2e8f0" stroke="#64748b"/>
+  <text x="440" y="72" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">2. Self-correction</text>
+  <text x="440" y="94" text-anchor="middle" font-size="12" fill="#334155">independent critique agent</text>
+  <text x="440" y="111" text-anchor="middle" font-size="12" fill="#334155">plus a remediation loop</text>
+
+  <rect x="592" y="44" width="260" height="76" rx="10" fill="#e2e8f0" stroke="#64748b"/>
+  <text x="722" y="72" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">3. Build the eval</text>
+  <text x="722" y="94" text-anchor="middle" font-size="12" fill="#334155">prove the value of a change,</text>
+  <text x="722" y="111" text-anchor="middle" font-size="12" fill="#334155">enable ablations</text>
+
+  <line x1="288" y1="82" x2="304" y2="82" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="570" y1="82" x2="586" y2="82" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+
+  <!-- Row 2: eval maturity -->
+  <rect x="88" y="156" width="320" height="72" rx="10" fill="#fef9c3" stroke="#ca8a04"/>
+  <text x="248" y="182" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Vibe eval (early)</text>
+  <text x="248" y="203" text-anchor="middle" font-size="12" fill="#334155">read outputs by hand, a few core tasks,</text>
+  <text x="248" y="220" text-anchor="middle" font-size="12" fill="#334155">radical prompt and architecture changes</text>
+
+  <rect x="470" y="156" width="320" height="72" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="630" y="182" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Strict, measurable eval</text>
+  <text x="630" y="203" text-anchor="middle" font-size="12" fill="#334155">curated golden set, negative cases,</text>
+  <text x="630" y="220" text-anchor="middle" font-size="12" fill="#334155">scaled raters and cross-functional teams</text>
+
+  <path d="M722,120 L722,136 L248,136 L248,150" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="408" y1="192" x2="464" y2="192" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="436" y="182" text-anchor="middle" font-size="11" fill="#64748b">grow</text>
+
+  <!-- Row 3: three grading layers -->
+  <rect x="28" y="262" width="268" height="100" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="162" y="288" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Human raters</text>
+  <text x="162" y="310" text-anchor="middle" font-size="12" fill="#334155">rubric with worked examples</text>
+  <text x="162" y="327" text-anchor="middle" font-size="12" fill="#334155">pass/fail plus an explanation</text>
+  <text x="162" y="344" text-anchor="middle" font-size="12" fill="#334155">high human-human agreement</text>
+
+  <rect x="306" y="262" width="268" height="100" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="440" y="288" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">LLM judge</text>
+  <text x="440" y="310" text-anchor="middle" font-size="12" fill="#334155">sampling pipeline compares its</text>
+  <text x="440" y="327" text-anchor="middle" font-size="12" fill="#334155">scores against expert scores</text>
+  <text x="440" y="344" text-anchor="middle" font-size="12" fill="#334155">watch the disagreement rate</text>
+
+  <rect x="584" y="262" width="268" height="100" rx="10" fill="#fce7f3" stroke="#db2777"/>
+  <text x="718" y="288" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Trace spot checks</text>
+  <text x="718" y="310" text-anchor="middle" font-size="12" fill="#334155">read the agent's reasoning,</text>
+  <text x="718" y="327" text-anchor="middle" font-size="12" fill="#334155">not only the pass rate</text>
+  <text x="718" y="344" text-anchor="middle" font-size="12" fill="#334155">catches deliberate rule breaks</text>
+
+  <line x1="630" y1="228" x2="630" y2="248" stroke="#475569" stroke-width="2"/>
+  <line x1="162" y1="248" x2="718" y2="248" stroke="#475569" stroke-width="2"/>
+  <line x1="162" y1="248" x2="162" y2="256" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="440" y1="248" x2="440" y2="256" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="718" y1="248" x2="718" y2="256" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+
+  <!-- Row 4: pattern-level analysis -->
+  <rect x="190" y="396" width="500" height="60" rx="10" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="440" y="422" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Analyze failures as patterns, not single runs</text>
+  <text x="440" y="443" text-anchor="middle" font-size="12" fill="#334155">several golden-set examples per pattern, then measure how often that pattern fails</text>
+
+  <line x1="162" y1="362" x2="162" y2="378" stroke="#475569" stroke-width="2"/>
+  <line x1="440" y1="362" x2="440" y2="378" stroke="#475569" stroke-width="2"/>
+  <line x1="718" y1="362" x2="718" y2="378" stroke="#475569" stroke-width="2"/>
+  <line x1="162" y1="378" x2="718" y2="378" stroke="#475569" stroke-width="2"/>
+  <line x1="440" y1="378" x2="440" y2="390" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+
+  <!-- Row 5: launch gate -->
+  <rect x="110" y="478" width="660" height="64" rx="10" fill="#e2e8f0" stroke="#475569"/>
+  <text x="440" y="504" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Launch gate</text>
+  <text x="440" y="526" text-anchor="middle" font-size="12" fill="#334155">where and why performance regressed, acceptable tradeoff vs critical failure, criteria agreed in advance</text>
+
+  <line x1="440" y1="456" x2="440" y2="472" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+
+  <!-- Feedback loop: online evals refresh the eval set -->
+  <path d="M770,510 C862,510 884,250 796,192" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arl)"/>
+  <text x="886" y="350" text-anchor="middle" font-size="11" fill="#64748b" transform="rotate(-90 886 350)">online evals, test set refreshed with prod data</text>
+</svg>
