@@ -102,7 +102,7 @@ One limit worth stating: the per-effort numbers aren't published in the table. T
 DeepSWE's fixed harness compares 18 models' behavior on one scaffold. It doesn't directly rank complete products like Hermes Agent, Codex, or Claude Code, each of which runs its own orchestration, tools, prompts, retry logic, and sandboxing.
 
 ![Scatter plot of DeepSWE Pass@1 versus average cost for 18 models, next to a bar comparison of GPT-5.6 Sol, Terra, and Luna's mean output tokens and mean agent steps](/images/posts/gpt-5-6-coding-agent-model-routing/deepswe-routing-tradeoffs.svg)
-*Top: Pass@1 versus average cost for all 18 models on the [DeepSWE official leaderboard](https://deepswe.datacurve.ai/)'s best view; the 15 models outside the GPT-5.6 family are shown as unlabeled context dots. Bottom: mean output tokens and mean agent steps for the three GPT-5.6 tiers. This is the v1.1 snapshot updated July 25, 2026, so it won't reflect later leaderboard changes.*
+*Top: Pass@1 versus average cost for all 18 models on the [DeepSWE official leaderboard](https://deepswe.datacurve.ai/)'s best view; the 15 models outside the GPT-5.6 family are shown as unlabeled context dots. Bottom: mean output tokens and mean agent steps for the three GPT-5.6 tiers. This reflects the current DeepSWE v1.1 leaderboard, updated July 25, 2026.*
 
 ## Response speed versus time to a useful answer
 
