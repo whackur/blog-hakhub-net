@@ -102,7 +102,7 @@ GPT-5.5와 Luna도 반올림 67% pass@1로 같지만, GPT-5.5는 출력 토큰�
 DeepSWE의 고정 하네스는 18개 모델의 행동을 하나의 스캐폴드 위에서 비교한 것입니다. Hermes Agent나 Codex, Claude Code처럼 각자 다른 오케스트레이션·툴·프롬프트·재시도·샌드박스를 쓰는 완제품의 순위를 직접 매긴 게 아닙니다.
 
 ![DeepSWE 18개 모델의 Pass@1 대 평균 비용 산점도와 GPT-5.6 Sol·Terra·Luna의 평균 출력 토큰·스텝 수 비교 막대그래프](/images/posts/gpt-5-6-coding-agent-model-routing/deepswe-routing-tradeoffs.svg)
-*위쪽은 [DeepSWE 공식 리더보드](https://deepswe.datacurve.ai/) best view 기준 18개 모델의 Pass@1과 평균 비용을 보여주며, GPT-5.6 세 티어 외 15개 모델은 라벨 없는 배경용 점으로 표시했습니다. 아래쪽은 GPT-5.6 세 티어의 평균 출력 토큰과 평균 스텝 수를 나란히 보여줍니다. v1.1 2026-07-25 갱신 스냅샷 기준이라 리더보드가 이후 바뀌어도 이 그림은 그대로입니다.*
+*위쪽은 [DeepSWE 공식 리더보드](https://deepswe.datacurve.ai/) best view 기준 18개 모델의 Pass@1과 평균 비용을 보여주며, GPT-5.6 세 티어 외 15개 모델은 라벨 없는 배경용 점으로 표시했습니다. 아래쪽은 GPT-5.6 세 티어의 평균 출력 토큰과 평균 스텝 수를 나란히 보여줍니다. 2026-07-25 갱신 기준 최신 리더보드입니다.*
 
 ## 응답 속도와 첫 응답까지 걸리는 시간
 
