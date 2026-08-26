@@ -37,8 +37,9 @@ IT 기술 블로그입니다. 주력 주제:
 - **AI** — 모델, 도구, 활용, 동향, Local LLM(온디바이스/셀프호스팅), Physical AI(로보틱스·임베디드 AI)
 - **Blockchain / Web3** — Solidity, 스마트 컨트랙트, 프로토콜
 - **Security** — 인증(WebAuthn, passkey 등), 암호학, 애플리케이션·인프라 보안
+- **Finance** — 퀀트 금융 오픈소스, 금융 인프라·핀테크 기술 (연구·교육 관점, 투자 조언 아님)
 
-카테고리(`categories`)는 **AI / Blockchain / Security** 3개로 운영한다. 세부 주제(local-llm, physical-ai 등)는 `tags`로.
+카테고리(`categories`)는 **AI / Blockchain / Security / Finance** 4개로 운영한다. 세부 주제(local-llm, physical-ai, quant-finance 등)는 `tags`로.
 
 ## 글 발행 — `docs/publishing/` 참조
 
