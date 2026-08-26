@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440" font-family="ui-sans-serif, system-ui, sans-serif">
+  <rect width="800" height="440" rx="12" fill="#f8fafc"/>
+  <text x="400" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">gs-quant: what runs locally vs. what needs the Marquee API</text>
+
+  <!-- Local region -->
+  <rect x="30" y="60" width="330" height="330" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="195" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#065f46">Your machine (pip install gs-quant)</text>
+  <text x="195" y="110" text-anchor="middle" font-size="12" fill="#047857">Apache-2.0 code, no account needed</text>
+
+  <rect x="55" y="130" width="280" height="54" rx="8" fill="#ffffff" stroke="#10b981"/>
+  <text x="195" y="152" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">timeseries / analytics helpers</text>
+  <text x="195" y="171" text-anchor="middle" font-size="11" fill="#334155">returns, volatility, statistics on your own data</text>
+
+  <rect x="55" y="196" width="280" height="54" rx="8" fill="#ffffff" stroke="#10b981"/>
+  <text x="195" y="218" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">datetime / instrument definitions</text>
+  <text x="195" y="237" text-anchor="middle" font-size="11" fill="#334155">business-day logic, typed trade objects</text>
+
+  <rect x="55" y="262" width="280" height="54" rx="8" fill="#ffffff" stroke="#10b981"/>
+  <text x="195" y="284" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">backtests / models (framework code)</text>
+  <text x="195" y="303" text-anchor="middle" font-size="11" fill="#334155">strategy plumbing; valuations still call out</text>
+
+  <rect x="55" y="328" width="280" height="44" rx="8" fill="#fef3c7" stroke="#d97706"/>
+  <text x="195" y="347" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">GsSession</text>
+  <text x="195" y="364" text-anchor="middle" font-size="11" fill="#334155">client id + secret (institutional clients)</text>
+
+  <!-- API region -->
+  <rect x="440" y="60" width="330" height="330" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="605" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#1e3a8a">Goldman Sachs Marquee (remote APIs)</text>
+  <text x="605" y="110" text-anchor="middle" font-size="12" fill="#1d4ed8">production engines, account-gated</text>
+
+  <rect x="465" y="130" width="280" height="54" rx="8" fill="#ffffff" stroke="#3b82f6"/>
+  <text x="605" y="152" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">Pricing and Risk</text>
+  <text x="605" y="171" text-anchor="middle" font-size="11" fill="#334155">instruments, measures, scenarios, portfolios</text>
+
+  <rect x="465" y="196" width="280" height="54" rx="8" fill="#ffffff" stroke="#3b82f6"/>
+  <text x="605" y="218" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">Data</text>
+  <text x="605" y="237" text-anchor="middle" font-size="11" fill="#334155">datasets, market data, analytics feeds</text>
+
+  <rect x="465" y="262" width="280" height="54" rx="8" fill="#ffffff" stroke="#3b82f6"/>
+  <text x="605" y="284" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">Markets / SecurityMaster</text>
+  <text x="605" y="303" text-anchor="middle" font-size="11" fill="#334155">asset lookup, identifiers, relative dates</text>
+
+  <rect x="465" y="328" width="280" height="44" rx="8" fill="#ffffff" stroke="#3b82f6"/>
+  <text x="605" y="347" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">Hedging (incl. ML-based)</text>
+  <text x="605" y="364" text-anchor="middle" font-size="11" fill="#334155">portfolio hedge construction</text>
+
+  <!-- Arrow -->
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <line x1="335" y1="350" x2="462" y2="350" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <text x="400" y="340" text-anchor="middle" font-size="11" fill="#475569">HTTPS</text>
+
+  <text x="400" y="420" text-anchor="middle" font-size="11" fill="#64748b">Boundary drawn from the README and the official docs structure (developer.gs.com/docs/gsquant), checked 2026-08-26.</text>
+</svg>

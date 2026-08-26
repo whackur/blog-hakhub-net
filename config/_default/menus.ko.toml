@@ -38,6 +38,12 @@ name = "Security"
 url = "/categories/security"
 weight = 4
 
+[[main]]
+parent = "블로그"
+name = "Finance"
+url = "/categories/finance"
+weight = 5
+
 
 [[footer]]
 name = "소개"
