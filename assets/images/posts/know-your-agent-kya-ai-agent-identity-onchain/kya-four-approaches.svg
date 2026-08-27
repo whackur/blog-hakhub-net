@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 720" width="960" height="720" font-family="Arial, Helvetica, sans-serif" role="img" aria-labelledby="svgTitle svgDesc">
+  <title id="svgTitle">Four KYA approaches: ERC-8004, Visa TAP, Trulioo DPA, Sumsub</title>
+  <desc id="svgDesc">Four columns compare where each Know Your Agent approach anchors trust. ERC-8004 anchors trust in on-chain registries (Identity, Reputation, Validation); standards status Draft, mainnet live since 2026-01-29, 30+ chains, about 89,600 registrations by 2026-06-12. Visa Trusted Agent Protocol anchors trust in signed HTTP requests (Web Bot Auth) with three signatures for legitimacy, delegator and payment method; announced 2025-10-14 with 12 launch partners. Trulioo anchors trust in a certificate-authority style model where a Digital Personhood Authority issues a Digital Agent Passport. Sumsub anchors trust in a verified human identity with liveness check, launched 2026-01. A bottom row shows the common gap: no jurisdiction mandated KYA as of 2026-03.</desc>
+
+  <style>
+    @media (prefers-color-scheme: dark) {
+      rect[fill="#F8FAFC"] { fill:#0F172A; }
+      rect[fill="none"] { stroke:#1E293B; }
+      rect[fill="#EFF6FF"] { fill:#1E2A45; }
+      rect[fill="#FFFBEB"] { fill:#3A2E12; }
+      rect[fill="#ECFDF5"] { fill:#0F2E22; }
+      rect[fill="#FDF2F8"] { fill:#3B1D2E; }
+      rect[fill="#F1F5F9"] { fill:#1E293B; }
+      rect[fill="#FFFFFF"] { fill:#111827; }
+      text[fill="#1E293B"] { fill:#F1F5F9; }
+      text[fill="#475569"] { fill:#CBD5E1; }
+      line[stroke="#CBD5E1"] { stroke:#334155; }
+    }
+  </style>
+
+  <rect x="0" y="0" width="960" height="720" fill="#F8FAFC"/>
+  <rect x="1" y="1" width="958" height="718" fill="none" stroke="#E2E8F0" stroke-width="2"/>
+
+  <text x="480" y="46" font-size="26" font-weight="700" fill="#1E293B" text-anchor="middle">Know Your Agent (KYA): where trust is anchored</text>
+  <text x="480" y="72" font-size="16" fill="#475569" text-anchor="middle">Four approaches, four different trust anchors</text>
+
+  <!-- Column 1: ERC-8004 -->
+  <g>
+    <rect x="30" y="96" width="215" height="480" rx="12" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5"/>
+    <text x="137" y="130" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">ERC-8004</text>
+    <text x="137" y="152" font-size="14" font-style="italic" fill="#475569" text-anchor="middle">Trustless Agents</text>
+
+    <rect x="46" y="172" width="183" height="70" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5"/>
+    <text x="137" y="196" font-size="13" fill="#475569" text-anchor="middle">Trust anchor</text>
+    <text x="137" y="218" font-size="15" font-weight="700" fill="#1E293B" text-anchor="middle">On-chain registries</text>
+
+    <text x="137" y="272" font-size="14" fill="#1E293B" text-anchor="middle">Identity Registry</text>
+    <text x="137" y="294" font-size="14" fill="#1E293B" text-anchor="middle">Reputation Registry</text>
+    <text x="137" y="316" font-size="14" fill="#1E293B" text-anchor="middle">Validation Registry</text>
+    <line x1="52" y1="336" x2="223" y2="336" stroke="#CBD5E1" stroke-width="1"/>
+    <text x="137" y="362" font-size="13" fill="#475569" text-anchor="middle">Standard status: Draft</text>
+    <text x="137" y="384" font-size="13" fill="#475569" text-anchor="middle">Mainnet live: 2026-01-29</text>
+    <text x="137" y="406" font-size="13" fill="#475569" text-anchor="middle">30+ chains (singleton)</text>
+    <text x="137" y="428" font-size="13" fill="#475569" text-anchor="middle">~89,600 registrations</text>
+    <text x="137" y="446" font-size="12" fill="#475569" text-anchor="middle">(Base + Ethereum, 2026-06-12)</text>
+    <line x1="52" y1="466" x2="223" y2="466" stroke="#CBD5E1" stroke-width="1"/>
+    <text x="137" y="492" font-size="13" fill="#475569" text-anchor="middle">Operator: permissionless</text>
+    <text x="137" y="514" font-size="13" fill="#475569" text-anchor="middle">Sybil filtering: off-chain</text>
+    <text x="137" y="536" font-size="13" fill="#475569" text-anchor="middle">Human binding: none</text>
+  </g>
+
+  <!-- Column 2: Visa TAP -->
+  <g>
+    <rect x="265" y="96" width="215" height="480" rx="12" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1.5"/>
+    <text x="372" y="130" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">Visa TAP</text>
+    <text x="372" y="152" font-size="14" font-style="italic" fill="#475569" text-anchor="middle">Trusted Agent Protocol</text>
+
+    <rect x="281" y="172" width="183" height="70" rx="8" fill="#FFFFFF" stroke="#FCD34D" stroke-width="1.5"/>
+    <text x="372" y="196" font-size="13" fill="#475569" text-anchor="middle">Trust anchor</text>
+    <text x="372" y="218" font-size="15" font-weight="700" fill="#1E293B" text-anchor="middle">Signed HTTP requests</text>
+
+    <text x="372" y="272" font-size="14" fill="#1E293B" text-anchor="middle">Web Bot Auth signatures</text>
+    <text x="372" y="294" font-size="14" fill="#1E293B" text-anchor="middle">3 signatures: legitimacy,</text>
+    <text x="372" y="316" font-size="14" fill="#1E293B" text-anchor="middle">delegator, payment method</text>
+    <line x1="287" y1="336" x2="458" y2="336" stroke="#CBD5E1" stroke-width="1"/>
+    <text x="372" y="362" font-size="13" fill="#475569" text-anchor="middle">Announced: 2025-10-14</text>
+    <text x="372" y="384" font-size="13" fill="#475569" text-anchor="middle">Visa + Cloudflare</text>
+    <text x="372" y="406" font-size="13" fill="#475569" text-anchor="middle">12 launch partners</text>
+    <text x="372" y="428" font-size="13" fill="#475569" text-anchor="middle">(Adyen, Ant International,</text>
+    <text x="372" y="446" font-size="12" fill="#475569" text-anchor="middle">Checkout.com, ...)</text>
+    <line x1="287" y1="466" x2="458" y2="466" stroke="#CBD5E1" stroke-width="1"/>
+    <text x="372" y="492" font-size="13" fill="#475569" text-anchor="middle">Operator: card network</text>
+    <text x="372" y="514" font-size="13" fill="#475569" text-anchor="middle">Verified at: merchant side</text>
+    <text x="372" y="536" font-size="13" fill="#475569" text-anchor="middle">Human binding: delegator</text>
+  </g>
+
+  <!-- Column 3: Trulioo -->
+  <g>
+    <rect x="500" y="96" width="215" height="480" rx="12" fill="#ECFDF5" stroke="#6EE7B7" stroke-width="1.5"/>
+    <text x="607" y="130" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">Trulioo DPA</text>
+    <text x="607" y="152" font-size="14" font-style="italic" fill="#475569" text-anchor="middle">Digital Personhood Authority</text>
+
+    <rect x="516" y="172" width="183" height="70" rx="8" fill="#FFFFFF" stroke="#6EE7B7" stroke-width="1.5"/>
+    <text x="607" y="196" font-size="13" fill="#475569" text-anchor="middle">Trust anchor</text>
+    <text x="607" y="218" font-size="15" font-weight="700" fill="#1E293B" text-anchor="middle">Certificate authority</text>
+
+    <text x="607" y="272" font-size="14" fill="#1E293B" text-anchor="middle">SSL CA model, applied</text>
+    <text x="607" y="294" font-size="14" fill="#1E293B" text-anchor="middle">to agents: DPA issues a</text>
+    <text x="607" y="316" font-size="14" fill="#1E293B" text-anchor="middle">Digital Agent Passport</text>
+    <line x1="522" y1="336" x2="693" y2="336" stroke="#CBD5E1" stroke-width="1"/>
+    <text x="607" y="362" font-size="13" fill="#475569" text-anchor="middle">PYMNTS survey (n=350):</text>
+    <text x="607" y="384" font-size="13" fill="#475569" text-anchor="middle">~90% of firms: bot</text>
+    <text x="607" y="406" font-size="13" fill="#475569" text-anchor="middle">management is a top issue</text>
+    <text x="607" y="428" font-size="13" fill="#475569" text-anchor="middle">~$100B/yr est. losses from</text>
+    <text x="607" y="446" font-size="12" fill="#475569" text-anchor="middle">legacy identity controls</text>
+    <line x1="522" y1="466" x2="693" y2="466" stroke="#CBD5E1" stroke-width="1"/>
+    <text x="607" y="492" font-size="13" fill="#475569" text-anchor="middle">Operator: identity vendor</text>
+    <text x="607" y="514" font-size="13" fill="#475569" text-anchor="middle">Verified at: passport check</text>
+    <text x="607" y="536" font-size="13" fill="#475569" text-anchor="middle">Human binding: via issuer</text>
+  </g>
+
+  <!-- Column 4: Sumsub -->
+  <g>
+    <rect x="735" y="96" width="195" height="480" rx="12" fill="#FDF2F8" stroke="#F9A8D4" stroke-width="1.5"/>
+    <text x="832" y="130" font-size="20" font-weight="700" fill="#1E293B" text-anchor="middle">Sumsub</text>
+    <text x="832" y="152" font-size="14" font-style="italic" fill="#475569" text-anchor="middle">AI Agent Verification</text>
+
+    <rect x="751" y="172" width="163" height="70" rx="8" fill="#FFFFFF" stroke="#F9A8D4" stroke-width="1.5"/>
+    <text x="832" y="196" font-size="13" fill="#475569" text-anchor="middle">Trust anchor</text>
+    <text x="832" y="218" font-size="15" font-weight="700" fill="#1E293B" text-anchor="middle">Verified human</text>
+
+    <text x="832" y="272" font-size="14" fill="#1E293B" text-anchor="middle">Agent bound to a</text>
+    <text x="832" y="294" font-size="14" fill="#1E293B" text-anchor="middle">KYC-verified person</text>
+    <text x="832" y="316" font-size="14" fill="#1E293B" text-anchor="middle">+ liveness check</text>
+    <line x1="757" y1="336" x2="908" y2="336" stroke="#CBD5E1" stroke-width="1"/>
+    <text x="832" y="362" font-size="13" fill="#475569" text-anchor="middle">Launched: 2026-01</text>
+    <text x="832" y="384" font-size="13" fill="#475569" text-anchor="middle">Closest to classic</text>
+    <text x="832" y="406" font-size="13" fill="#475569" text-anchor="middle">KYC practice</text>
+    <line x1="757" y1="466" x2="908" y2="466" stroke="#CBD5E1" stroke-width="1"/>
+    <text x="832" y="492" font-size="13" fill="#475569" text-anchor="middle">Operator: KYC vendor</text>
+    <text x="832" y="514" font-size="13" fill="#475569" text-anchor="middle">Verified at: onboarding</text>
+    <text x="832" y="536" font-size="13" fill="#475569" text-anchor="middle">Human binding: direct</text>
+  </g>
+
+  <!-- Bottom row: common gap -->
+  <g>
+    <rect x="30" y="600" width="900" height="90" rx="12" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.5"/>
+    <text x="480" y="636" font-size="17" font-weight="700" fill="#1E293B" text-anchor="middle">Shared gap: no jurisdiction mandates KYA (as of 2026-03)</text>
+    <text x="480" y="664" font-size="14" fill="#475569" text-anchor="middle">Signals only: NIST NCCoE concept paper (2026-02-05) · EU AI Act operator logging · Singapore agentic AI framework</text>
+  </g>
+</svg>
