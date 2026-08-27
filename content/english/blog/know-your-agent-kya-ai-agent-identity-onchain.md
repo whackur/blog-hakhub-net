@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["ai-agent", "kya", "identity", "erc-8004", "reputation", "compliance"]
 author: "whackur"
 translationKey: "know-your-agent-kya-ai-agent-identity-onchain"
-draft: true
+draft: false
 ---
 
 When you open a bank account you show an ID. When you sign up for an exchange you take a selfie. That procedure is KYC (Know Your Customer), and since the FATF was founded in 1989 it has been the standard way to keep illicit money out at the entry point of the financial system. Now the entity signing contracts, sending payments and swapping tokens on a DEX is increasingly not a person but an AI agent, and the same question comes back in a new form. The agent that just sent a payment request to my API: who is it, who built it, and what was it actually authorized to do? The trust layer that answers that question is being called KYA (Know Your Agent).

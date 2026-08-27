@@ -9,7 +9,7 @@ categories: ["Blockchain"]
 tags: ["ai-agent", "kya", "identity", "erc-8004", "reputation", "compliance"]
 author: "whackur"
 translationKey: "know-your-agent-kya-ai-agent-identity-onchain"
-draft: true
+draft: false
 ---
 
 은행 계좌를 열 때 신분증을 내고, 거래소에 가입할 때 얼굴을 찍는 절차를 KYC(Know Your Customer)라고 부릅니다. 이 절차는 1989년 FATF 설립 이후 금융의 진입점에서 불법 자금을 걸러내는 표준 관행이 됐습니다. 이제 사람이 아니라 AI 에이전트가 계약을 맺고, 결제를 보내고, DEX에서 토큰을 바꾸는 시대가 오면서 같은 질문이 다시 나옵니다. 지금 내 API에 결제 요청을 보낸 이 에이전트는 누구이고, 누가 만들었고, 어디까지 권한을 받았는가. 이 질문에 답하는 신뢰 계층을 업계는 KYA(Know Your Agent)라고 부르기 시작했습니다.
