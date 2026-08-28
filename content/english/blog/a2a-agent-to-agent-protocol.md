@@ -3,7 +3,7 @@ title: "The A2A (Agent-to-Agent) Protocol: How Agents Delegate to Each Other, an
 meta_title: ""
 description: "A2A, announced by Google in April 2025 and donated to the Linux Foundation, standardizes agent-to-agent collaboration. This post covers its core objects (Agent Card, Task, Message, Artifact), how it differs from MCP, where x402, AP2 and UCP attach as payment extensions, adoption as of August 2026, and the criticism it has drawn."
 date: 2026-08-27T10:00:00+09:00
-lastmod: 2026-08-27T10:00:00+09:00
+lastmod: 2026-08-28T10:00:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["a2a", "ai-agent", "agentic-payments", "x402", "mcp"]
@@ -70,21 +70,34 @@ The boundary is not perfectly clean. On launch day a Hacker News commenter (vess
 
 ## Where blockchains come in
 
-This is the part this blog cares about. To repeat: the A2A core spec never mentions a blockchain. Authentication is OAuth, API keys or mTLS; identity is bound to a domain and a signed Agent Card; there is no concept of payment at all. Chains meet A2A through three routes: the official a2a-x402 extension, the commerce protocols AP2 and UCP layered above it, and an academic proposal for decentralized discovery.
+This is the part this blog cares about. To repeat: the A2A core spec never mentions a blockchain. Authentication is OAuth, API keys or mTLS; identity is bound to a domain and a signed Agent Card; there is no concept of payment at all. Chains meet A2A through three routes: Google's a2a-x402 extension, the commerce protocols AP2 and UCP layered above it, and an academic proposal for decentralized discovery.
 
 ### x402 and the a2a-x402 extension
 
 x402 is a payment protocol that actually uses HTTP status code 402 "Payment Required", a code reserved in the HTTP spec since the 1990s and never standardized. Coinbase revived it in May 2025. When a request needs payment the server returns 402 along with requirements (how much, which token on which chain, to which address). The client signs a payment authorization with its wallet and retries, a facilitator (a service that verifies the signature and settles on-chain) confirms it, and the server releases the response. The goal is for an agent to pay a few cents in stablecoins per request instead of a human signing up and registering a card. [x402.org](https://www.x402.org/) states support for EVM chains and Solana; when checked on August 27, 2026 it showed 75.41M transactions, $24.24M in volume and 22K sellers over the trailing 30 days. Governance has moved to an x402 Foundation under the Linux Foundation. For a concrete deployment see the [Apify x402 post](/en/blog/apify-x402-agentic-payments-coinbase-wallet/).
 
-[google-agentic-commerce/a2a-x402](https://github.com/google-agentic-commerce/a2a-x402) is the official extension that puts this flow inside an A2A Task. As of August 27, 2026 the repo has 554 GitHub stars, a last push on August 4, 2026, an Apache-2.0 license, and a spec at version v0.1. Following the [spec document](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.1/spec.md), it works like this.
+[google-agentic-commerce/a2a-x402](https://github.com/google-agentic-commerce/a2a-x402) is the extension that puts this flow inside an A2A Task. Google built it and maintains it in the google-agentic-commerce organization. As of August 28, 2026 the repo has 554 GitHub stars, 144 forks, a last push on August 4, 2026, and an Apache-2.0 license. The spec directory holds both v0.1 and v0.2; [v0.2](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.2/spec.md), added on November 4, 2025, is the latest. The README still points to v0.1 as the official spec, and the only release tag is v0.1.0 (there is no v0.2.0 tag), so v0.2 is best read as the current spec on the main branch rather than a tagged release. The description below follows v0.2.
 
-- The merchant agent declares the extension URI `https://github.com/google-a2a/a2a-x402/v0.1` in the `extensions` array of its Agent Card. With `required: true`, clients that do not understand the extension cannot call the paid skills.
+- The merchant agent declares the extension URI `https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.2` in the `extensions` array of its Agent Card. The v0.1 URI was `https://github.com/google-a2a/a2a-x402/v0.1`, a leftover from when the organization was named google-a2a rather than google-agentic-commerce. With `required: true`, clients that do not understand the extension cannot call the paid skills.
 - The client activates the extension by sending the same URI in the `X-A2A-Extensions` HTTP header; the server echoes it back to confirm.
-- When the client requests a paid job, the merchant creates a Task in the `input-required` state (the v0.x spelling of v1.0's `INPUT_REQUIRED`) and puts `x402.payment.status: "payment-required"` plus the payment requirements (`x402.payment.required`: amount, asset, `network`, payee address and so on) in the message `metadata`. The spec's example network is `base`.
+- When the client requests a paid job, the merchant creates a Task in the `input-required` state (the v0.x spelling of v1.0's `INPUT_REQUIRED`) and puts `x402.payment.status: "payment-required"` in the message `metadata`. Where the payment requirements themselves (`x402PaymentRequiredResponse`: amount, asset, network, payee address and so on) travel depends on which of the two flows below is in use.
 - The client evaluates the terms. It can decline with `payment-rejected`, or sign a `PaymentPayload` with its wallet and send it back under the same `taskId` with `x402.payment.status: "payment-submitted"`.
-- The merchant verifies the signature through a facilitator, settles on-chain, moves the status through `payment-verified` to `payment-completed`, then does the actual work and returns Artifacts. Settlement receipts accumulate in an `x402.payment.receipts` array; failures set `payment-failed` with an error code in `x402.payment.error`.
+- The merchant verifies the signature through a facilitator, settles on-chain, moves the status through `payment-verified` to `payment-completed`, then does the actual work and returns Artifacts. Settlement results (`x402SettleResponse`) go into the `x402.payment.receipts` array, which must be present in the final Task message. Failures set `payment-failed` and put a short error code in `x402.payment.error`. The spec defines seven: `INSUFFICIENT_FUNDS`, `INVALID_SIGNATURE`, `EXPIRED_PAYMENT`, `DUPLICATE_NONCE`, `NETWORK_MISMATCH`, `INVALID_AMOUNT` and `SETTLEMENT_FAILED`.
 
-In other words, the A2A Task state machine stays untouched and a second, payment-specific state machine rides on top of it in `metadata`. The Python example (adk-demo) defaults to a mock facilitator and a mock wallet with a hardcoded key; real on-chain settlement requires a facilitator configuration and a wallet implementation of your own (the README suggests MetaMask, an MPC service, or a hardware signer). Given that the spec and the schemes directory are labelled experimental, this is a reference implementation rather than a production payment rail.
+In other words, the A2A Task state machine stays untouched and a second, payment-specific state machine rides on top of it in `metadata`. The payment data structures (`x402PaymentRequiredResponse`, `PaymentRequirements`, `PaymentPayload`, `x402SettleResponse`) are not redefined; the extension references Coinbase's core x402 spec for them.
+
+The main change in v0.2 is a composable design that splits where those x402 objects travel inside A2A messages into two flows that can be combined with other protocols.
+
+- **Standalone Flow.** The x402 objects go directly into A2A message metadata. `x402PaymentRequiredResponse` sits under the `x402.payment.required` key of `task.status.message.metadata`, and `PaymentPayload` under the `x402.payment.payload` key of `message.metadata`. The spec's JSON examples use `base` as the network. The metadata approach v0.1 defined corresponds to this flow.
+- **Embedded Flow.** x402 acts as one form of payment inside a higher-level protocol such as AP2. `x402PaymentRequiredResponse` is embedded in a higher-level object such as an AP2 CartMandate and delivered through `task.artifacts`, and `PaymentPayload` is embedded in an AP2 PaymentMandate and delivered through `message.parts`. This is where AP2, covered in the next section, actually connects to x402.
+
+The rule for telling the two apart is simple. When a client receives `x402.payment.status: "payment-required"`, it checks the metadata for an `x402.payment.required` key. If the key is there, this is the Standalone Flow; if not, it is the Embedded Flow and the client looks for the higher-level object in the artifacts.
+
+v0.2 also lays out three signing patterns depending on whether a human is present. **Atomic Signing** (human-present): the wallet handles two signatures, one for the payment and one for the order, with a single user approval. **Delegated Signing** (human-not-present): the agent signs with its own key within a delegation the user pre-authorized. **Smart Contract Escrow** (decoupled): the user pre-funds a contract, signs once off-chain at checkout, and the merchant releases the funds from the contract.
+
+Governance deserves a separate note. According to A2A's [extension governance page](https://a2a-protocol.org/latest/topics/extension-and-binding-governance/), official extensions live in the a2aproject organization in repositories prefixed `ext-{name}`, with URIs starting `https://a2a-protocol.org/extensions/`; experimental ones use the `experimental-ext-{name}` prefix. a2a-x402 sits in the google-agentic-commerce organization with a github.com URI, which puts it outside that official namespace. The example extensions listed in the official documentation (Secure Passport, Timestamp, Traceability, AGP) do not include x402 either. It is Google's extension, but not an official a2aproject extension.
+
+The repository is not archived and carries no deprecation notice, but activity is low: the last push was August 4, 2026 and the last substantive commit on main was May 24, 2026 (a Dependabot configuration). The Python example (adk-demo) defaults to a mock facilitator and a mock wallet with a hardcoded key; real on-chain settlement requires a facilitator configuration and a wallet implementation of your own (the README suggests MetaMask, an MPC service, or a hardware signer). The v0.2 spec body itself is not labelled experimental, but the `schemes/` directory holding partner drafts still is. This repository remains the reference spec for x402 payments over A2A, and v0.2 is its latest version. For the current state of A2A core, look to the a2aproject organization and a2a-protocol.org instead.
 
 ### AP2 and UCP
 
@@ -112,7 +125,7 @@ The Linux Foundation's [press release of April 9, 2026](https://www.linuxfoundat
 - **The v1.0 spec**, released in March 2026 as the first stable version, with equivalence guarantees across the three bindings (JSON-RPC, gRPC, HTTP+JSON), Signed Agent Cards, single-endpoint multi-tenancy, and modernized OAuth 2.0 flows. The Agent Card stayed backward compatible so one agent can advertise v0.3 and v1.0 at the same time. v1.0.1 followed on May 28, 2026.
 - **Cloud platform integration.** Microsoft added A2A to Azure AI Foundry and Copilot Studio, AWS to Amazon Bedrock AgentCore Runtime, and Google Cloud [announced](https://cloud.google.com/blog/products/ai-machine-learning/agent2agent-protocol-is-getting-an-upgrade) Vertex AI Agent Engine and Agentspace support with the v0.3 upgrade in August 2025. All three major clouds now host A2A agents in a managed runtime.
 - **SDKs.** The press release counts five production-ready languages: Python, JavaScript, Java, Go and .NET. As of August 27, 2026 the [repository README](https://github.com/a2aproject/A2A) and roadmap list six, adding Rust.
-- **GitHub stars.** More than 22,000 at the time of the press release; 25,509 when checked on August 27, 2026 (2,588 forks, last push August 25, 2026).
+- **GitHub stars.** More than 22,000 at the time of the press release; 25,522 when checked on August 28, 2026 (2,590 forks, last push August 25, 2026).
 - **Production use** in supply chain, financial services, insurance and IT operations. Named examples come from Google Cloud's August 2025 post: Tyson Foods (sales and supply chain optimization) and Gordon Food Service (a real-time channel for product data and lead sharing).
 
 The [roadmap](https://a2a-protocol.org/latest/roadmap/) (updated March 10, 2026) lists expanded SDK support for extensions, an A2A Inspector and a Technology Compatibility Kit (TCK) for validating implementations, and documentation of community best practices. The August 2026 move into AAIF continues that trajectory.
@@ -134,7 +147,7 @@ The criticism, then, comes in three strands. "MCP is enough, why learn another o
 - [A2A Protocol Specification](https://a2a-protocol.org/latest/specification/): the v1.0 spec itself, for exact object and method definitions.
 - [A2A and MCP](https://a2a-protocol.org/latest/topics/a2a-and-mcp/): the official division-of-labor explanation and the repair shop example.
 - [a2a-samples](https://github.com/a2aproject/a2a-samples): example A2A agents built with ADK, LangGraph, CrewAI and others.
-- [A2A x402 Extension spec v0.1](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.1/spec.md): the payment state flow and metadata fields.
+- [A2A x402 Extension spec v0.2](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.2/spec.md): the payment state flow, the Standalone and Embedded flows, and the signing patterns.
 - [Agentic Payments in June 2026](/en/blog/agentic-payments-june-2026-x402-ucp-mpp/): x402, UCP and MPP implementation progress, for a deeper look at the payment layer.
 - [Know Your Agent (KYA)](/en/blog/know-your-agent-kya-ai-agent-identity-onchain/): the standards race over where agent identity gets anchored.
 
@@ -142,7 +155,7 @@ The criticism, then, comes in three strands. "MCP is enough, why learn another o
 
 A2A is an HTTP protocol that lets agents from different organizations and frameworks recognize each other through Agent Cards, delegate work as Tasks, receive progress through streaming or push, and get results back as Artifacts. If MCP is the vertical standard that attaches tools to an agent, A2A is the horizontal standard that connects an agent to the agent next to it, and as of August 2026 both live under the same foundation (AAIF).
 
-There is no blockchain in that core. Chains appear only in the settlement step of the a2a-x402 extension and in AP2's x402 extension, and even there we are at spec v0.1 with mock-facilitator examples. On-chain Agent Card proposals exist in a paper and, separately, in the ERC-8004 community, but they are not part of the A2A spec. Miss that distinction and it is easy to come away with the wrong impression that A2A is "the blockchain agent protocol".
+There is no blockchain in that core. Chains appear only in the settlement step of the a2a-x402 extension and in AP2's x402 extension, and even there we are at a draft spec (v0.2 is the latest, and the only tagged release is v0.1.0) with mock-facilitator examples. On-chain Agent Card proposals exist in a paper and, separately, in the ERC-8004 community, but they are not part of the A2A spec. Miss that distinction and it is easy to come away with the wrong impression that A2A is "the blockchain agent protocol".
 
 Adoption is real but not universal. The 150 organizations, the v1.0 release and the three-cloud integrations are facts; so is the observation that those numbers do not equal deep production use. My own read is that if you are building something today, the community advice is right: start with MCP, and add A2A at the point where your agents become independent systems that hand long-running work across team or company boundaries. The payment layer (x402, AP2) is the step after that. For now, reading the specs and samples is the appropriate level of investment.
 
@@ -154,7 +167,7 @@ Adoption is real but not universal. The 150 organizations, the v1.0 release and 
 - [A2A and MCP](https://a2a-protocol.org/latest/topics/a2a-and-mcp/) — a2a-protocol.org, accessed 2026-08-27
 - [Agent Discovery in A2A](https://a2a-protocol.org/latest/topics/agent-discovery/) — a2a-protocol.org, accessed 2026-08-27
 - [A2A Roadmap](https://a2a-protocol.org/latest/roadmap/) — a2a-protocol.org (updated 2026-03-10), accessed 2026-08-27
-- [a2aproject/A2A](https://github.com/a2aproject/A2A) — GitHub (25,509 stars; v1.0.0 2026-03-12; v1.0.1 2026-05-28), accessed 2026-08-27
+- [a2aproject/A2A](https://github.com/a2aproject/A2A) — GitHub (25,522 stars; v1.0.0 2026-03-12; v1.0.1 2026-05-28), accessed 2026-08-28
 - [Announcing the Agent2Agent Protocol (A2A)](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/) — Google for Developers, 2025-04-09, accessed 2026-08-27
 - [Google Cloud donates A2A to Linux Foundation](https://developers.googleblog.com/en/google-cloud-donates-a2a-to-linux-foundation/) — Google for Developers, 2025-06-23, accessed 2026-08-27
 - [Agent2Agent protocol (A2A) is getting an upgrade](https://cloud.google.com/blog/products/ai-machine-learning/agent2agent-protocol-is-getting-an-upgrade) — Google Cloud Blog, 2025-08-01, accessed 2026-08-27
@@ -162,8 +175,9 @@ Adoption is real but not universal. The 150 organizations, the v1.0 release and 
 - [A2A Protocol Surpasses 150 Organizations...](https://www.linuxfoundation.org/press/a2a-protocol-surpasses-150-organizations-lands-in-major-cloud-platforms-and-sees-enterprise-production-use-in-first-year) — Linux Foundation, 2026-04-09, accessed 2026-08-27
 - [A year of open collaboration: Celebrating the anniversary of A2A](https://opensource.googleblog.com/2026/04/a-year-of-open-collaboration-celebrating-the-anniversary-of-a2a.html) — Google Open Source Blog, 2026-04-16, accessed 2026-08-27
 - [A2A joins AAIF's open agentic stack](https://aaif.io/blog/a2a-joins-aaif) — Agentic AI Foundation, 2026-08-17, accessed 2026-08-27
-- [google-agentic-commerce/a2a-x402](https://github.com/google-agentic-commerce/a2a-x402) — GitHub (554 stars; last push 2026-08-04), accessed 2026-08-27
-- [A2A Protocol: x402 Payments Extension v0.1](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.1/spec.md) — GitHub, accessed 2026-08-27
+- [google-agentic-commerce/a2a-x402](https://github.com/google-agentic-commerce/a2a-x402) — GitHub (554 stars; last push 2026-08-04; v0.2 spec added 2025-11-04; only tag is v0.1.0, no v0.2.0 tag), accessed 2026-08-28
+- [A2A Protocol: x402 Payments Extension v0.2](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.2/spec.md) — GitHub, accessed 2026-08-28
+- [Extension and Binding Governance](https://a2a-protocol.org/latest/topics/extension-and-binding-governance/) — a2a-protocol.org, accessed 2026-08-28
 - [x402.org](https://www.x402.org/) — x402 Foundation, accessed 2026-08-27
 - [Towards Multi-Agent Economies: Enhancing the A2A Protocol with Ledger-Anchored Identities and x402 Micropayments for AI Agents](https://arxiv.org/abs/2507.19550) — Vaziry, Rodriguez Garzon, Küpper (TU Berlin / T-Labs), arXiv 2025-07-24; IJCCI 2025, Springer CCIS vol. 2827, accessed 2026-08-27
 - [Agent Payments Protocol (AP2)](https://ap2-protocol.org/) — ap2-protocol.org (v0.2), accessed 2026-08-27
