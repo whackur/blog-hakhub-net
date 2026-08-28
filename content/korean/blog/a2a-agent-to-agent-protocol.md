@@ -3,7 +3,7 @@ title: "A2A(Agent-to-Agent) 프로토콜: 에이전트 간 협업 표준과 결�
 meta_title: ""
 description: "Google이 2025년 4월 공개하고 Linux Foundation에 기증한 A2A 프로토콜의 핵심 개념(Agent Card, Task, Message, Artifact)과 동작 방식, MCP와의 역할 분담, x402·AP2·UCP 결제 확장과 만나는 지점, 2026년 8월 기준 채택 현황과 커뮤니티 비판을 정리합니다."
 date: 2026-08-27T10:00:00+09:00
-lastmod: 2026-08-27T10:00:00+09:00
+lastmod: 2026-08-28T10:00:00+09:00
 image: ""
 categories: ["Blockchain"]
 tags: ["a2a", "ai-agent", "agentic-payments", "x402", "mcp"]
@@ -70,21 +70,34 @@ A2A 공식 문서의 [A2A와 MCP](https://a2a-protocol.org/latest/topics/a2a-and
 
 ## 블록체인 접점
 
-여기서부터가 이 블로그의 관심사입니다. 다시 강조하면 A2A 코어 스펙에는 블록체인이 등장하지 않습니다. 인증은 OAuth·API 키·mTLS이고, 신원은 도메인과 서명된 Agent Card에 묶이고, 결제라는 개념 자체가 없습니다. 블록체인은 세 경로로 A2A와 만납니다. 공식 확장인 a2a-x402, 그 위의 상거래 프로토콜 AP2·UCP, 그리고 학계의 탈중앙 발견 제안입니다.
+여기서부터가 이 블로그의 관심사입니다. 다시 강조하면 A2A 코어 스펙에는 블록체인이 등장하지 않습니다. 인증은 OAuth·API 키·mTLS이고, 신원은 도메인과 서명된 Agent Card에 묶이고, 결제라는 개념 자체가 없습니다. 블록체인은 세 경로로 A2A와 만납니다. Google이 만든 a2a-x402 확장, 그 위의 상거래 프로토콜 AP2·UCP, 그리고 학계의 탈중앙 발견 제안입니다.
 
 ### x402와 a2a-x402 확장
 
 x402는 HTTP 상태 코드 402 "Payment Required"를 실제로 쓰는 결제 프로토콜입니다. 1990년대 HTTP 스펙에 예약만 되어 있던 이 코드를 Coinbase가 2025년 5월 되살렸습니다. 서버가 결제가 필요한 요청에 402와 함께 "얼마를, 어느 체인의 어느 토큰으로, 어디로" 보내라는 요구 사항을 돌려주면, 클라이언트가 지갑으로 결제 승인에 서명해서 재요청하고, facilitator(서명 검증과 온체인 정산을 대행하는 서비스)가 확인한 뒤 서버가 응답을 내줍니다. 사람이 회원가입하고 카드를 등록하는 대신 에이전트가 요청 한 번에 스테이블코인 몇 센트를 내는 흐름을 목표로 합니다. [x402.org](https://www.x402.org/)는 EVM 계열 체인과 Solana를 지원한다고 밝히고 있고, 2026년 8월 27일 조회 시점에 최근 30일 트랜잭션 7,541만 건, 거래 대금 2,424만 달러, 판매자 2만 2천 곳을 표시했습니다. 거버넌스는 Linux Foundation 산하 x402 Foundation으로 이관되었습니다. 구체적인 구현 사례는 [Apify x402 글](/blog/apify-x402-agentic-payments-coinbase-wallet/)에서 다뤘습니다.
 
-[google-agentic-commerce/a2a-x402](https://github.com/google-agentic-commerce/a2a-x402)는 이 x402 흐름을 A2A Task 안에 넣은 공식 확장입니다. 2026년 8월 27일 기준 GitHub 스타 554개, 마지막 push 2026년 8월 4일, 라이선스 Apache-2.0이고 스펙 버전은 v0.1입니다. 동작을 [스펙 문서](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.1/spec.md) 기준으로 따라가면 이렇습니다.
+[google-agentic-commerce/a2a-x402](https://github.com/google-agentic-commerce/a2a-x402)는 이 x402 흐름을 A2A Task 안에 넣은 확장입니다. Google이 만들어 google-agentic-commerce 조직에서 관리하며, 2026년 8월 28일 기준 GitHub 스타 554개, 포크 144개, 마지막 push 2026년 8월 4일, 라이선스 Apache-2.0입니다. 스펙 디렉터리에는 v0.1과 v0.2가 함께 들어 있고, 2025년 11월 4일 추가된 [v0.2](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.2/spec.md)가 최신입니다. 다만 README는 여전히 v0.1을 공식 스펙으로 안내하고 릴리스 태그도 v0.1.0 하나뿐입니다(v0.2.0 태그 없음). v0.2는 태그가 붙은 릴리스가 아니라 main 브랜치에 올라온 최신 스펙으로 읽어야 합니다. 아래 설명은 v0.2 기준입니다.
 
-- 판매자 에이전트는 Agent Card의 `extensions` 배열에 확장 URI `https://github.com/google-a2a/a2a-x402/v0.1`을 선언합니다. `required: true`로 두면 이 확장을 모르는 클라이언트는 유료 skill을 호출할 수 없습니다.
+- 판매자 에이전트는 Agent Card의 `extensions` 배열에 확장 URI `https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.2`를 선언합니다. v0.1의 URI는 `https://github.com/google-a2a/a2a-x402/v0.1`이었는데, 조직 이름이 google-a2a에서 google-agentic-commerce로 바뀐 흔적입니다. `required: true`로 두면 이 확장을 모르는 클라이언트는 유료 skill을 호출할 수 없습니다.
 - 클라이언트는 요청 시 `X-A2A-Extensions` HTTP 헤더에 같은 URI를 넣어 확장을 활성화하고, 서버는 응답 헤더에 URI를 돌려줘 확인합니다.
-- 클라이언트가 유료 작업을 요청하면 판매자는 Task를 만들어 상태를 `input-required`(v0.x 표기, v1.0의 `INPUT_REQUIRED`)로 두고, 메시지 `metadata`에 `x402.payment.status: "payment-required"`와 결제 요구 사항(`x402.payment.required`: 금액, 자산, `network`, 수취 주소 등)을 담아 돌려줍니다. 스펙 예시의 네트워크는 `base`입니다.
+- 클라이언트가 유료 작업을 요청하면 판매자는 Task를 만들어 상태를 `input-required`(v0.x 표기, v1.0의 `INPUT_REQUIRED`)로 두고, 메시지 `metadata`에 `x402.payment.status: "payment-required"`를 담아 돌려줍니다. 결제 요구 사항(`x402PaymentRequiredResponse`: 금액, 자산, 네트워크, 수취 주소 등)이 어디에 실리는지는 아래 두 흐름에 따라 다릅니다.
 - 클라이언트는 조건을 보고 결제할지 결정합니다. 거절하면 `payment-rejected`, 진행하면 지갑으로 서명한 `PaymentPayload`를 `x402.payment.status: "payment-submitted"`와 함께 같은 `taskId`로 보냅니다.
-- 판매자는 facilitator로 서명을 검증하고 온체인에 정산한 뒤 `payment-verified`를 거쳐 `payment-completed`로 바꾸고, 실제 작업을 수행해 Artifact를 돌려줍니다. 정산 영수증은 `x402.payment.receipts` 배열에 누적되며, 실패 시에는 `payment-failed`와 오류 코드(`x402.payment.error`)가 붙습니다.
+- 판매자는 facilitator로 서명을 검증하고 온체인에 정산한 뒤 `payment-verified`를 거쳐 `payment-completed`로 바꾸고, 실제 작업을 수행해 Artifact를 돌려줍니다. 정산 결과(`x402SettleResponse`)는 `x402.payment.receipts` 배열에 담기며, 이 키는 최종 Task 메시지에 반드시 들어가야 합니다. 실패하면 `payment-failed`가 되고 `x402.payment.error`에 짧은 오류 코드가 붙습니다. 스펙이 정의한 오류 코드는 `INSUFFICIENT_FUNDS`, `INVALID_SIGNATURE`, `EXPIRED_PAYMENT`, `DUPLICATE_NONCE`, `NETWORK_MISMATCH`, `INVALID_AMOUNT`, `SETTLEMENT_FAILED` 일곱 가지입니다.
 
-즉 A2A의 Task 상태 기계는 그대로 두고, 그 위에 `metadata` 필드로 결제 상태 기계를 한 층 더 얹은 구조입니다. 파이썬 예제(adk-demo)는 기본값으로 모의 facilitator와 하드코딩된 키를 쓰는 모의 지갑을 사용하며, 실제 온체인 거래를 위해서는 facilitator 설정과 MetaMask·MPC·하드웨어 서명 같은 지갑 구현을 직접 연결해야 합니다. 스펙과 스킴 디렉터리가 "experimental"로 표기된 점을 감안하면 프로덕션 결제 레일이라기보다 참조 구현 단계입니다.
+즉 A2A의 Task 상태 기계는 그대로 두고, 그 위에 `metadata` 필드로 결제 상태 기계를 한 층 더 얹은 구조입니다. 결제 데이터 구조(`x402PaymentRequiredResponse`, `PaymentRequirements`, `PaymentPayload`, `x402SettleResponse`)는 새로 정의하지 않고 Coinbase의 코어 x402 스펙을 그대로 참조합니다.
+
+v0.2의 핵심 변화는 이 x402 객체들을 A2A 메시지의 어디에 실을지 두 가지 흐름으로 나눠 조합할 수 있게 한 composable 설계입니다.
+
+- **Standalone Flow**(단독 흐름): x402 객체를 A2A 메시지 metadata에 직접 담습니다. `x402PaymentRequiredResponse`는 `task.status.message.metadata`의 `x402.payment.required` 키에, `PaymentPayload`는 `message.metadata`의 `x402.payment.payload` 키에 들어갑니다. 스펙의 JSON 예시에서 네트워크는 `base`입니다. v0.1이 정의했던 metadata 방식이 이 흐름에 해당합니다.
+- **Embedded Flow**(내장 흐름): x402가 AP2 같은 상위 프로토콜의 결제 수단(form of payment) 가운데 하나로 동작합니다. `x402PaymentRequiredResponse`는 AP2의 CartMandate(장바구니 위임장) 같은 상위 객체 안에 담겨 `task.artifacts`로 전달되고, `PaymentPayload`는 AP2의 PaymentMandate(결제 위임장) 안에 담겨 `message.parts`로 전달됩니다. 다음 절에서 다루는 AP2가 x402와 실제로 맞물리는 지점이 여기입니다.
+
+클라이언트가 두 흐름을 구분하는 규칙은 단순합니다. `x402.payment.status: "payment-required"`를 받았을 때 metadata에 `x402.payment.required` 키가 있으면 Standalone이고, 없으면 Embedded로 판단해 artifacts에서 상위 객체를 찾습니다.
+
+v0.2는 사람이 자리에 있는지에 따라 세 가지 서명 패턴도 정리했습니다. **Atomic Signing**(human-present)은 지갑이 결제 서명과 주문 서명 두 개를 사용자 승인 한 번으로 처리하는 방식입니다. **Delegated Signing**(human-not-present)은 사용자가 미리 승인한 위임 범위 안에서 에이전트가 자기 키로 서명합니다. **Smart Contract Escrow**(decoupled)는 사용자가 컨트랙트에 자금을 먼저 넣어 두고, 체크아웃 시점에 오프체인 서명을 한 번 하면 판매자가 컨트랙트에서 자금을 인출(release)하는 구조입니다.
+
+거버넌스 위치는 따로 짚어 둘 필요가 있습니다. A2A의 [확장 거버넌스 문서](https://a2a-protocol.org/latest/topics/extension-and-binding-governance/)에 따르면 공식 확장은 a2aproject 조직에 `ext-{name}` 접두어 저장소로 두고 URI도 `https://a2a-protocol.org/extensions/`로 시작해야 하며, 실험 단계는 `experimental-ext-{name}` 접두어를 씁니다. a2a-x402는 google-agentic-commerce 조직에 있고 URI도 github.com 도메인이어서 이 공식 확장 네임스페이스 밖에 있습니다. 공식 문서가 예시로 드는 확장 목록(Secure Passport, Timestamp, Traceability, AGP)에도 x402는 없습니다. Google이 만든 확장은 맞지만 a2aproject의 공식 확장은 아닙니다.
+
+저장소 자체는 아카이브되지 않았고 폐기 공지도 없습니다. 다만 마지막 push가 2026년 8월 4일, main 브랜치의 마지막 실질 커밋이 2026년 5월 24일(Dependabot 설정)로 활동이 적습니다. 파이썬 예제(adk-demo)는 기본값으로 모의 facilitator와 하드코딩된 키를 쓰는 모의 지갑을 사용하며, 실제 온체인 거래를 위해서는 facilitator 설정과 MetaMask·MPC·하드웨어 서명 같은 지갑 구현을 직접 연결해야 합니다. v0.2 스펙 본문에 experimental 표기는 없지만 파트너 초안이 들어 있는 `schemes/` 디렉터리는 여전히 experimental입니다. A2A 위에서 x402 결제를 구현할 때 참조할 스펙은 여전히 이 저장소이고 최신은 v0.2입니다. 반면 A2A 코어의 현재 상태는 a2aproject 조직과 a2a-protocol.org에서 확인해야 합니다.
 
 ### AP2와 UCP
 
@@ -112,7 +125,7 @@ Linux Foundation은 [2026년 4월 9일 보도자료](https://www.linuxfoundation
 - **v1.0 스펙.** 2026년 3월에 나온 첫 안정 버전으로, 세 전송 바인딩(JSON-RPC·gRPC·HTTP+JSON)의 동등성 보장, Signed Agent Card, 단일 엔드포인트 멀티테넌시, OAuth 2.0 흐름 현대화가 들어갔습니다. Agent Card는 하위 호환을 유지해서 한 에이전트가 v0.3과 v1.0을 동시에 광고할 수 있습니다. 2026년 5월 28일에 v1.0.1이 나왔습니다.
 - **클라우드 플랫폼 통합.** Microsoft는 Azure AI Foundry와 Copilot Studio에, AWS는 Amazon Bedrock AgentCore Runtime에 A2A를 넣었고, Google Cloud는 2025년 8월 v0.3 업그레이드와 함께 Vertex AI Agent Engine과 Agentspace 지원을 [발표](https://cloud.google.com/blog/products/ai-machine-learning/agent2agent-protocol-is-getting-an-upgrade)했습니다. 3대 클라우드가 모두 관리형 런타임에서 A2A 에이전트를 호스팅합니다.
 - **SDK.** 보도자료는 Python, JavaScript, Java, Go, .NET 5개 언어를 프로덕션 준비 상태로 꼽았습니다. 2026년 8월 27일 기준 [저장소 README](https://github.com/a2aproject/A2A)와 로드맵은 Rust를 더해 6개를 나열합니다.
-- **GitHub 스타.** 보도자료 시점 2만 2천 개 이상, 2026년 8월 27일 조회 시점 25,509개(포크 2,588개, 마지막 push 2026년 8월 25일).
+- **GitHub 스타.** 보도자료 시점 2만 2천 개 이상, 2026년 8월 28일 조회 시점 25,522개(포크 2,590개, 마지막 push 2026년 8월 25일).
 - **프로덕션 사용.** 공급망, 금융 서비스, 보험, IT 운영 분야에서 실제 배포가 있다고 밝혔습니다. 이름이 공개된 사례로는 Google Cloud가 2025년 8월에 언급한 Tyson Foods(영업·공급망 최적화)와 Gordon Food Service(제품 데이터·리드 공유 채널)가 있습니다.
 
 [로드맵 문서](https://a2a-protocol.org/latest/roadmap/)(2026년 3월 10일 갱신)는 확장 SDK 지원 확대, 구현 검증용 A2A Inspector와 호환성 테스트 키트(TCK), 커뮤니티 모범 사례 문서화를 다음 과제로 적었습니다. 2026년 8월 AAIF 합류는 이 흐름의 연장입니다.
@@ -134,7 +147,7 @@ Linux Foundation은 [2026년 4월 9일 보도자료](https://www.linuxfoundation
 - [A2A Protocol Specification](https://a2a-protocol.org/latest/specification/): v1.0 스펙 원문. 데이터 객체와 RPC 메서드 정의를 직접 확인할 때.
 - [A2A와 MCP](https://a2a-protocol.org/latest/topics/a2a-and-mcp/): 공식 문서의 역할 분담 설명과 자동차 수리점 예시.
 - [a2a-samples](https://github.com/a2aproject/a2a-samples): ADK, LangGraph, CrewAI 등 여러 프레임워크로 만든 A2A 에이전트 예제 모음.
-- [A2A x402 Extension 스펙 v0.1](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.1/spec.md): 결제 상태 흐름과 metadata 필드 정의.
+- [A2A x402 Extension 스펙 v0.2](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.2/spec.md): 결제 상태 흐름, Standalone·Embedded 두 흐름, 서명 패턴 정의.
 - [에이전트 결제 2026년 6월 동향](/blog/agentic-payments-june-2026-x402-ucp-mpp/): x402·UCP·MPP 구현 진전, 이 글의 결제 층을 더 깊이 볼 때.
 - [KYA(Know Your Agent)](/blog/know-your-agent-kya-ai-agent-identity-onchain/): 에이전트 신원을 어디에 고정할지에 대한 표준 경쟁.
 
@@ -142,7 +155,7 @@ Linux Foundation은 [2026년 4월 9일 보도자료](https://www.linuxfoundation
 
 A2A는 서로 다른 조직과 프레임워크의 에이전트가 Agent Card로 서로를 알아보고, Task 단위로 일을 맡기고, 스트리밍이나 푸시로 진행 상황을 받고, Artifact로 결과를 돌려받는 HTTP 프로토콜입니다. MCP가 에이전트에 도구를 붙이는 세로 방향 표준이라면 A2A는 에이전트를 옆의 에이전트에 연결하는 가로 방향 표준이고, 2026년 8월 현재 둘은 같은 재단(AAIF) 아래에 있습니다.
 
-블록체인은 이 코어에 없습니다. 체인은 a2a-x402 확장의 정산 단계에서, 그리고 AP2의 x402 확장에서만 등장하고, 그마저도 스펙 v0.1과 모의 facilitator 예제 단계입니다. 온체인 Agent Card 같은 제안은 논문과 ERC-8004 커뮤니티에서 각자 진행 중이지 A2A 스펙의 일부가 아닙니다. 이 구분을 놓치면 "A2A = 블록체인 에이전트 프로토콜"이라는 잘못된 인상을 갖기 쉽습니다.
+블록체인은 이 코어에 없습니다. 체인은 a2a-x402 확장의 정산 단계에서, 그리고 AP2의 x402 확장에서만 등장하고, 그마저도 태그된 릴리스가 v0.1.0 하나뿐인 초안 스펙(최신 v0.2)과 모의 facilitator 예제 단계입니다. 온체인 Agent Card 같은 제안은 논문과 ERC-8004 커뮤니티에서 각자 진행 중이지 A2A 스펙의 일부가 아닙니다. 이 구분을 놓치면 "A2A = 블록체인 에이전트 프로토콜"이라는 잘못된 인상을 갖기 쉽습니다.
 
 채택은 확실히 진행됐지만 보편적이지는 않습니다. 150개 조직, v1.0, 3대 클라우드 통합은 사실이고, 그 수치가 곧 깊은 프로덕션 사용을 뜻하지 않는다는 지적도 사실입니다. 개인적인 판단으로는 지금 무언가를 만든다면 커뮤니티 권고대로 MCP로 시작하는 것이 맞고, 에이전트가 조직 경계를 넘어 다른 팀의 에이전트와 장기 작업을 주고받는 독립 시스템이 되는 시점에 A2A를 얹는 것이 순서입니다. 결제 층(x402, AP2)은 그 다음 단계이고, 지금은 스펙과 샘플을 읽어 두는 정도가 적절합니다.
 
@@ -154,7 +167,7 @@ A2A는 서로 다른 조직과 프레임워크의 에이전트가 Agent Card로 
 - [A2A and MCP](https://a2a-protocol.org/latest/topics/a2a-and-mcp/) — a2a-protocol.org, 조회일 2026-08-27
 - [Agent Discovery in A2A](https://a2a-protocol.org/latest/topics/agent-discovery/) — a2a-protocol.org, 조회일 2026-08-27
 - [A2A Roadmap](https://a2a-protocol.org/latest/roadmap/) — a2a-protocol.org (2026-03-10 갱신), 조회일 2026-08-27
-- [a2aproject/A2A](https://github.com/a2aproject/A2A) — GitHub (스타 25,509, v1.0.0 2026-03-12, v1.0.1 2026-05-28), 조회일 2026-08-27
+- [a2aproject/A2A](https://github.com/a2aproject/A2A) — GitHub (스타 25,522, v1.0.0 2026-03-12, v1.0.1 2026-05-28), 조회일 2026-08-28
 - [Announcing the Agent2Agent Protocol (A2A)](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/) — Google for Developers, 2025-04-09, 조회일 2026-08-27
 - [Google Cloud donates A2A to Linux Foundation](https://developers.googleblog.com/en/google-cloud-donates-a2a-to-linux-foundation/) — Google for Developers, 2025-06-23, 조회일 2026-08-27
 - [Agent2Agent protocol (A2A) is getting an upgrade](https://cloud.google.com/blog/products/ai-machine-learning/agent2agent-protocol-is-getting-an-upgrade) — Google Cloud Blog, 2025-08-01, 조회일 2026-08-27
@@ -162,8 +175,9 @@ A2A는 서로 다른 조직과 프레임워크의 에이전트가 Agent Card로 
 - [A2A Protocol Surpasses 150 Organizations...](https://www.linuxfoundation.org/press/a2a-protocol-surpasses-150-organizations-lands-in-major-cloud-platforms-and-sees-enterprise-production-use-in-first-year) — Linux Foundation, 2026-04-09, 조회일 2026-08-27
 - [A year of open collaboration: Celebrating the anniversary of A2A](https://opensource.googleblog.com/2026/04/a-year-of-open-collaboration-celebrating-the-anniversary-of-a2a.html) — Google Open Source Blog, 2026-04-16, 조회일 2026-08-27
 - [A2A joins AAIF's open agentic stack](https://aaif.io/blog/a2a-joins-aaif) — Agentic AI Foundation, 2026-08-17, 조회일 2026-08-27
-- [google-agentic-commerce/a2a-x402](https://github.com/google-agentic-commerce/a2a-x402) — GitHub (스타 554, 마지막 push 2026-08-04), 조회일 2026-08-27
-- [A2A Protocol: x402 Payments Extension v0.1](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.1/spec.md) — GitHub, 조회일 2026-08-27
+- [google-agentic-commerce/a2a-x402](https://github.com/google-agentic-commerce/a2a-x402) — GitHub (스타 554, 마지막 push 2026-08-04, v0.2 스펙 2025-11-04 추가, 태그는 v0.1.0만 있고 v0.2.0 태그 없음), 조회일 2026-08-28
+- [A2A Protocol: x402 Payments Extension v0.2](https://github.com/google-agentic-commerce/a2a-x402/blob/main/spec/v0.2/spec.md) — GitHub, 조회일 2026-08-28
+- [Extension and Binding Governance](https://a2a-protocol.org/latest/topics/extension-and-binding-governance/) — a2a-protocol.org, 조회일 2026-08-28
 - [x402.org](https://www.x402.org/) — x402 Foundation, 조회일 2026-08-27
 - [Towards Multi-Agent Economies: Enhancing the A2A Protocol with Ledger-Anchored Identities and x402 Micropayments for AI Agents](https://arxiv.org/abs/2507.19550) — Vaziry, Rodriguez Garzon, Küpper (TU Berlin / T-Labs), arXiv 2025-07-24, IJCCI 2025 / Springer CCIS vol. 2827, 조회일 2026-08-27
 - [Agent Payments Protocol (AP2)](https://ap2-protocol.org/) — ap2-protocol.org (v0.2), 조회일 2026-08-27
