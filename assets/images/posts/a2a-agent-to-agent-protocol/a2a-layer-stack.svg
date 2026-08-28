@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 660" width="960" height="660" font-family="Arial, Helvetica, sans-serif" role="img" aria-labelledby="svgTitle svgDesc">
   <title id="svgTitle">Where A2A sits: agent-to-agent layer, MCP tool layer, transport, and optional payment extensions</title>
-  <desc id="svgDesc">Four horizontal layers. Top: optional commerce and payment extensions layered on A2A (UCP for the shopping conversation, AP2 for signed mandates over card rails, with bank transfers on its roadmap, and the A2A x402 extension, which is the only box that settles on a blockchain). Second: the A2A layer, where a client agent and a remote agent exchange Agent Card discovery, Task lifecycle, Message and Part objects, Artifacts, and streaming updates. Third: MCP, connecting each agent vertically to its own tools, data, and APIs. Bottom: transport, HTTP(S) with JSON-RPC 2.0, gRPC or HTTP+JSON bindings, SSE streaming, push notifications, OAuth2, API keys and mTLS. A note states A2A core has no blockchain dependency.</desc>
+  <desc id="svgDesc">Four horizontal layers. Top: optional commerce and payment extensions layered on A2A (UCP for the shopping conversation, AP2 for signed mandates over card rails with bank transfers planned, and the A2A x402 extension, which is the only box that settles on a blockchain). Second: the A2A layer, where a client agent and a remote agent exchange Agent Card discovery, Task lifecycle, Message and Part objects, and Artifacts; tasks move from submitted through working and input-required to completed, updates arrive via SSE, polling or push, and agents stay opaque. Third: MCP, connecting each agent vertically to its own tools, data, and APIs. Bottom: transport, HTTP(S) with JSON-RPC 2.0, gRPC or HTTP+JSON bindings, SSE streaming, webhooks, OAuth 2.0, API keys and mTLS. A note states A2A core has no blockchain dependency.</desc>
   <rect x="0" y="0" width="960" height="660" fill="#F8FAFC"/>
   <rect x="1" y="1" width="958" height="658" fill="none" stroke="#E2E8F0" stroke-width="2"/>
 
@@ -12,47 +12,47 @@
   <rect x="30" y="84" width="900" height="128" rx="12" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1.5"/>
   <text x="46" y="106" font-size="13" font-weight="bold" fill="#92400E">OPTIONAL EXTENSIONS ON A2A: commerce and payments</text>
 
-  <rect x="46" y="118" width="270" height="80" rx="8" fill="#FFFFFF" stroke="#D6D3D1" stroke-width="1.2"/>
-  <text x="181" y="140" text-anchor="middle" font-size="15" font-weight="bold" fill="#0F172A">UCP</text>
-  <text x="181" y="160" text-anchor="middle" font-size="12" fill="#334155">Universal Commerce Protocol</text>
-  <text x="181" y="178" text-anchor="middle" font-size="11.5" fill="#475569">shopping conversation: checkout, orders</text>
-  <text x="181" y="193" text-anchor="middle" font-size="11" fill="#64748B">transports: A2A, MCP, REST</text>
+  <rect x="46" y="118" width="280" height="80" rx="8" fill="#FFFFFF" stroke="#D6D3D1" stroke-width="1.2"/>
+  <text x="186" y="140" text-anchor="middle" font-size="15" font-weight="bold" fill="#0F172A">UCP</text>
+  <text x="186" y="160" text-anchor="middle" font-size="12" fill="#334155">Universal Commerce Protocol</text>
+  <text x="186" y="178" text-anchor="middle" font-size="11" fill="#475569">conversational checkout and orders</text>
+  <text x="186" y="193" text-anchor="middle" font-size="11" fill="#64748B">transports: A2A, MCP, REST</text>
 
-  <rect x="345" y="118" width="270" height="80" rx="8" fill="#FFFFFF" stroke="#D6D3D1" stroke-width="1.2"/>
+  <rect x="340" y="118" width="280" height="80" rx="8" fill="#FFFFFF" stroke="#D6D3D1" stroke-width="1.2"/>
   <text x="480" y="140" text-anchor="middle" font-size="15" font-weight="bold" fill="#0F172A">AP2</text>
-  <text x="480" y="160" text-anchor="middle" font-size="12" fill="#334155">Agent Payments Protocol (A2A extension)</text>
-  <text x="480" y="178" text-anchor="middle" font-size="11.5" fill="#475569">signed mandates: intent, cart, payment</text>
-  <text x="480" y="193" text-anchor="middle" font-size="11" fill="#64748B">rails: cards; bank transfers planned; crypto via x402</text>
+  <text x="480" y="160" text-anchor="middle" font-size="12" fill="#334155">Agent Payments Protocol (A2A ext.)</text>
+  <text x="480" y="178" text-anchor="middle" font-size="11" fill="#475569">mandates: intent, cart, payment</text>
+  <text x="480" y="193" text-anchor="middle" font-size="11" fill="#64748B">rails: cards; bank transfers planned</text>
 
-  <rect x="644" y="118" width="270" height="80" rx="8" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.8"/>
-  <text x="779" y="140" text-anchor="middle" font-size="15" font-weight="bold" fill="#0F172A">A2A x402 extension</text>
-  <text x="779" y="160" text-anchor="middle" font-size="12" fill="#334155">HTTP 402 style pay-per-request</text>
-  <text x="779" y="178" text-anchor="middle" font-size="11.5" fill="#475569">payment-required → submitted → completed</text>
-  <text x="779" y="193" text-anchor="middle" font-size="11" font-weight="bold" fill="#B45309">only box that settles on-chain (e.g. USDC on Base)</text>
+  <rect x="634" y="118" width="280" height="80" rx="8" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.8"/>
+  <text x="774" y="140" text-anchor="middle" font-size="15" font-weight="bold" fill="#0F172A">A2A x402 extension</text>
+  <text x="774" y="160" text-anchor="middle" font-size="12" fill="#334155">HTTP 402 style pay-per-request</text>
+  <text x="774" y="178" text-anchor="middle" font-size="11" fill="#475569">payment-required → submitted → completed</text>
+  <text x="774" y="193" text-anchor="middle" font-size="11" font-weight="bold" fill="#B45309">settles on-chain (e.g. USDC on Base)</text>
 
   <!-- Layer 2: A2A -->
   <rect x="30" y="228" width="900" height="150" rx="12" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5"/>
   <text x="46" y="250" font-size="13" font-weight="bold" fill="#1E3A8A">A2A LAYER: agents delegating to agents across organizations</text>
 
-  <rect x="60" y="266" width="220" height="96" rx="10" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+  <rect x="50" y="266" width="240" height="96" rx="10" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
   <text x="170" y="292" text-anchor="middle" font-size="15" font-weight="bold" fill="#0F172A">Client agent</text>
   <text x="170" y="312" text-anchor="middle" font-size="11.5" fill="#475569">reads Agent Card, sends Message,</text>
   <text x="170" y="328" text-anchor="middle" font-size="11.5" fill="#475569">tracks Task, receives Artifacts</text>
   <text x="170" y="348" text-anchor="middle" font-size="11" fill="#64748B">framework A (e.g. LangGraph)</text>
 
-  <rect x="680" y="266" width="220" height="96" rx="10" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+  <rect x="670" y="266" width="240" height="96" rx="10" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
   <text x="790" y="292" text-anchor="middle" font-size="15" font-weight="bold" fill="#0F172A">Remote agent</text>
-  <text x="790" y="312" text-anchor="middle" font-size="11.5" fill="#475569">publishes /.well-known/agent-card.json,</text>
-  <text x="790" y="328" text-anchor="middle" font-size="11.5" fill="#475569">runs Task, streams status, returns Artifact</text>
-  <text x="790" y="348" text-anchor="middle" font-size="11" fill="#64748B">framework B (e.g. ADK), other company</text>
+  <text x="790" y="312" text-anchor="middle" font-size="11.5" fill="#475569">publishes Agent Card, runs Task,</text>
+  <text x="790" y="328" text-anchor="middle" font-size="11.5" fill="#475569">streams status, returns Artifact</text>
+  <text x="790" y="348" text-anchor="middle" font-size="11" fill="#64748B">framework B (e.g. ADK), other org</text>
 
-  <line x1="285" y1="314" x2="675" y2="314" stroke="#1D4ED8" stroke-width="3"/>
-  <polygon points="675,314 661,306 661,322" fill="#1D4ED8"/>
-  <polygon points="285,314 299,306 299,322" fill="#1D4ED8"/>
-  <rect x="330" y="278" width="300" height="22" rx="11" fill="#DBEAFE" stroke="#93C5FD" stroke-width="1"/>
+  <line x1="295" y1="314" x2="665" y2="314" stroke="#1D4ED8" stroke-width="3"/>
+  <polygon points="665,314 651,306 651,322" fill="#1D4ED8"/>
+  <polygon points="295,314 309,306 309,322" fill="#1D4ED8"/>
+  <rect x="310" y="278" width="340" height="22" rx="11" fill="#DBEAFE" stroke="#93C5FD" stroke-width="1"/>
   <text x="480" y="294" text-anchor="middle" font-size="12" font-weight="bold" fill="#1E3A8A">Agent Card · Task · Message/Part · Artifact</text>
-  <text x="480" y="340" text-anchor="middle" font-size="11.5" fill="#334155">task states: submitted → working → input-required / auth-required → completed · failed · canceled · rejected</text>
-  <text x="480" y="358" text-anchor="middle" font-size="11.5" fill="#334155">updates via SSE streaming, polling, or push notifications · agents stay opaque (no shared memory or tools)</text>
+  <text x="480" y="340" text-anchor="middle" font-size="11" fill="#334155">submitted → working → input-required → completed</text>
+  <text x="480" y="358" text-anchor="middle" font-size="11" fill="#334155">SSE / polling / push updates · agents stay opaque</text>
 
   <!-- Layer 3: MCP -->
   <rect x="30" y="394" width="900" height="128" rx="12" fill="#ECFDF5" stroke="#6EE7B7" stroke-width="1.5"/>
@@ -60,15 +60,15 @@
 
   <line x1="170" y1="362" x2="170" y2="444" stroke="#059669" stroke-width="3"/>
   <polygon points="170,446 162,432 178,432" fill="#059669"/>
-  <rect x="60" y="448" width="220" height="60" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+  <rect x="50" y="448" width="240" height="60" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
   <text x="170" y="472" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0F172A">Tools / data (MCP servers)</text>
-  <text x="170" y="492" text-anchor="middle" font-size="11.5" fill="#475569">databases, calendars, internal APIs</text>
+  <text x="170" y="492" text-anchor="middle" font-size="11.5" fill="#475569">databases, calendars, APIs</text>
 
   <line x1="790" y1="362" x2="790" y2="444" stroke="#059669" stroke-width="3"/>
   <polygon points="790,446 782,432 798,432" fill="#059669"/>
-  <rect x="680" y="448" width="220" height="60" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+  <rect x="670" y="448" width="240" height="60" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
   <text x="790" y="472" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0F172A">Tools / data (MCP servers)</text>
-  <text x="790" y="492" text-anchor="middle" font-size="11.5" fill="#475569">scanners, manuals, vendor systems</text>
+  <text x="790" y="492" text-anchor="middle" font-size="11.5" fill="#475569">scanners, manuals, vendor tools</text>
 
   <rect x="330" y="440" width="300" height="70" rx="10" fill="#FFFFFF" stroke="#A7F3D0" stroke-width="1.2"/>
   <text x="480" y="463" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#065F46">MCP: stateless-ish tool calls</text>
@@ -81,5 +81,5 @@
   <text x="480" y="584" text-anchor="middle" font-size="13" fill="#0F172A">HTTP(S) · JSON-RPC 2.0 / gRPC / HTTP+JSON · SSE streaming · webhooks · OAuth 2.0, API keys, mTLS</text>
   <text x="480" y="606" text-anchor="middle" font-size="12" font-weight="bold" fill="#B91C1C">A2A core has no blockchain dependency. Chains appear only inside the x402 extension's settlement step.</text>
 
-  <text x="930" y="648" text-anchor="end" font-size="10.5" fill="#64748B">Sources: a2a-protocol.org v1.0 spec, a2a-x402 spec v0.1, ap2-protocol.org, UCP developer blog. Checked 2026-08-27.</text>
+  <text x="930" y="648" text-anchor="end" font-size="10.5" fill="#64748B">Sources: a2a-protocol.org v1.0 spec, a2a-x402 spec v0.2, ap2-protocol.org, UCP developer blog. Checked 2026-08-28.</text>
 </svg>
