@@ -66,7 +66,7 @@ The boundary is not perfectly clean. On launch day a Hacker News commenter (vess
 
 ![Layer diagram of the A2A stack. Top: optional commerce and payment extensions (UCP, AP2, the A2A x402 extension). Second: the A2A layer where a client agent and a remote agent exchange Agent Card, Task, Message and Artifact objects. Third: the MCP layer where each agent reaches its own tools. Bottom: transport (HTTP, JSON-RPC, gRPC, SSE, OAuth). A note says A2A core has no blockchain dependency and chains appear only in the x402 extension's settlement step.](/images/posts/a2a-agent-to-agent-protocol/a2a-layer-stack.svg)
 
-*Where A2A (horizontal, agent to agent) and MCP (vertical, agent to tools) sit, and the optional payment extensions above them. Only one box settles on a chain: the x402 extension. Sources are the respective specs, checked 2026-08-27.*
+*Where A2A (horizontal, agent to agent) and MCP (vertical, agent to tools) sit, and the optional payment extensions above them. Only one box settles on a chain: the x402 extension. Sources are the respective specs, checked 2026-08-28.*
 
 ## Where blockchains come in
 
