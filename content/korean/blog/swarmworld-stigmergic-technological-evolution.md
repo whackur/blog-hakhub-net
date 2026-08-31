@@ -3,7 +3,7 @@ title: "SwarmWorld: 말 없이 협력하는 LLM 에이전트 사회와 창작자
 meta_title: ""
 description: "MIT LAMM이 2026년 8월 26일 공개한 SwarmWorld 논문을 정리합니다. 똑같은 gpt-5.6-luna 에이전트 50~200개를 72×54 격자에 풀어 놓고, 대화 채널을 끊어도 기술이 퍼지고 창작자가 사라진 뒤에도 작동하는지 검증한 실험입니다. 스티머지 개념, 네 가지 조건, 홀드아웃 리질리언스 측정, 자발적 분업, 그리고 저자들이 말하는 집단 이점의 경계까지 다룹니다."
 date: 2026-08-30T20:00:00+09:00
-lastmod: 2026-08-30T20:00:00+09:00
+lastmod: 2026-08-31T10:05:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["llm-agents", "multi-agent", "emergent-behavior", "stigmergy", "ai-research"]
@@ -21,6 +21,10 @@ MIT LAMM(Laboratory for Atomistic and Molecular Mechanics)의 Subhadeep Pal, Fio
 논문이 기대는 개념은 stigmergy(스티머지)입니다. 개체가 서로에게 지시를 내리지 않고, 환경에 남긴 흔적으로 다음 행동을 유발하는 협업 방식입니다.
 
 흰개미 집이 교과서적인 예입니다. 흰개미 한 마리가 침을 섞은 흙덩이를 어딘가에 놓으면 그 흙덩이가 다음 흰개미에게 신호가 됩니다. 여기에 더 쌓아라, 이 방향으로 벽을 세워라. 설계도를 들고 지시하는 감독은 없습니다. 개미의 페로몬 길도 같은 원리로 생깁니다. 먹이를 찾은 개미가 남긴 흔적이 다른 개미를 끌어들이고, 그 흔적이 진해질수록 더 많이 끌어들입니다. 정보는 개체 사이가 아니라 개체와 환경 사이를 오갑니다.
+
+![스티머지 조율 개념 삽화. 에이전트들이 서로에게 메시지를 보내는 대신 공유 세계에 artifact와 controller를 남기고, 다음 에이전트가 그 세계 상태를 읽어 재사용하는 흐름을 보여 준다. 화살표는 에이전트와 세계 사이에만 오가고 에이전트끼리는 오가지 않는다.](/images/posts/swarmworld-stigmergic-technological-evolution/stigmergic-coordination-loop.png)
+
+논문에서는 두 조건 모두에서 첫 재사용의 약 95%가 이런 직접 물리 관측으로 일어났습니다.
 
 LLM 에이전트 연구에서 이 개념이 흥미로운 이유는 분명합니다. 스티머지가 작동하려면 환경이 상태를 붙들고 있어야 하고, 그 상태가 다음 행위자에게 읽혀야 합니다. 채팅 로그가 아니라 세계가 기억을 갖는 구조입니다. 이 블로그에서 다룬 [상태 외부화 하네스](/blog/harness-1-state-externalizing-search-agents/)가 한 에이전트의 문맥을 밖으로 빼는 이야기였다면, SwarmWorld는 그 외부 상태를 여러 에이전트가 공유하는 물리 세계로 만든 셈입니다.
 

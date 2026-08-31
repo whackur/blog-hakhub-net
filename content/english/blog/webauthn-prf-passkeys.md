@@ -3,7 +3,7 @@ title: "Pulling Encryption Keys Out of Passkeys with the WebAuthn PRF Extension"
 meta_title: ""
 description: "How the WebAuthn PRF extension relates to CTAP2 hmac-secret, the encryption design decisions it leaves to your app, and current device and platform support."
 date: 2026-07-03T14:52:00+09:00
-lastmod: 2026-07-03T18:44:00+09:00
+lastmod: 2026-08-31T10:05:00+09:00
 image: ""
 categories: ["Security"]
 tags: ["passkey", "webauthn", "fido2", "security", "cryptography"]
@@ -27,6 +27,10 @@ The WebAuthn `prf` extension returns one or two pseudo-random outputs tied to a 
 The same credential and the same salt always produce the same output. Without the secret held by the authenticator, that output looks random. The practical mental model is HMAC with a random key and a strong hash function: different credentials or different salts produce unrelated outputs. [Corbado describes](https://www.corbado.com/blog/passkeys-prf-webauthn) this output as a deterministic 32-byte value bound to a specific passkey credential, usable as symmetric key material for WebCrypto once you add proper KDF and encryption design on top.
 
 There's an important boundary here. PRF does not encrypt anything by itself. It hands back credential-scoped key material after a WebAuthn ceremony completes. To turn that into actual encryption, the application still needs a separate crypto layer, typically WebCrypto.
+
+![Conceptual flow of PRF key derivation. A caller-supplied salt and the credential enter the CTAP2 hmac-secret computation inside the authenticator, and the credential-and-salt-bound 32-byte PRF output returns to feed the application-side encryption layer (wrapping a data key in envelope encryption).](/images/posts/webauthn-prf-passkeys/prf-key-derivation-flow.png)
+
+The authenticator owns the PRF computation, the browser only relays its result, and the application owns the actual encryption and envelope-encryption design.
 
 ## How it relates to CTAP2 hmac-secret
 

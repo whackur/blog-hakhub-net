@@ -3,7 +3,7 @@ title: "SwarmWorld: LLM Agents That Cooperate Without Talking, and Technology Th
 meta_title: ""
 description: "MIT LAMM published SwarmWorld on August 26, 2026. Fifty to two hundred identical gpt-5.6-luna agents were dropped into a 72x54 grid, and the paper cuts their communication channels one by one to see what still spreads. This post covers stigmergy, the four conditions, the held-out resilience assay that removes every agent, the division of labor that appears on its own, and the boundary the authors draw around the swarm's advantage."
 date: 2026-08-30T20:00:00+09:00
-lastmod: 2026-08-30T20:00:00+09:00
+lastmod: 2026-08-31T10:05:00+09:00
 image: ""
 categories: ["AI"]
 tags: ["llm-agents", "multi-agent", "emergent-behavior", "stigmergy", "ai-research"]
@@ -21,6 +21,10 @@ When we build multi-agent systems, one choice happens almost automatically. Agen
 The concept the paper builds on is stigmergy: individuals coordinate not by instructing each other but by leaving traces in the environment that trigger the next action.
 
 Termite mounds are the standard example. A termite deposits a pellet of soil somewhere, and that pellet becomes the signal for the next termite. Add here. Build the wall this way. No foreman holds a blueprint. Ant pheromone trails work the same way. A trace left by a successful forager attracts more foragers, and the more it gets used the stronger it becomes. Information flows between individual and environment rather than between individuals.
+
+![Illustration of stigmergic coordination. Instead of messaging each other, agents leave artifacts with controllers in a shared world, and the next agent reads that world state and reuses it. Arrows flow only between agents and the world, never agent to agent.](/images/posts/swarmworld-stigmergic-technological-evolution/stigmergic-coordination-loop.png)
+
+In both conditions, roughly 95% of first reuse happened through this kind of direct physical observation.
 
 That makes stigmergy interesting for LLM agent research for a clear reason. It only works if the environment holds state and the next actor can read it. The memory lives in the world, not in a chat log. This blog covered [state-externalizing harnesses](/en/blog/harness-1-state-externalizing-search-agents/), which push a single agent's context outside its window. SwarmWorld turns that external state into a shared physical world that many agents write to.
 
