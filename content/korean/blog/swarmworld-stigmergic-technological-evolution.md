@@ -118,6 +118,8 @@ Figure 7의 기술 초상은 메커니즘을 보여 주는 시각화이지 실�
 교신저자인 Markus Buehler가 [2026년 8월 29일 X에 올린 글](https://x.com/ProfBuehlerMIT/status/2093630309585531033)에서 결과를 이렇게 요약했습니다.
 
 > A swarm of hundreds of initially identical agents spontaneously differentiates into explorers, builders, caretakers, and coordinators - without direct communication.
+>
+> 처음에 모두 똑같았던 수백 개의 에이전트가 직접 소통 없이 탐색자, 건설자, 관리자, 조율자로 저절로 갈라집니다.
 > — Markus J. Buehler, [X](https://x.com/ProfBuehlerMIT/status/2093630309585531033)
 
 같은 날 [Hacker News에 올라온 글](https://news.ycombinator.com/item?id=49490461)은 3포인트에 댓글 하나로 거의 묻혔습니다. 그 댓글도 Buehler의 트윗을 인용하며 흥미롭다고 적은 정도입니다. Reddit에는 아직 이 논문을 다루는 논의가 없습니다.
