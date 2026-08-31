@@ -3,8 +3,8 @@ title: "Circle CCTP V2 EVM Contracts: A Source-Code Walkthrough"
 meta_title: ""
 description: "How TokenMessengerV2, MessageTransmitterV2, and TokenMinterV2 divide responsibility in Circle's CCTP V2. Covers the burn-and-mint lifecycle, message layout, fast transfer fee model, hookData, destinationCaller, and the trust assumptions every integrator should know."
 date: 2026-06-30T17:30:00+09:00
-lastmod: 2026-07-02T00:00:00+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/circle-cctp-v2-evm-contracts/cctp-v2-burn-mint-lifecycle.png"
 categories: ["Blockchain"]
 tags: ["cctp", "circle", "usdc", "cross-chain", "solidity"]
 author: "whackur"
@@ -167,6 +167,10 @@ Domain IDs are assigned centrally by Circle. Current major EVM chains:
 The trust structure of CCTP is visible right here in the layout. Four fields, nonce, finalityThresholdExecuted, feeExecuted, and expirationBlock, are never produced on-chain. Circle's off-chain service fills them in and signs the result, and that signed result is accepted as fact on the destination chain. The attesters witness the burn and, at the same time, complete the message.
 
 ## Burn lifecycle
+
+![CCTP V2 flow in which TokenMessengerV2 and TokenMinterV2 burn USDC on the source chain, MessageTransmitterV2 emits a message, Circle attests it, and the destination contracts mint USDC](/images/posts/circle-cctp-v2-evm-contracts/cctp-v2-burn-mint-lifecycle.png)
+
+The transfer lifecycle joins a source-chain burn and message emission, Circle attestation, and destination-chain verification and minting.
 
 The sequence from the source chain to receiving USDC on the destination:
 

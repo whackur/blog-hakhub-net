@@ -3,8 +3,8 @@ title: "Figure: From HELOC Lender to Blockchain-Native Capital Markets"
 meta_title: ""
 description: "Figure Technology Solutions started as a consumer HELOC lender and has since built a blockchain-native capital markets platform on Provenance Blockchain, integrating loan origination, the DART ownership registry, tokenized lending markets, and the YLDS yield-bearing security."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/figure-blockchain-capital-markets/closed-loop-capital-markets.png"
 categories: ["Blockchain"]
 tags: ["rwa", "provenance", "capital-markets", "tokenization", "heloc", "ylds"]
 author: "whackur"
@@ -21,6 +21,10 @@ Figure Technology Solutions started as a consumer home equity lender. Founded in
 A quick definition: real-world assets (RWA) in blockchain finance refers to financial instruments that originate outside the chain, such as mortgages, government bonds, and private credit, and are represented as on-chain tokens. "Putting RWA on a blockchain" undersells what Figure is building. The actual thesis, as stated in its [Investor Relations materials](https://investors.figure.com/investor-relations), is a "blockchain-native capital marketplace for the origination, funding, sale and trading of on-chain loan products and tokenized assets."
 
 The important detail: Figure is not tokenizing assets that were created somewhere else. It originates loans directly onto Provenance Blockchain, then connects those loans to an ownership registry, a trading marketplace, and a yield-bearing cash instrument. The pipeline is closed-loop from the start.
+
+![Figure capital-markets architecture. A HELOC is originated through the LOS and registered in DART, while DART, Figure Connect, Democratized Prime, and YLDS each connect to Provenance as the shared record, settlement, and tokenization rail.](/images/posts/figure-blockchain-capital-markets/closed-loop-capital-markets.png)
+
+Provenance is not one sequential step at the end of the pipeline. It is the shared rail used by the registry, markets, and settlement asset.
 
 ## The System Components
 

@@ -3,8 +3,8 @@ title: "Future AGI: AI 에이전트 평가·관찰·개선을 한곳에서"
 meta_title: ""
 description: "프로덕션에서 무너지는 AI 에이전트를 하나의 피드백 루프로 다잡는 오픈소스 플랫폼 Future AGI. 코드와 경쟁 도구 비교까지 짚었습니다."
 date: 2026-06-29T10:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/future-agi-intro/agent-improvement-loop.png"
 categories: ["AI"]
 author: "whackur"
 tags: ["ai-agent", "llm", "observability", "evals", "open-source"]
@@ -28,6 +28,10 @@ AI 에이전트를 만들어 본 사람은 이 장면이 익숙합니다. 데모
 조각마다 도구가 다르니 데이터가 안 흐릅니다. 프로덕션 트레이스가 다음 버전 개선으로 돌아오질 않죠. 에이전트는 관측만 되고 나아지지는 않습니다. Future AGI는 이 흐름을 하나로 합칩니다. 트레이스 하나가 다음 개선의 입력이 되도록요.
 
 루프가 닫힌다는 건 구체적으로 이런 흐름입니다. 프로덕션에서 실패한 트레이스를 잡아 eval 데이터셋에 넣고, 그 데이터셋으로 프롬프트 최적화를 돌리고, 개선된 프롬프트를 배포한 뒤 새 트레이스로 결과를 확인합니다. 도구가 나뉘어 있으면 이 사이클의 단계마다 수동 export/import가 끼어들고, 대개 거기서 루프가 끊깁니다.
+
+![Future AGI의 에이전트 개선 루프. 프로덕션 트레이스를 모니터링해 평가 데이터셋으로 만들고, 평가와 프롬프트 최적화, 배포를 거친 새 트레이스가 다시 모니터링으로 돌아오는 순환을 보여 준다.](/images/posts/future-agi-intro/agent-improvement-loop.png)
+
+실패 트레이스가 평가 데이터와 최적화 입력으로 이어지고, 배포 뒤 새 트레이스로 개선 여부를 확인하면서 루프가 닫힙니다.
 
 ## 6가지 기능
 

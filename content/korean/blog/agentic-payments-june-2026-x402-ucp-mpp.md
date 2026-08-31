@@ -3,8 +3,8 @@ title: "에이전트 결제 2026년 6월 동향: x402, UCP, MPP 구현 진전"
 meta_title: ""
 description: "2026년 6월 x402 auth-capture와 builder-code attribution, UCP idempotency 강화, MPP 구독형 결제 실험, ERC-8126 Final 이동 등 에이전트 결제 스택의 주요 변화를 정리합니다."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/agentic-payments-june-2026-x402-ucp-mpp/agent-payment-layer-stack.png"
 categories: ["Blockchain"]
 tags: ["agentic-payments", "x402", "ucp", "mpp", "stablecoin"]
 author: "whackur"
@@ -118,6 +118,10 @@ Ethereum ERC 쪽에서는 두 신호가 있었다.
 ERC-8004 자체는 6월 한 달간 ethereum/ercs 표준 프로세스 상태 변경이 없었다. 다만 이는 배포 여부와는 다른 이야기다. ERC-8004 레지스트리는 2026년 1월 29일 이더리움 메인넷에 배포된 상태에서 6월을 맞았다.
 
 ## 레이어별 분업 구도
+
+![UCP 상거래 계층, x402 HTTP 결제 계층, MPP 실행 도구 계층, ERC-8004·8126·8273 신원·권한 계층과 ACP 출처 추적의 관계를 나타낸 에이전트 결제 스택](/images/posts/agentic-payments-june-2026-x402-ucp-mpp/agent-payment-layer-stack.png)
+
+각 표준은 하나를 대체하기보다 상거래, HTTP 결제, 실행 도구, 신원·권한, 출처 추적이라는 서로 다른 계층을 맡는다.
 
 6월 한 달간 에이전트 결제 스택의 경쟁이 수렴하는 단일 프로토콜로 가는 게 아니라는 점이 분명해졌다. x402는 HTTP 402 payment challenge와 facilitator settlement를 담당한다. UCP는 cart/checkout의 동의·신원·주문 증거를 정리한다. ERC-8004/8126/8273 계열은 에이전트 신원과 action별 권한 증명을 다룬다. pay.sh/MPP는 실행 환경에서 결제 시작 표면을 다듬는다.
 

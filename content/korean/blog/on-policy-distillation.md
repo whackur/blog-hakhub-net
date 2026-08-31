@@ -3,8 +3,8 @@ title: "On-Policy Distillation: RL과 SFT 사이의 빈틈을 메우는 법"
 meta_title: ""
 description: "Thinking Machines Lab이 공개한 on-policy distillation을 리뷰합니다. 학생이 직접 생성한 궤적에 교사 모델이 토큰 단위로 점수를 매기는 방식으로, Qwen3 기술보고서 수치와 함께 reverse KL의 성격과 재현 조건을 짚습니다."
 date: 2026-07-10T14:08:50+09:00
-lastmod: 2026-07-10T14:08:50+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/on-policy-distillation/student-teacher-reverse-kl-loop.png"
 categories: ["AI"]
 tags: ["llm", "post-training", "distillation", "reinforcement-learning", "reverse-kl"]
 author: "whackur"
@@ -34,6 +34,10 @@ on-policy distillation은 이 둘을 다음처럼 조합합니다.
 | SFT | 오프폴리시 | dense |
 | RL | 온폴리시 | sparse |
 | On-policy distillation | 온폴리시 | dense |
+
+![On-policy distillation 학습 루프. 학생이 직접 만든 trajectory를 고정된 교사가 토큰별 로그 확률로 채점하고, reverse KL 신호가 학생을 업데이트하는 흐름과 SFT, RL의 샘플링 및 보상 밀도 차이를 보여 준다.](/images/posts/on-policy-distillation/student-teacher-reverse-kl-loop.png)
+
+학생이 방문한 상태를 그대로 교사가 토큰 단위로 채점하므로, 온폴리시 샘플링과 조밀한 학습 신호가 한 루프에 결합됩니다.
 
 **학생이 직접 궤적을 샘플링**하고, **고정된 교사가 그 궤적의 각 토큰에 점수를 매깁니다.** 학생이 실제로 방문한 상태에서 채점이 이뤄지니 오프폴리시 학습의 상태 불일치 문제가 없고, 토큰 단위로 신호가 나오니 RL의 희박한 보상 문제도 없습니다.
 

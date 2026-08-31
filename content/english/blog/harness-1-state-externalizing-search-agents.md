@@ -3,8 +3,8 @@ title: "Harness-1: Teaching Search Agents to Offload State"
 meta_title: ""
 description: "How the 20B Harness-1 search subagent externalizes working memory to a stateful harness, stabilizes RL training, and achieves 0.730 average curated recall across eight benchmarks."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/harness-1-state-externalizing-search-agents/state-externalizing-harness.png"
 categories: ["AI"]
 tags: ["search-agent", "retrieval", "rl", "rag", "agent-harness"]
 author: "whackur"
@@ -44,6 +44,10 @@ The harness handles:
 - `B_t`: context budget marker
 
 Search results don't just get appended to a prompt. They update harness state `(s_t, a_t) → (s_{t+1}, o_{t+1})`, and the model sees a compressed rendering of that state at each turn.
+
+![Harness-1 state-externalization split. The model policy chooses search, curation, verification, and stopping actions, while the harness stores the candidate pool, curated evidence, full text, evidence graph, verification records, history, and budget before returning compressed state.](/images/posts/harness-1-state-externalizing-search-agents/state-externalizing-harness.png)
+
+The model chooses semantic actions; the harness maintains seven kinds of working state and returns a compressed view.
 
 ## Tools
 

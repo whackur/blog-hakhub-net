@@ -3,8 +3,8 @@ title: "FHE·SP1·Groth16로 보는 비밀 투표 아키텍처"
 meta_title: ""
 description: "온체인 비밀 투표를 FHE 집계, SP1 실행 증명, Groth16 온체인 검증으로 설계하는 방법을 구체적인 아키텍처와 신뢰 가정 체크리스트와 함께 설명합니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/fhe-sp1-groth16-secret-voting/secret-voting-architecture.png"
 categories: ["Blockchain"]
 tags: ["fhe", "zk-proof", "groth16", "sp1", "voting", "privacy", "zero-knowledge", "maci", "semaphore"]
 author: "whackur"
@@ -56,6 +56,10 @@ Groth16은 큰 실행 증명을 EVM이 검증하기 좋은 상수 크기 SNARK�
 5. **개표**: 투표 종료 후 [KMS](https://docs.zama.ai/protocol/protocol/overview/kms)가 임계 복호화를 수행합니다. Zama KMS 문서 기준 예시는 13개 MPC 노드 중 9개가 참여하는 구조이며, 개인키는 단일 주체가 직접 접근하지 못하도록 secret sharing됩니다.
 
 6. **온체인 확정**: Ethereum 또는 Base 컨트랙트가 Groth16/PLONK proof와 복호화 결과를 검증한 뒤 최종 집계를 기록합니다. Base 같은 L2에서는 동일한 gas량이라도 실제 비용이 낮아집니다.
+
+![비밀 투표의 처리 흐름. 유권자의 FHE 암호문이 호스트 컨트랙트와 코프로세서를 거쳐 집계되고, SP1 실행 증명과 Groth16 또는 PLONK 래퍼를 Ethereum이나 Base가 검증하며, 투표 종료 뒤 KMS 임계 복호화 결과가 최종 집계로 확정되는 구조를 보여 준다.](/images/posts/fhe-sp1-groth16-secret-voting/secret-voting-architecture.png)
+
+FHE 집계와 KMS 복호화는 오프체인에서 수행되고, 호스트 컨트랙트 기록과 최종 증명 검증은 Ethereum 또는 Base에서 확정됩니다.
 
 ## 비슷하지만 다른 패턴들
 

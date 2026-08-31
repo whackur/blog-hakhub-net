@@ -3,8 +3,8 @@ title: "Figure: HELOC 대출에서 블록체인 자본시장 플랫폼으로"
 meta_title: ""
 description: "Figure Technology Solutions는 미국 HELOC 비은행 대출 1위에서 출발해 Provenance Blockchain 기반 자본시장 플랫폼으로 진화했습니다. DART 소유권 레지스트리, YLDS 이자부 증권, Democratized Prime 대출 마켓 구조를 정리합니다."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/figure-blockchain-capital-markets/closed-loop-capital-markets.png"
 categories: ["Blockchain"]
 tags: ["rwa", "provenance", "capital-markets", "tokenization", "heloc", "ylds"]
 author: "whackur"
@@ -21,6 +21,10 @@ Figure Technology Solutions는 미국 주택담보대출 시장에서 출발한 
 RWA(Real World Assets)란 주택담보대출, 국채, 회사채처럼 블록체인 바깥에서 발행·유통되는 금융 자산을 온체인 토큰으로 표현하는 방식이다. Figure의 접근 방식을 단순히 "RWA를 블록체인에 올린다"로 요약하면 핵심을 놓친다. 회사가 하려는 일은 대출 생성 단계부터 블록체인 기록을 쓰고, 거기서 만들어진 자산을 법적 소유권 등록, 거래 마켓, 이자부 현금성 자산까지 하나의 rail로 연결하는 것이다.
 
 [Figure의 Investor Relations 페이지](https://investors.figure.com/investor-relations)는 회사를 "blockchain-native capital marketplace for the origination, funding, sale and trading of on-chain loan products and tokenized assets"로 설명한다.
+
+![Figure 자본시장 플랫폼 구조. HELOC이 LOS를 거쳐 생성되고 DART에 소유권이 등록되며, DART·Figure Connect·Democratized Prime·YLDS가 Provenance의 기록·정산·토큰화 레일에 각각 연결되는 구조를 보여 준다.](/images/posts/figure-blockchain-capital-markets/closed-loop-capital-markets.png)
+
+Provenance는 순서상 하나의 후속 단계가 아니라, 대출 등록과 거래·대출·정산 구성 요소가 함께 쓰는 공통 레일입니다.
 
 ## 핵심 시스템
 

@@ -3,8 +3,8 @@ title: "AI 자기개선은 모델 밖 하네스에서 먼저 온다"
 meta_title: ""
 description: "릴리안 웽이 Lil'Log에 정리한 하네스 엔지니어링 개념과, 모델은 그대로 두고 하네스만 진화시켜 SWE-bench 점수를 20%에서 50%로 올린 Darwin Gödel Machine 사례를 살펴봅니다."
 date: 2026-07-08T10:20:00+09:00
-lastmod: 2026-07-08T10:20:00+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/harness-engineering-self-improvement/editable-harness-loop.png"
 categories: ["AI"]
 tags: ["ai-agent", "coding-agent", "harness", "self-improvement", "context-engineering", "swe-bench"]
 author: "whackur"
@@ -43,6 +43,10 @@ AI가 스스로를 개선한다는 말을 들으면 보통 모델이 자기 가�
 - **모델 파라미터와 공동 최적화**: SIA는 하네스와 모델 가중치를 한 루프 안에서 함께 최적화하려는 초기 시도로, 아직 시험적인 단계로 소개됩니다.
 
 이 목록에서 눈여겨볼 지점은, 뒤로 갈수록 사람이 검토하기 어려워진다는 것입니다. 프롬프트 한 줄을 바꾸는 건 리뷰하기 쉽지만, 하네스 코드 자체를 에이전트가 고치기 시작하면 그 변경이 다음 실행에 어떤 영향을 미칠지 예측하기가 훨씬 까다로워집니다.
+
+![고정된 모델과 편집 가능한 하네스의 관계. 모델 주위의 워크플로·컨텍스트·메모리·도구·서브에이전트가 계획·실행·테스트·개선 루프를 만들고, 평가 기준과 권한 경계는 루프 바깥에 남는 구조를 보여 준다.](/images/posts/harness-engineering-self-improvement/editable-harness-loop.png)
+
+자기개선의 편집 대상은 프롬프트에서 하네스 코드와 옵티마이저 코드로 이동하지만, 평가와 권한 경계는 그 루프 밖에 있어야 합니다.
 
 ## SWE-bench 20%에서 50%라는 숫자의 의미
 
