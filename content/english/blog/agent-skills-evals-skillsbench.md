@@ -4,7 +4,7 @@ meta_title: "Agent Skills Eval Methodology and SkillsBench"
 description: "A digest of Philipp Schmid's skill eval methodology from Google DeepMind, the SkillsBench paper numbers, and open-source harnesses like skill-eval-harness you can use today."
 date: 2026-07-18T01:00:00+09:00
 lastmod: 2026-08-05T00:00:00+09:00
-image: ""
+image: "/images/posts/agent-skills-evals-skillsbench/eval-harness-flow-1200.png"
 categories: ["AI"]
 tags: ["agent-skills", "evals", "coding-agent", "llm-agents", "hermes-agent"]
 author: "whackur"

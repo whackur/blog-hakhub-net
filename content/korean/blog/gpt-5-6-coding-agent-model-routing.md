@@ -4,7 +4,7 @@ meta_title: ""
 description: "GPT-5.6의 Sol·Terra·Luna 티어와 max/high/xhigh/ultra 설정을 구분하고, OpenAI 런치 스냅샷과 DeepSWE 18모델 리더보드·Artificial Analysis 수치로 Hermes Agent·Codex 같은 코딩 에이전트에 어떤 모델을 언제 써야 하는지 정리합니다."
 date: 2026-07-13T09:30:00+09:00
 lastmod: 2026-08-05T10:00:00+09:00
-image: ""
+image: "/images/posts/gpt-5-6-coding-agent-model-routing/deepswe-routing-tradeoffs-1200.png"
 categories: ["AI"]
 tags: ["gpt-5-6", "coding-agent", "model-routing", "benchmark", "llm"]
 author: "whackur"

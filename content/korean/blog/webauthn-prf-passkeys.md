@@ -4,7 +4,7 @@ meta_title: ""
 description: "WebAuthn PRF 확장과 CTAP2 hmac-secret의 관계, 암호화 설계 원칙, 기기·플랫폼 지원 현황을 구현 시 주의점과 함께 정리합니다."
 date: 2026-07-03T14:52:00+09:00
 lastmod: 2026-08-31T10:05:00+09:00
-image: ""
+image: "/images/posts/webauthn-prf-passkeys/prf-key-derivation-flow.png"
 categories: ["Security"]
 tags: ["passkey", "webauthn", "fido2", "security", "cryptography"]
 author: "whackur"

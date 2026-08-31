@@ -4,7 +4,7 @@ meta_title: ""
 description: "KYA applies the KYC due-diligence frame to AI agents. This post covers the concept, the standards race between ERC-8004, Visa TAP, Trulioo and Sumsub, regulatory signals from NIST, the EU and Singapore, and on-chain reality including vouch spam in the reputation registry."
 date: 2026-08-27T10:00:00+09:00
 lastmod: 2026-08-27T10:00:00+09:00
-image: ""
+image: "/images/posts/know-your-agent-kya-ai-agent-identity-onchain/kya-four-approaches-1200.png"
 categories: ["Blockchain"]
 tags: ["ai-agent", "kya", "identity", "erc-8004", "reputation", "compliance"]
 author: "whackur"

@@ -4,7 +4,7 @@ meta_title: ""
 description: "AI 에이전트가 사용자를 대신해 온체인 자산을 다룰 때 필요한 신원·검증·정책 실행 3계층 표준 ERC-8004, ERC-8126, ERC-8196을 정리합니다."
 date: 2026-06-30T07:00:00+09:00
 lastmod: 2026-07-17T17:50:08+09:00
-image: ""
+image: "/images/posts/ai-agent-wallet-trust-stack-erc-8004-8126-8196/trust-stack-layers-1200.png"
 categories: ["Blockchain"]
 tags: ["ai-agent", "wallet", "erc-8004", "erc-8126", "erc-8196"]
 author: "whackur"

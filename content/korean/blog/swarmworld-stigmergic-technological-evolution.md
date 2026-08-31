@@ -4,7 +4,7 @@ meta_title: ""
 description: "MIT LAMM이 2026년 8월 26일 공개한 SwarmWorld 논문을 정리합니다. 똑같은 gpt-5.6-luna 에이전트 50~200개를 72×54 격자에 풀어 놓고, 대화 채널을 끊어도 기술이 퍼지고 창작자가 사라진 뒤에도 작동하는지 검증한 실험입니다. 스티머지 개념, 네 가지 조건, 홀드아웃 리질리언스 측정, 자발적 분업, 그리고 저자들이 말하는 집단 이점의 경계까지 다룹니다."
 date: 2026-08-30T20:00:00+09:00
 lastmod: 2026-08-31T10:05:00+09:00
-image: ""
+image: "/images/posts/swarmworld-stigmergic-technological-evolution/final-checkpoint-comparison-1200.png"
 categories: ["AI"]
 tags: ["llm-agents", "multi-agent", "emergent-behavior", "stigmergy", "ai-research"]
 author: "whackur"

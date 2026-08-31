@@ -4,7 +4,7 @@ meta_title: "gs-quant Review: Goldman Sachs Open-Source Quant Library"
 description: "What Goldman Sachs' Python quant toolkit gs-quant is, the history from the 2018 repo to the 2021 OSPO, the local-vs-Marquee-API boundary visible in the code structure, community reactions, and its limits, reviewed for research and education."
 date: 2026-08-26T10:00:00+09:00
 lastmod: 2026-08-26T10:00:00+09:00
-image: ""
+image: "/images/posts/gs-quant-goldman-sachs-open-source-quant-library/local-vs-api-boundary-1200.png"
 categories: ["Finance"]
 tags: ["quant-finance", "open-source", "python", "goldman-sachs"]
 author: "whackur"

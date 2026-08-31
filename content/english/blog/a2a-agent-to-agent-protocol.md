@@ -4,7 +4,7 @@ meta_title: ""
 description: "A2A, announced by Google in April 2025 and donated to the Linux Foundation, standardizes agent-to-agent collaboration. This post covers its core objects (Agent Card, Task, Message, Artifact), how it differs from MCP, where x402, AP2 and UCP attach as payment extensions, adoption as of August 2026, and the criticism it has drawn."
 date: 2026-08-27T10:00:00+09:00
 lastmod: 2026-08-28T10:00:00+09:00
-image: ""
+image: "/images/posts/a2a-agent-to-agent-protocol/a2a-layer-stack-1200.png"
 categories: ["Blockchain"]
 tags: ["a2a", "ai-agent", "agentic-payments", "x402", "mcp"]
 author: "whackur"
