@@ -4,7 +4,7 @@ meta_title: "프로덕션 에이전트 Eval 운영법 (YouTube 광고팀 사례)
 description: "Google YouTube 광고팀이 강연에서 공개한 프로덕션 에이전트 eval 운영 방식을 정리합니다. 감으로 시작해 엄격한 측정으로 넘어가는 순서, 사람 채점자와 LLM judge 보정, trace 점검으로 잡아낸 disclaimer 삭제 사례까지."
 date: 2026-08-04T10:00:00+09:00
 lastmod: 2026-08-04T10:00:00+09:00
-image: ""
+image: "/images/posts/production-agent-evals-youtube-ads/eval-operations-loop-1200.png"
 categories: ["AI"]
 tags: ["evals", "llm-as-judge", "agent", "prompt-engineering"]
 author: "whackur"

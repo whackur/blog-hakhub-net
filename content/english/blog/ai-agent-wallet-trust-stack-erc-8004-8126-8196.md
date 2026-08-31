@@ -4,7 +4,7 @@ meta_title: ""
 description: "How three Ethereum standards work together to handle AI agent identity, security verification, and policy-bound wallet execution."
 date: 2026-06-30T07:00:00+09:00
 lastmod: 2026-07-17T17:50:08+09:00
-image: ""
+image: "/images/posts/ai-agent-wallet-trust-stack-erc-8004-8126-8196/trust-stack-layers-1200.png"
 categories: ["Blockchain"]
 tags: ["ai-agent", "wallet", "erc-8004", "erc-8126", "erc-8196"]
 author: "whackur"

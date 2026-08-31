@@ -4,7 +4,7 @@ meta_title: ""
 description: "The application layer above the ERC-8004/8126/8196 trust stack: job escrow (ERC-8183), regulated-asset compliance delegation (ERC-8226), multi-agent coordination (ERC-8001, Final), and fixed-supply agent collections (ERC-8041), with a builder's view of what is usable now."
 date: 2026-07-01T09:00:00+09:00
 lastmod: 2026-07-17T17:50:08+09:00
-image: ""
+image: "/images/posts/ai-agent-commerce-coordination-erc-8183-8226-8001/erc8183-job-lifecycle-1200.png"
 categories: ["Blockchain"]
 tags: ["ai-agent", "ethereum", "eip", "erc-8183", "erc-8226", "erc-8001", "erc-8041"]
 author: "whackur"

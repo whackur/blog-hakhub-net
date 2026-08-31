@@ -4,7 +4,7 @@ meta_title: "Running Production Agent Evals (YouTube Ads Team)"
 description: "How Google's YouTube Ads team runs evals for a production agent: starting on intuition before going strict, managing human raters, calibrating an LLM judge, and the disclaimer removal only a trace revealed."
 date: 2026-08-04T10:00:00+09:00
 lastmod: 2026-08-04T10:00:00+09:00
-image: ""
+image: "/images/posts/production-agent-evals-youtube-ads/eval-operations-loop-1200.png"
 categories: ["AI"]
 tags: ["evals", "llm-as-judge", "agent", "prompt-engineering"]
 author: "whackur"

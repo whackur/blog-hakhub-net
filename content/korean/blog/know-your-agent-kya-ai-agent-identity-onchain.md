@@ -4,7 +4,7 @@ meta_title: ""
 description: "KYC의 실사 프레임을 AI 에이전트에 적용한 KYA 개념을 정리하고, ERC-8004·Visa TAP·Trulioo·Sumsub의 표준 경쟁, NIST·EU·싱가포르 규제 신호, 평판 레지스트리 vouch spam 같은 온체인 실태를 짚습니다."
 date: 2026-08-27T10:00:00+09:00
 lastmod: 2026-08-27T10:00:00+09:00
-image: ""
+image: "/images/posts/know-your-agent-kya-ai-agent-identity-onchain/kya-four-approaches-1200.png"
 categories: ["Blockchain"]
 tags: ["ai-agent", "kya", "identity", "erc-8004", "reputation", "compliance"]
 author: "whackur"

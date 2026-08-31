@@ -4,7 +4,7 @@ meta_title: ""
 description: "How the WebAuthn PRF extension relates to CTAP2 hmac-secret, the encryption design decisions it leaves to your app, and current device and platform support."
 date: 2026-07-03T14:52:00+09:00
 lastmod: 2026-08-31T10:05:00+09:00
-image: ""
+image: "/images/posts/webauthn-prf-passkeys/prf-key-derivation-flow.png"
 categories: ["Security"]
 tags: ["passkey", "webauthn", "fido2", "security", "cryptography"]
 author: "whackur"
