@@ -3,8 +3,8 @@ title: "DeepSWE: A Benchmark for Long-Horizon Coding Agents"
 meta_title: ""
 description: "DeepSWE from DataCurve AI evaluates coding agents on 113 original long-horizon tasks using behavior-based verification, not patch matching. Here is what it measures and how the leaderboard should be read."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/deepswe-coding-agent-benchmark/deepswe-verification-flow.png"
 categories: ["AI"]
 tags: ["benchmark", "coding-agent", "swe-bench", "llm", "evaluation"]
 author: "whackur"
@@ -38,6 +38,10 @@ Every task has a 5,400-second (90-minute) agent timeout. Internet access is bloc
 One example task gives a sense of the difficulty level. `happy-dom-abort-pending-body-reads` targets the TypeScript repo `capricorn86/happy-dom`. The instruction asks for correct abort/cleanup semantics when a shutdown interrupts Request/Response body consumption, formData parsing, and timers. This is not a function to implement in isolation; it requires understanding how multiple components interact and changing behavior across several files.
 
 ## How scoring works
+
+![DeepSWE evaluation flow in which a Harbor task produces a candidate patch in the agent container and hidden tests score its behavior in a separate verifier container](/images/posts/deepswe-coding-agent-benchmark/deepswe-verification-flow.png)
+
+DeepSWE runs the candidate patch against tests in a separate verifier environment and scores its behavior.
 
 ### Behavior-based verification
 

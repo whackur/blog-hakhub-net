@@ -3,8 +3,8 @@ title: "ERC-8004 에이전트 평판: 온체인 등록과 조회"
 meta_title: ""
 description: "ERC-8004는 단일 컨트랙트가 아닌 레지스트리 세트다. giveFeedback()으로 Reputation Registry에 피드백을 등록하고, getSummary()로 신뢰 집합 기준 집계 조회하는 방법. 배포된 컨트랙트 주소와 생태계 서비스 현황."
 date: 2026-06-30T15:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/erc8004-agent-reputation-registry-lookup/reputation-write-read-flow.png"
 categories: ["Blockchain"]
 tags: ["ai-agent", "erc-8004", "reputation", "smart-contract", "onchain"]
 author: "whackur"
@@ -27,6 +27,10 @@ Reputation Registry는 초기화 시 Identity Registry 주소를 `initialize(add
 `giveFeedback()`에는 레지스트리 주소 파라미터가 없다. 트랜잭션 자체를 원하는 Reputation Registry 컨트랙트 주소(`tx.to`)로 보내면 된다. 어느 Reputation Registry 주소를 신뢰하고 쓸지는 애플리케이션이 결정한다. 피드백은 Identity Registry를 거치지 않고 Reputation Registry 스토리지에 직접 저장된다.
 
 ## Reputation Registry 구조
+
+![클라이언트가 giveFeedback으로 평판 필드를 기록하고 애플리케이션이 신뢰하는 clientAddresses 집합을 getSummary에 넘겨 집계값을 읽는 ERC-8004 평판 등록·조회 흐름](/images/posts/erc8004-agent-reputation-registry-lookup/reputation-write-read-flow.png)
+
+쓰기는 누구에게나 열려 있지만, 조회 결과는 애플리케이션이 `getSummary()`에 넘긴 신뢰 클라이언트 집합으로 필터링된다.
 
 Reputation Registry는 퍼미션리스 온체인 게시판이다. 에이전트 소유자·운영자를 제외한 어떤 주소든 어느 에이전트에나 피드백을 올릴 수 있고, 레지스트리는 피드백의 진위를 판단하지 않는다.
 

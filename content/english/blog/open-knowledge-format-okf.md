@@ -3,8 +3,8 @@ title: "Open Knowledge Format: A Shared Vocabulary for Agent Knowledge"
 meta_title: ""
 description: "OKF v0.1 is Google Cloud's proposed open format for AI agent knowledge sharing: YAML-frontmattered Markdown files in a directory tree, no central registry or required runtime."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/open-knowledge-format-okf/knowledge-bundle-structure.png"
 categories: ["AI"]
 tags: ["ai-agent", "knowledge-management", "metadata", "open-standard", "okf", "google-cloud", "mcp"]
 author: "whackur"
@@ -47,6 +47,10 @@ path/to/bundle/
     ├── index.md
     └── <concept>.md
 ```
+
+![OKF Knowledge Bundle structure. The directory tree contains index.md, log.md, and concept documents; each concept combines YAML frontmatter with a required type field, a Markdown body, and links to other concepts.](/images/posts/open-knowledge-format-okf/knowledge-bundle-structure.png)
+
+Humans and agents can read the same bundle, and Git can provide history and diffs, though Git itself is not a conformance requirement.
 
 A Git repository is the recommended storage format, since it gives you history, attribution, diffs, and reviews for free. tarball and zip are acceptable. A bundle can also live as a subdirectory within a larger repo.
 

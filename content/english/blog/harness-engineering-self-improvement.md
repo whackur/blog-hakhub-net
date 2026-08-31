@@ -3,8 +3,8 @@ title: "AI Self-Improvement Starts Outside the Model"
 meta_title: ""
 description: "Lilian Weng's Lil'Log post frames the harness around a model, not the model itself, as the near-term site of AI self-improvement, and explains how the Darwin Gödel Machine pushed SWE-bench from 20% to 50% without touching model weights."
 date: 2026-07-08T10:20:00+09:00
-lastmod: 2026-07-08T10:20:00+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/harness-engineering-self-improvement/editable-harness-loop.png"
 categories: ["AI"]
 tags: ["ai-agent", "coding-agent", "harness", "self-improvement", "context-engineering", "swe-bench"]
 author: "whackur"
@@ -43,6 +43,10 @@ Moving down this list shifts the object being edited from text a person wrote to
 - **Joint optimization with model weights**: SIA is an early, explicitly provisional attempt to optimize the harness and model parameters together in a single loop.
 
 The pattern worth noticing here: the further down this list you go, the harder it gets for a human to review. Changing one line of a prompt is easy to check. Once an agent starts editing its own harness code, predicting what that change does to the next run gets a lot harder.
+
+![Relationship between a fixed model and an editable harness. Workflow, context, memory, tools, and sub-agents surround the model in a plan-execute-test-improve loop, while evaluation criteria and permission boundaries remain outside it.](/images/posts/harness-engineering-self-improvement/editable-harness-loop.png)
+
+The optimization target moves from prompts toward harness and optimizer code, but evaluation and permission boundaries need to remain outside that loop.
 
 ## What the SWE-bench 20% to 50% claim means
 

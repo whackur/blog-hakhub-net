@@ -3,8 +3,8 @@ title: "Circle CCTP V2 EVM 컨트랙트 파헤치기"
 meta_title: ""
 description: "Circle CCTP V2의 TokenMessengerV2·MessageTransmitterV2·TokenMinterV2 세 컨트랙트가 역할을 어떻게 나누는지 소스코드 기준으로 정리했습니다. burn-and-mint 라이프사이클과 메시지 레이아웃, fast transfer 수수료 모델, hookData·destinationCaller의 실무 영향까지 다룹니다."
 date: 2026-06-30T17:30:00+09:00
-lastmod: 2026-07-02T00:00:00+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/circle-cctp-v2-evm-contracts/cctp-v2-burn-mint-lifecycle.png"
 categories: ["Blockchain"]
 tags: ["cctp", "circle", "usdc", "cross-chain", "solidity"]
 author: "whackur"
@@ -169,6 +169,10 @@ V2에서 nonce는 V1의 uint64 순차 카운터에서 `bytes32` 값으로 바뀌
 이 레이아웃에 CCTP의 신뢰 구조가 그대로 드러납니다. nonce, finalityThresholdExecuted, feeExecuted, expirationBlock 네 필드는 온체인에서 만들어지지 않습니다. Circle의 오프체인 서비스가 값을 채우고 서명하며, 그 서명된 결과가 목적지 체인에서 그대로 사실로 통합니다. attester는 소각을 목격하는 증인이면서 동시에 메시지를 완성하는 주체입니다.
 
 ## 소각 라이프사이클
+
+![소스 체인에서 TokenMessengerV2와 TokenMinterV2가 USDC를 소각하고 MessageTransmitterV2가 메시지를 낸 뒤 Circle attestation을 거쳐 목적지 체인에서 USDC를 민트하는 CCTP V2 흐름](/images/posts/circle-cctp-v2-evm-contracts/cctp-v2-burn-mint-lifecycle.png)
+
+소스 체인의 소각과 메시지 발생, Circle attestation, 목적지 체인의 검증과 민트가 하나의 전송 수명주기를 이룬다.
 
 소스 체인에서 시작해 목적지 체인에서 USDC를 받기까지의 흐름입니다.
 

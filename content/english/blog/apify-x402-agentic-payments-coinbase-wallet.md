@@ -3,8 +3,8 @@ title: "Apify x402 and Coinbase Wallets, in Depth: How Agents Buy Web Automation
 meta_title: ""
 description: "Apify opened more than 20,000 Actors to x402. This deep dive explains the HTTP 402 flow, EIP-3009 and Permit2, facilitators, Coinbase Agentic Wallet, Bazaar discovery, security practices, the agentic-payment ecosystem, and country-level constraints."
 date: 2026-07-05T01:10:00+09:00
-lastmod: 2026-07-06T11:32:39+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/apify-x402-agentic-payments-coinbase-wallet/x402-payment-flow.png"
 categories: ["Blockchain"]
 tags: ["x402", "agentic-payments", "apify", "coinbase", "ai-agent", "usdc", "base", "eip-3009", "stablecoin"]
 author: "whackur"
@@ -31,6 +31,10 @@ Until now the customer was usually a human: create an account, add billing, gene
 The important shift is that an agent's usable tool list is no longer frozen at deploy time. It can decide at runtime that it needs an Instagram profile scraper, buy a dollar's worth of access, run it, and continue the task. Apify's integration is not just a crypto checkout. It is a runtime-purchasable tool supply layer for agents.
 
 ## The x402 payment flow
+
+![Sequence showing an agent requesting an Apify Actor, receiving HTTP 402 payment requirements, retrying the Actor request with a payment signature, and receiving the result after the Actor verifies and settles through a facilitator](/images/posts/apify-x402-agentic-payments-coinbase-wallet/x402-payment-flow.png)
+
+The agent signs the payment requirements from the 402 response and receives the Actor result after facilitator verification and settlement.
 
 HTTP 402 Payment Required was reserved in the HTTP spec for future payment use, but it mostly sat unused. x402 turns it into a working protocol. According to the [Coinbase Developer Platform docs](https://docs.cdp.coinbase.com/x402/welcome), x402 lets clients and servers exchange stablecoin payments over HTTP without accounts, sessions, or bespoke API keys.
 

@@ -3,8 +3,8 @@ title: "DeepSWE: 코딩 에이전트를 장기 과제로 평가하는 벤치마�
 meta_title: ""
 description: "DataCurve AI가 공개한 long-horizon 소프트웨어 엔지니어링 벤치마크 DeepSWE. 113개 태스크, 행동 기반 verifier, mini-swe-agent 고정 harness로 모델별 성능을 측정합니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/deepswe-coding-agent-benchmark/deepswe-verification-flow.png"
 categories: ["AI"]
 tags: ["benchmark", "coding-agent", "swe-bench", "llm", "evaluation"]
 author: "whackur"
@@ -40,6 +40,10 @@ solution/         참조 정답 (에이전트에게 숨김)
 태스크 예시를 보면 성격이 잡힙니다. `happy-dom-abort-pending-body-reads`는 TypeScript 저장소 `capricorn86/happy-dom`을 대상으로 합니다. 지시문은 "shutdown으로 Request/Response body 소비, formData 파싱, 타이머가 중단될 때 AbortError와 cleanup semantics를 맞추라"는 실제 코드베이스 동작 변경 요구입니다. 함수 하나를 짜는 문제가 아니라 여러 파일에 걸친 동작 변경입니다.
 
 ## 평가 원리
+
+![Harbor 태스크가 에이전트 컨테이너에서 후보 패치를 만들고 별도 verifier 컨테이너의 숨은 테스트로 행동을 채점하는 DeepSWE 평가 흐름](/images/posts/deepswe-coding-agent-benchmark/deepswe-verification-flow.png)
+
+DeepSWE는 에이전트가 만든 후보 패치를 별도 verifier 환경의 테스트로 실행해 행동을 채점한다.
 
 ### 참조 패치 매칭이 아닌 행동 기반 채점
 

@@ -3,8 +3,8 @@ title: "Mixture of Agents: How Layering Open-Source LLMs Beat GPT-4 Omni"
 meta_title: ""
 description: "MoA stacks multiple LLMs in layers, each refining the previous layer's outputs. Here's the architecture, benchmark results, variants, and the quality-versus-diversity tradeoff."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-03T17:45:00+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/mixture-of-agents-moa/layered-aggregation-flow.png"
 categories: ["AI"]
 tags: ["moa", "llm", "multi-agent", "ensemble", "ai-architecture"]
 author: "whackur"
@@ -19,6 +19,10 @@ The starting observation is what the paper calls the collaborativeness of LLMs: 
 ## Architecture
 
 Each MoA layer runs multiple LLMs in parallel. Every agent receives the full output of the previous layer as context, generates its own response, and an aggregator merges those responses into the next layer's input. The pattern repeats across layers.
+
+![MoA layered aggregation architecture. Outputs from parallel agents in the first layer converge on an aggregator, feed parallel agents in the second layer, and then pass through a final aggregator to produce the answer.](/images/posts/mixture-of-agents-moa/layered-aggregation-flow.png)
+
+Agents run in parallel within a layer, but the next layer waits for every output and the aggregation step from the layer before it.
 
 | Component | Role |
 |---|---|

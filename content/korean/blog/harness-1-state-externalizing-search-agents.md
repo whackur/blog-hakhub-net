@@ -3,8 +3,8 @@ title: "Harness-1: 상태 외부화 하네스로 학습한 검색 에이전트"
 meta_title: ""
 description: "20B 검색 서브에이전트 Harness-1이 하네스에 상태를 외부화해 RL을 안정시키고 8개 벤치마크 평균 curated recall 0.730을 달성한 방법을 살펴봅니다."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/harness-1-state-externalizing-search-agents/state-externalizing-harness.png"
 categories: ["AI"]
 tags: ["search-agent", "retrieval", "rl", "rag", "agent-harness"]
 author: "whackur"
@@ -46,6 +46,10 @@ draft: false
 - `B_t`: context budget marker
 
 검색 결과가 단순히 다음 prompt에 append되지 않는다. 하네스 상태 `(s_t, a_t) → (s_{t+1}, o_{t+1})`를 갱신하고, 모델은 압축된 상태 렌더링을 보며 다음 행동을 결정한다.
+
+![Harness-1의 상태 외부화 구조. 모델 정책은 검색·선별·검증·종료를 결정해 구조화된 행동을 보내고, 하네스는 후보 풀·선별 증거·원문·증거 그래프·검증 기록·히스토리·예산을 보관한 뒤 압축 상태를 돌려준다.](/images/posts/harness-1-state-externalizing-search-agents/state-externalizing-harness.png)
+
+모델은 의미적 행동을 고르고, 하네스는 일곱 종류의 작업 상태를 유지해 압축된 형태로 다시 제공합니다.
 
 ## 도구 인터페이스
 

@@ -3,8 +3,8 @@ title: "Chainlink CCIP EVM 컨트랙트 구조 분석"
 meta_title: ""
 description: "Chainlink CCIP의 Router, OnRamp, OffRamp, TokenPool, FeeQuoter, RMN이 어떻게 맞물려 체인 간 메시지와 토큰을 이동시키는지 소스 코드 기준으로 정리합니다."
 date: 2026-06-30T17:30:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/chainlink-ccip-evm-contracts/ccip-cross-chain-architecture.png"
 categories: ["Blockchain"]
 tags: ["chainlink", "ccip", "cross-chain", "solidity", "smart-contract"]
 author: "whackur"
@@ -17,6 +17,10 @@ Ethereum Mainnet에서 Arbitrum으로 USDC를 보내거나, Polygon 컨트랙트
 Chainlink CCIP(Cross-Chain Interoperability Protocol)는 이 문제에 Chainlink의 DON(탈중앙화 오라클 네트워크)과 별도 위험 관리 네트워크(RMN)를 적용한 프로토콜입니다. 단순 토큰 전송뿐 아니라 임의 데이터를 함께 보낼 수 있고, 하나의 트랜잭션에서 토큰 이동과 컨트랙트 호출을 묶는 것도 가능합니다. 이 글은 CCIP EVM 컨트랙트의 각 구성 요소가 어떤 역할을 하는지, 그리고 그것들이 어떻게 맞물려 동작하는지를 소스 코드 기준으로 설명합니다.
 
 ## 전체 구조 개요
+
+![소스 체인의 Sender·Router·OnRamp에서 CCIP Network와 RMN을 거쳐 목적지 체인의 OffRamp·Router·CCIPReceiver로 이어지고 TokenPool과 FeeQuoter가 지원하는 CCIP 구조](/images/posts/chainlink-ccip-evm-contracts/ccip-cross-chain-architecture.png)
+
+메시지는 소스 체인의 Router와 OnRamp를 지나 CCIP 네트워크를 건너고, 목적지 체인의 OffRamp와 Router를 거쳐 CCIPReceiver에 도달한다.
 
 CCIP 컨트랙트는 크게 두 레이어로 나뉩니다. 사용자(또는 dApp)가 직접 접하는 **인터페이스 레이어**와 DON이 조율하는 **파이프라인 레이어**입니다.
 

@@ -3,8 +3,8 @@ title: "TradingAgents: LLM 에이전트로 만든 트레이딩 회사, 논문과
 meta_title: ""
 description: "애널리스트, 리서처 토론, 트레이더, 리스크 팀으로 역할을 나눈 멀티 에이전트 트레이딩 프레임워크 TradingAgents를 논문과 코드로 뜯어봤습니다. 백테스트 수치를 어디까지 믿을 수 있는지도 함께 짚습니다."
 date: 2026-07-03T14:30:00+09:00
-lastmod: 2026-07-03T15:10:00+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/tradingagents-multi-agent-llm-trading/agent-decision-flow.png"
 categories: ["AI"]
 tags: ["multi-agent", "llm-agents", "trading", "langgraph", "fintech", "agent-debate"]
 author: "whackur"
@@ -38,6 +38,10 @@ draft: false
 | Researcher Team | Bull Researcher, Bear Researcher, Research Manager | 강세와 약세가 토론하고 리서치 매니저가 정리 |
 | Trader | Trader | 애널리스트와 리서처 결과로 결정 신호 생성 |
 | Risk Management Team | Aggressive, Neutral, Conservative, Portfolio Manager | 세 관점에서 리스크를 토론하고 최종 판단 |
+
+![TradingAgents 의사결정 흐름. 시장, 소셜, 뉴스, 펀더멘털 애널리스트의 리포트가 강세·약세 토론과 리서치 매니저, 트레이더를 거쳐 공격적·중립적·보수적 리스크 토론과 포트폴리오 매니저의 최종 판단으로 이어진다.](/images/posts/tradingagents-multi-agent-llm-trading/agent-decision-flow.png)
+
+단계 사이에는 긴 대화 기록 대신 구조화된 리포트가 전달되며, 각 팀의 토론 결과도 다음 의사결정자의 입력으로 남습니다.
 
 논문은 이 흐름에 ReAct 프롬프팅을 쓰고, 리포트와 문서를 전역 상태처럼 활용해 긴 메시지 기록에만 의존하지 않도록 했다고 설명합니다.
 

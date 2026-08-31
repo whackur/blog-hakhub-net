@@ -3,8 +3,8 @@ title: "Open Knowledge Format(OKF): 에이전트용 지식 표현 개방형 포�
 meta_title: ""
 description: "Google Cloud가 제안한 AI 에이전트용 지식 교환 표준 OKF v0.1. YAML frontmatter + Markdown 기반 Knowledge Bundle 구조, LLM Wiki·AGENTS.md·MCP와의 관계를 정리합니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/open-knowledge-format-okf/knowledge-bundle-structure.png"
 categories: ["AI"]
 tags: ["ai-agent", "knowledge-management", "metadata", "open-standard", "okf", "google-cloud", "mcp"]
 author: "whackur"
@@ -49,6 +49,10 @@ path/to/bundle/
     ├── index.md
     └── <concept>.md
 ```
+
+![OKF Knowledge Bundle 구조. index.md와 log.md, 하위 디렉터리의 concept 문서로 이뤄진 트리와 type 필드가 필수인 YAML frontmatter, Markdown 본문, concept 간 링크를 보여 준다.](/images/posts/open-knowledge-format-okf/knowledge-bundle-structure.png)
+
+번들은 사람과 에이전트가 함께 읽을 수 있고 Git으로 이력과 diff를 관리할 수 있지만, Git 사용 자체가 명세의 필수 조건은 아닙니다.
 
 Git 저장소로 관리하는 것이 권장됩니다. history, attribution, diff, review가 모두 가능합니다. tarball/zip도 허용하며, 큰 repo의 하위 디렉터리로도 쓸 수 있습니다.
 
