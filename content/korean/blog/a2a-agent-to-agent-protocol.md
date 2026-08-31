@@ -4,7 +4,7 @@ meta_title: ""
 description: "Google이 2025년 4월 공개하고 Linux Foundation에 기증한 A2A 프로토콜의 핵심 개념(Agent Card, Task, Message, Artifact)과 동작 방식, MCP와의 역할 분담, x402·AP2·UCP 결제 확장과 만나는 지점, 2026년 8월 기준 채택 현황과 커뮤니티 비판을 정리합니다."
 date: 2026-08-27T10:00:00+09:00
 lastmod: 2026-08-28T10:00:00+09:00
-image: ""
+image: "/images/posts/a2a-agent-to-agent-protocol/a2a-layer-stack-1200.png"
 categories: ["Blockchain"]
 tags: ["a2a", "ai-agent", "agentic-payments", "x402", "mcp"]
 author: "whackur"

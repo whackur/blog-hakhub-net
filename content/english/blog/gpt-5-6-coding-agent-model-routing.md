@@ -4,7 +4,7 @@ meta_title: ""
 description: "A source-grounded breakdown of GPT-5.6's Sol, Terra, and Luna tiers versus its max/high/xhigh/ultra reasoning settings, using OpenAI's launch snapshot plus the 18-model DeepSWE leaderboard and Artificial Analysis data to decide which model fits which coding agent task."
 date: 2026-07-13T09:30:00+09:00
 lastmod: 2026-08-05T10:00:00+09:00
-image: ""
+image: "/images/posts/gpt-5-6-coding-agent-model-routing/deepswe-routing-tradeoffs-1200.png"
 categories: ["AI"]
 tags: ["gpt-5-6", "coding-agent", "model-routing", "benchmark", "llm"]
 author: "whackur"

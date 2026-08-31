@@ -4,7 +4,7 @@ meta_title: ""
 description: "MIT LAMM published SwarmWorld on August 26, 2026. Fifty to two hundred identical gpt-5.6-luna agents were dropped into a 72x54 grid, and the paper cuts their communication channels one by one to see what still spreads. This post covers stigmergy, the four conditions, the held-out resilience assay that removes every agent, the division of labor that appears on its own, and the boundary the authors draw around the swarm's advantage."
 date: 2026-08-30T20:00:00+09:00
 lastmod: 2026-08-31T10:05:00+09:00
-image: ""
+image: "/images/posts/swarmworld-stigmergic-technological-evolution/final-checkpoint-comparison-1200.png"
 categories: ["AI"]
 tags: ["llm-agents", "multi-agent", "emergent-behavior", "stigmergy", "ai-research"]
 author: "whackur"

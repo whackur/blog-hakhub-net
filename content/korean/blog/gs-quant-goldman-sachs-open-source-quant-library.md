@@ -4,7 +4,7 @@ meta_title: "gs-quant 골드만삭스 오픈소스 퀀트 라이브러리 리뷰
 description: "골드만삭스의 Python 퀀트 툴킷 gs-quant가 무엇인지, 2018년 저장소 생성부터 OSPO 출범까지의 공개 배경, 코드 구조에서 드러나는 로컬 영역과 Marquee API 영역의 경계, 커뮤니티 반응과 한계를 연구·교육 관점에서 정리합니다."
 date: 2026-08-26T10:00:00+09:00
 lastmod: 2026-08-26T10:00:00+09:00
-image: ""
+image: "/images/posts/gs-quant-goldman-sachs-open-source-quant-library/local-vs-api-boundary-1200.png"
 categories: ["Finance"]
 tags: ["quant-finance", "open-source", "python", "goldman-sachs"]
 author: "whackur"

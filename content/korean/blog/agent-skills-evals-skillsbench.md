@@ -4,7 +4,7 @@ meta_title: "Agent Skills Eval 방법론과 SkillsBench 정리"
 description: "Google DeepMind Philipp Schmid의 스킬 eval 방법론을 정리하고, SkillsBench 논문 수치와 skill-eval-harness 등 관련 오픈소스를 함께 살펴봅니다."
 date: 2026-07-18T01:00:00+09:00
 lastmod: 2026-08-05T00:00:00+09:00
-image: ""
+image: "/images/posts/agent-skills-evals-skillsbench/eval-harness-flow-1200.png"
 categories: ["AI"]
 tags: ["agent-skills", "evals", "coding-agent", "llm-agents", "hermes-agent"]
 author: "whackur"
