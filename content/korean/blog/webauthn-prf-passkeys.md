@@ -3,7 +3,7 @@ title: "WebAuthn PRF 확장으로 passkey에서 암호화 키 꺼내기"
 meta_title: ""
 description: "WebAuthn PRF 확장과 CTAP2 hmac-secret의 관계, 암호화 설계 원칙, 기기·플랫폼 지원 현황을 구현 시 주의점과 함께 정리합니다."
 date: 2026-07-03T14:52:00+09:00
-lastmod: 2026-07-03T18:44:00+09:00
+lastmod: 2026-08-31T10:05:00+09:00
 image: ""
 categories: ["Security"]
 tags: ["passkey", "webauthn", "fido2", "security", "cryptography"]
@@ -27,6 +27,10 @@ WebAuthn의 `prf` 확장은 credential 하나와 호출자가 넘긴 입력값(s
 같은 credential에 같은 입력을 넣으면 항상 같은 출력이 나옵니다. 반대로 authenticator가 쥔 비밀 없이는 그 출력이 무작위처럼 보입니다. 실무적으로는 무작위 키로 강한 해시 함수를 돌리는 HMAC과 같은 모델로 이해하면 됩니다. credential마다, salt마다 서로 다른 출력이 나오는 구조입니다. [Corbado의 정리](https://www.corbado.com/blog/passkeys-prf-webauthn)에 따르면 이 출력은 특정 passkey credential에 묶인 결정론적 32바이트 값이고, 적절한 KDF와 암호화 설계를 거치면 WebCrypto용 대칭키 재료로 쓸 수 있습니다.
 
 여기서 중요한 경계선이 있습니다. PRF는 그 자체로 데이터를 암호화하지 않습니다. WebAuthn 의식(ceremony)이 끝난 뒤 credential에 묶인 키 재료를 하나 내줄 뿐입니다. 이 키 재료로 실제 암호화를 하려면 애플리케이션이 WebCrypto 같은 별도의 암호화 계층을 붙여야 합니다.
+
+![PRF 키 유도 흐름 개념도. 호출자가 넣은 salt와 credential이 authenticator 내부의 CTAP2 hmac-secret 계산으로 들어가고, credential과 salt에 묶인 32바이트 PRF 출력이 돌아와 애플리케이션 측 암호화 계층(envelope encryption의 데이터 키 감싸기)에 쓰이는 과정을 보여 준다.](/images/posts/webauthn-prf-passkeys/prf-key-derivation-flow.png)
+
+PRF 계산은 authenticator가 맡고 브라우저는 결과만 전달하며, 실제 데이터 암호화와 envelope encryption은 애플리케이션이 책임집니다.
 
 ## CTAP2 hmac-secret과의 관계
 
