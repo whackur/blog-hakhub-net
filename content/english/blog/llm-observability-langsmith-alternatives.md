@@ -3,8 +3,8 @@ title: "LLM Observability Without LangSmith: Five Open-Source Tools Compared"
 meta_title: ""
 description: "A practical comparison of Langfuse, Opik, Laminar/LMNR, Arize Phoenix, and Helicone as self-hostable LangSmith alternatives for LLM and agent debugging."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T18:00:00+09:00
+image: "/images/posts/llm-observability-langsmith-alternatives/http-log-vs-llm-trace.png"
 categories: ["AI"]
 tags: ["llm-observability", "evals", "tracing", "langfuse", "opik"]
 author: "whackur"
@@ -19,6 +19,10 @@ Five tools are worth knowing. They cover different parts of the space, and picki
 ## LLM observability, defined
 
 LLM observability is not the same as application logging, and the difference matters when choosing a tool. A standard HTTP request log captures request and response as flat key-value records. A single LLM application request can fan out into multiple model calls, tool invocations (search, code execution, external APIs), memory lookups, and sub-agent delegations. Reconstructing "why did this response go wrong" means navigating a nested tree, not reading a flat log line.
+
+![A flat HTTP log compared with an LLM trace tree containing nested spans](/images/posts/llm-observability-langsmith-alternatives/http-log-vs-llm-trace.png)
+
+*Reconstructed from the article's explanation of the difference between conventional HTTP logs and LLM traces and spans.*
 
 A few concepts are worth understanding before comparing tools:
 

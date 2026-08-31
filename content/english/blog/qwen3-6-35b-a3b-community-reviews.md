@@ -3,8 +3,8 @@ title: "Qwen3.6-35B-A3B: Community Reviews, Uncensored Variants, and MTP Benchma
 meta_title: ""
 description: "From the 1.2M-download uncensored variant to real MTP acceleration numbers on 12 GB and 16 GB VRAM. What the community has found running Qwen3.6-35B-A3B locally."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T18:00:00+09:00
+image: "/images/posts/qwen3-6-35b-a3b-community-reviews/mtp-vram-speed-tradeoff.png"
 categories: ["AI"]
 tags: ["qwen", "local-llm", "moe", "mtp", "uncensored", "llama-cpp"]
 author: "whackur"
@@ -97,6 +97,10 @@ From the [r/LocalLLaMA K_P quants thread](https://www.reddit.com/r/LocalLLaMA/co
 | Q4_K_XL + MTP | 74 tok/s (acceptance ~79.5%) |
 | Q4_K_XL, no MTP, short context | 97 tok/s |
 | Q4_K_XL, no MTP, 128K context | 56 tok/s |
+
+![Generation-speed comparison and VRAM bottleneck for MTP and context settings on a 16 GB RTX 5080](/images/posts/qwen3-6-35b-a3b-community-reviews/mtp-vram-speed-tradeoff.png)
+
+*Reconstructed from the post's 16 GB RTX 5080 measurements and the potential MTP bottleneck when VRAM headroom is limited.*
 
 At 128K context, prompt processing runs around 1,584 tok/s (about 81 seconds). MTP only helps when the full model fits in VRAM. If the MTP compute buffer forces MoE expert layers onto CPU, that bottleneck can make MTP slower than running without it, even with a high acceptance rate.
 

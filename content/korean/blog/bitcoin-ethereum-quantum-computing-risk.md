@@ -3,8 +3,8 @@ title: "비트코인과 이더리움, 양자 컴퓨터는 정말 위협일까"
 meta_title: ""
 description: "Google·이더리움 재단·스탠퍼드의 2026년 3월 논문이 secp256k1 공격에 필요한 큐비트 수를 대폭 낮췄다. 오늘 당장 붕괴하지는 않지만, 개발자가 지금부터 준비해야 하는 이유를 정리한다."
 date: 2026-07-05T23:37:01+09:00
-lastmod: 2026-07-06T00:09:52+09:00
-image: ""
+lastmod: 2026-08-31T18:00:00+09:00
+image: "/images/posts/bitcoin-ethereum-quantum-computing-risk/public-key-exposure-attack-window.png"
 categories: ["Blockchain"]
 tags: ["bitcoin", "ethereum", "quantum-computing", "post-quantum-cryptography", "cryptography"]
 author: "whackur"
@@ -103,6 +103,10 @@ Taproot는 가장 최신의 주소 형식이지만, tweaked 공개키를 해시 
 추정치는 출처마다 다소 갈린다. 2025년 Chaincode Labs 연구는 재사용된 공개키 기준으로 최대 626만 BTC까지 노출됐다고 봤고, Ledger Donjon은 가치 기준으로 약 25%를 노출 상태로 추정했다. 방법론 차이는 있지만 Google 논문과 Project Eleven 모두 690만 BTC 근방으로 수렴한다.
 
 공격 시점은 두 갈래로 나뉜다. 공개키가 상시 노출된 P2PK·재사용 주소·Taproot는 "장기 공격(at-rest)" 대상으로, 공격자가 시간에 쫓기지 않는다. 반면 해시형 주소는 지출 순간 서명에 공개키가 포함돼 멤풀에 브로드캐스트되는데, 이때는 다음 블록이 채굴되기 전(평균 10분)에 개인키를 복원해 자금을 자신에게 리다이렉트해야 하는 "단기 공격(on-spend)"이다. 블록 채굴은 평균과 표준편차가 모두 약 10분인 포아송 과정이라, Google 논문은 이상적인 조건(단일 서명 P2WPKH 지출, 9분 키 복원, 공개키 노출 즉시 전파, 멤풀 혼잡 없음)에서 공격 성공 확률을 약 41%로 모델링했다. 블록 시간이 짧은 체인일수록 이 확률은 급격히 낮아진다. Litecoin(2.5분)은 3% 미만, Zcash(75초)는 1,300분의 1 미만, Dogecoin(1분)은 8,000분의 1 미만이다. 다만 이는 방어자에게 유리한 쪽으로만 해석할 수 없다. 논문은 충분히 높은 수수료를 내거나 멤풀이 한산할 때 공격자가 30분에서 1시간 안에 깨지 못하면 어떤 트랜잭션도 사실상 안전해 보인다고 언급하면서도, 반대로 공격자가 고수수료 트랜잭션을 대량으로 뿌려 멤풀을 인위적으로 혼잡시켜 시간을 벌 가능성도 함께 지적한다.
+
+![비트코인 주소의 공개키 노출 시점에 따른 장기 공격과 지출 시점 공격 흐름](/images/posts/bitcoin-ethereum-quantum-computing-risk/public-key-exposure-attack-window.png)
+
+*위 도표는 이 절의 주소별 공개키 노출 시점과 Google 논문의 9분 키 복원·약 41% 성공 확률 모델을 재구성했다.*
 
 ## 포스트양자 암호는 이미 표준이 나왔다
 

@@ -3,8 +3,8 @@ title: "Bitcoin, Ethereum, and the Quantum Computing Question"
 meta_title: ""
 description: "A March 2026 paper from Google, the Ethereum Foundation, and Stanford cut the qubit budget for attacking secp256k1 dramatically. Here is what changed, what did not, and what developers should do now."
 date: 2026-07-05T23:37:01+09:00
-lastmod: 2026-07-06T00:09:52+09:00
-image: ""
+lastmod: 2026-08-31T18:00:00+09:00
+image: "/images/posts/bitcoin-ethereum-quantum-computing-risk/public-key-exposure-attack-window.png"
 categories: ["Blockchain"]
 tags: ["bitcoin", "ethereum", "quantum-computing", "post-quantum-cryptography", "cryptography"]
 author: "whackur"
@@ -103,6 +103,10 @@ The **March 2026 joint whitepaper from ARK Invest and Unchained, "Bitcoin and Qu
 Estimates vary by source. A 2025 Chaincode Labs study put reused-key exposure as high as 6.26 million BTC, while Ledger Donjon estimated about 25% by value. The methodologies differ, but the Google paper and Project Eleven both converge on a figure near 6.9 million BTC.
 
 Attack timing splits into two categories. Public keys that stay exposed permanently, P2PK, reused addresses, and Taproot, are "at-rest" targets, where an attacker faces no time pressure at all. Hash-type addresses only expose their public key briefly, inside the signature broadcast to the mempool at spend time, an "on-spend" attack that requires recovering the private key and redirecting funds before the next block confirms (about 10 minutes on average). Block mining is a Poisson process with a mean and standard deviation both around 10 minutes, so the Google paper modeled a roughly 41% success probability under ideal conditions (a single-signature P2WPKH spend, 9-minute key recovery, instant public-key propagation, no mempool congestion). Faster chains cut that probability sharply: under 3% for Litecoin (2.5-minute blocks), under 1 in 1,300 for Zcash (75 seconds), under 1 in 8,000 for Dogecoin (1 minute). This does not favor defenders unconditionally, though. The paper notes that with a high enough fee, or during a period of low congestion, any transaction looks practically safe if an attacker cannot break it within 30 minutes to an hour, but it also points out that an attacker could flood the mempool with high-fee transactions to buy more time.
+
+![At-rest and on-spend attack paths based on when a Bitcoin address exposes its public key](/images/posts/bitcoin-ethereum-quantum-computing-risk/public-key-exposure-attack-window.png)
+
+*This diagram reconstructs the address exposure paths in this section and the Google paper's model of 9-minute key recovery with roughly 41% success.*
 
 ## The post-quantum crypto standards already exist
 

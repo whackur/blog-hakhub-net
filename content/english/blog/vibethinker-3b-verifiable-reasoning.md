@@ -3,8 +3,8 @@ title: "VibeThinker-3B: Packing Verifiable Reasoning into 3 Billion Parameters"
 meta_title: ""
 description: "WeiboAI's VibeThinker-3B applies multi-stage RL and self-distillation to a 3B base model, claiming frontier-level results on math and coding benchmarks. A look at what it achieves and where it falls short."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T18:00:00+09:00
+image: "/images/posts/vibethinker-3b-verifiable-reasoning/training-pipeline.png"
 categories: ["AI"]
 tags: ["small-language-model", "reasoning", "reinforcement-learning", "math", "coding"]
 author: "whackur"
@@ -35,6 +35,10 @@ If this distinction holds, domains with reliable verification signals (math, cod
 ## Training pipeline
 
 Five stages:
+
+![Five-stage training pipeline from Qwen2.5-Coder-3B to VibeThinker-3B](/images/posts/vibethinker-3b-verifiable-reasoning/training-pipeline.png)
+
+*Diagram reconstructed from the five-stage sequence and each stage's core role described in the article.*
 
 ### 1. Curriculum-based two-stage SFT
 
