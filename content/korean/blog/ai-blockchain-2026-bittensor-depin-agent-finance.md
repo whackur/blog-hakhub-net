@@ -3,8 +3,8 @@ title: "2026년 AI x 블록체인 지형도: Bittensor, DePIN, 에이전트 금�
 meta_title: ""
 description: "2026년 AI와 블록체인이 교차하는 네 개 레이어, 분산 지능(Bittensor), 분산 GPU 컴퓨팅(Akash·Render·Aethir), 에이전트 금융(DeFAI), 머신 간 결제(x402)의 현황을 정리합니다."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T18:00:00+09:00
+image: "/images/posts/ai-blockchain-2026-bittensor-depin-agent-finance/x402-payment-flow.png"
 categories: ["Blockchain"]
 tags: ["ai-blockchain", "bittensor", "depin", "agent-finance", "akash", "render", "x402", "decentralized-compute"]
 author: "whackur"
@@ -83,6 +83,10 @@ AI 에이전트가 스스로 트레이딩·전략 실행·태스크 수행을 �
 [x402](https://x402.org/)는 오랫동안 예약만 되어 있던 HTTP 상태 코드 402 Payment Required를 실제로 동작하게 만든 머신 간 결제 프로토콜이다. Coinbase가 공개한 오픈 프로토콜로, AI 에이전트가 API·도구·데이터 접근 비용을 호출 시점에 직접 지불한다. 사람이 카드를 등록하거나 구독을 관리할 필요가 없다.
 
 동작 흐름은 HTTP 요청·응답 안에 결제를 끼워 넣는 방식이다. 에이전트가 유료 엔드포인트를 호출하면 서버가 402 응답으로 가격과 결제 조건을 알려주고, 에이전트는 서명된 결제 페이로드를 붙여 재요청한다. facilitator가 온체인 검증과 정산을 대신 처리하므로, API 서버는 자체 지갑 인프라 없이 스테이블코인 결제를 받을 수 있다.
+
+![AI 에이전트의 요청부터 facilitator의 온체인 검증·정산과 API 응답까지 이어지는 x402 결제 흐름](/images/posts/ai-blockchain-2026-bittensor-depin-agent-finance/x402-payment-flow.png)
+
+*본문의 x402 요청·결제·검증·정산 흐름을 재구성한 도표입니다.*
 
 결제·정산·권한 위임이 한 흐름으로 묶인다는 점이 x402의 실질적인 차별점이다. MCP 서버처럼 에이전트가 중간에서 다른 유료 API를 호출할 때도 결제 흐름이 이어지고, 호출 체인의 중간 참여자를 태깅하는 builder code 방식으로 다단계 호출의 정산 귀속 문제를 다룬다. 에이전트 금융 레이어에서 결제가 기능이 아니라 인프라가 되어가는 흐름의 한 단면이다.
 

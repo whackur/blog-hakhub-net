@@ -3,8 +3,8 @@ title: "AI x Blockchain in 2026: Bittensor, DePIN, and Agent Finance"
 meta_title: ""
 description: "In 2026, the AI-blockchain intersection has organized into four concrete layers: decentralized intelligence (Bittensor), distributed GPU compute (Akash, Render, Aethir), agent finance (DeFAI), and machine-to-machine payments (x402). This post maps each layer as of mid-2026."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T18:00:00+09:00
+image: "/images/posts/ai-blockchain-2026-bittensor-depin-agent-finance/x402-payment-flow.png"
 categories: ["Blockchain"]
 tags: ["ai-blockchain", "bittensor", "depin", "agent-finance", "akash", "render", "x402", "decentralized-compute"]
 author: "whackur"
@@ -73,6 +73,10 @@ The evaluation standard is shifting accordingly. Whether a project has a token m
 [x402](https://x402.org/) is a machine-to-machine payment protocol that puts the long-dormant HTTP 402 Payment Required status code to work. Coinbase published it as an open protocol. It lets AI agents pay for API access, tools, and data at the moment of invocation, with no human registering a card or managing a subscription.
 
 The flow embeds payment into the HTTP request-response cycle. An agent calls a paid endpoint, the server answers with a 402 response carrying the price and payment requirements, and the agent retries with a signed payment payload attached. A facilitator service handles on-chain verification and settlement, so the API server can accept stablecoin payments without running wallet infrastructure of its own.
+
+![x402 payment flow from an AI agent's request through facilitator-led on-chain verification and settlement to the API response](/images/posts/ai-blockchain-2026-bittensor-depin-agent-finance/x402-payment-flow.png)
+
+*Diagram reconstructed from the x402 request, payment, verification, and settlement flow described in this article.*
 
 What sets x402 apart in practice is that payment, settlement, and authorization travel in one flow. In MCP server architectures where one agent calls another agent's paid API, x402 carries the payment chain through each layer. Attribution and settlement for multi-hop service calls is a real design challenge, and x402's builder-code system addresses it by tagging each intermediary in the call chain. Payment handling is turning into a piece of agent infrastructure in its own right.
 
