@@ -1,0 +1,170 @@
+{{/*
+  Project-level SEO/AEO additions: self-referencing canonical + JSON-LD.
+
+  Included from layouts/_partials/essentials/head.html, right after the
+  basic-seo module partial. Deliberately kept OUT of a basic-seo.html override
+  so the upstream seo-tools/basic-seo module can keep updating on its own.
+
+  https://github.com/gethugothemes/hugo-modules/tree/master/seo-tools/basic-seo
+*/}}
+
+{{ $page := . }}
+
+{{/* ---------------------------------------------------------------- */}}
+{{/* Self-referencing canonical                                        */}}
+{{/* basic-seo only emits <link rel="canonical"> when a page sets      */}}
+{{/* `canonical` in front matter (syndicated content). Emit a          */}}
+{{/* self-referencing one for everything else so no page ever ends up  */}}
+{{/* with two canonicals.                                              */}}
+{{/* ---------------------------------------------------------------- */}}
+{{ if not .Params.canonical }}
+  <link rel="canonical" href="{{ .Permalink }}" />
+{{ end }}
+
+{{/* BCP47 tag for schema.org inLanguage. Falls back to the bare language key
+     if a new language is added without being listed here. */}}
+{{ $inLanguage := index (dict "ko" "ko-KR" "en" "en-US") .Lang | default .Lang }}
+
+{{/* Resolve an image reference (front matter or site metadata) to an absolute
+     URL. Asset-pipeline images are looked up so we link the URL Hugo actually
+     publishes; anything else falls back to absURL. */}}
+{{ $siteImage := "" }}
+{{ with site.Params.metadata.image }}
+  {{ if hasPrefix . "http" }}
+    {{ $siteImage = . }}
+  {{ else }}
+    {{ $path := strings.TrimPrefix "/" . }}
+    {{ with resources.Get $path }}
+      {{ $siteImage = .Permalink }}
+    {{ else }}
+      {{ $siteImage = $path | absURL }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ $image := $siteImage }}
+{{ with .Params.image }}
+  {{ if hasPrefix . "http" }}
+    {{ $image = . }}
+  {{ else }}
+    {{ $path := strings.TrimPrefix "/" . }}
+    {{ with resources.Get $path }}
+      {{ $image = .Permalink }}
+    {{ else }}
+      {{ $image = $path | absURL }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* ---------------------------------------------------------------- */}}
+{{/* BlogPosting + BreadcrumbList on blog single pages                 */}}
+{{/* ---------------------------------------------------------------- */}}
+{{ if and .IsPage (eq .Section "blog") }}
+
+  {{ $article := dict
+    "@context" "https://schema.org"
+    "@type" "BlogPosting"
+    "headline" .Title
+    "url" .Permalink
+    "mainEntityOfPage" (dict "@type" "WebPage" "@id" .Permalink)
+    "inLanguage" $inLanguage
+    "publisher" (dict "@type" "Organization" "name" site.Title "url" site.Home.Permalink)
+  }}
+
+  {{ with .Params.description | default .Description }}
+    {{ $article = merge $article (dict "description" .) }}
+  {{ end }}
+
+  {{ with $image }}
+    {{ $article = merge $article (dict "image" .) }}
+  {{ end }}
+
+  {{ if not .PublishDate.IsZero }}
+    {{ $article = merge $article (dict "datePublished" (.PublishDate.Format "2006-01-02T15:04:05Z07:00")) }}
+    {{ $modified := .PublishDate }}
+    {{ if not .Lastmod.IsZero }}
+      {{ $modified = .Lastmod }}
+    {{ end }}
+    {{ $article = merge $article (dict "dateModified" ($modified.Format "2006-01-02T15:04:05Z07:00")) }}
+  {{ end }}
+
+  {{/* Author page URL is built exactly like the theme builds its author links
+       (layouts/blog/single.html), so it always resolves to a real page. */}}
+  {{ with .Params.author | default site.Params.metadata.author }}
+    {{ $article = merge $article (dict "author" (dict
+      "@type" "Person"
+      "name" .
+      "url" (absLangURL (printf "authors/%s/" (urlize .)))
+    )) }}
+  {{ end }}
+
+  {{ with .Params.categories }}
+    {{ $article = merge $article (dict "articleSection" .) }}
+  {{ end }}
+
+  {{ with .Params.tags }}
+    {{ $article = merge $article (dict "keywords" (delimit . ", ")) }}
+  {{ end }}
+
+  <script type="application/ld+json">
+    {{ $article | jsonify | safeJS }}
+  </script>
+
+  {{/* Breadcrumb mirrors the visible trail in
+       themes/hugoplate/layouts/_partials/components/breadcrumb.html */}}
+  {{ $crumbs := slice (dict
+    "@type" "ListItem"
+    "position" 1
+    "name" (or (T "home") "Home")
+    "item" site.Home.Permalink
+  ) }}
+  {{ range .Ancestors.Reverse }}
+    {{ if and (not .IsHome) (ne .Title "Pages") }}
+      {{ $crumbs = $crumbs | append (dict
+        "@type" "ListItem"
+        "position" (add (len $crumbs) 1)
+        "name" (or (T (lower .Title)) .Title)
+        "item" .Permalink
+      ) }}
+    {{ end }}
+  {{ end }}
+  {{ $crumbs = $crumbs | append (dict
+    "@type" "ListItem"
+    "position" (add (len $crumbs) 1)
+    "name" $page.Title
+    "item" $page.Permalink
+  ) }}
+
+  {{ $breadcrumb := dict
+    "@context" "https://schema.org"
+    "@type" "BreadcrumbList"
+    "itemListElement" $crumbs
+  }}
+
+  <script type="application/ld+json">
+    {{ $breadcrumb | jsonify | safeJS }}
+  </script>
+
+{{ end }}
+
+{{/* ---------------------------------------------------------------- */}}
+{{/* WebSite on the home page of each language                         */}}
+{{/* No SearchAction: the search UI is client-side and has no verified */}}
+{{/* query-string URL pattern.                                         */}}
+{{/* ---------------------------------------------------------------- */}}
+{{ if .IsHome }}
+  {{ $website := dict
+    "@context" "https://schema.org"
+    "@type" "WebSite"
+    "name" site.Title
+    "url" .Permalink
+    "inLanguage" $inLanguage
+  }}
+  {{ with .Params.description | default site.Params.metadata.description }}
+    {{ $website = merge $website (dict "description" .) }}
+  {{ end }}
+
+  <script type="application/ld+json">
+    {{ $website | jsonify | safeJS }}
+  </script>
+{{ end }}
