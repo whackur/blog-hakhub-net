@@ -3,8 +3,8 @@ title: "LLM Observability 오픈소스 스택: LangSmith 대안 5종 비교"
 meta_title: ""
 description: "LangSmith를 대체할 수 있는 오픈소스 LLM observability 도구 Langfuse, Opik, Laminar/LMNR, Arize Phoenix, Helicone를 목적별로 비교합니다."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T18:00:00+09:00
+image: "/images/posts/llm-observability-langsmith-alternatives/http-log-vs-llm-trace.png"
 categories: ["AI"]
 tags: ["llm-observability", "evals", "tracing", "langfuse", "opik"]
 author: "whackur"
@@ -17,6 +17,10 @@ LLM 앱이나 AI 에이전트를 운영하다 보면 "어떤 프롬프트가 실
 ## LLM 관측성이란
 
 LLM 관측성(LLM observability)은 AI 애플리케이션의 내부 동작을 추적하고 분석하는 실천이다. 일반 앱 로그와 근본적으로 다른 이유가 있다. HTTP 요청 로그는 요청-응답 쌍을 기록하는 단순한 키-값 레코드다. LLM 앱에서 사용자 요청 하나는 여러 LLM 호출, 도구 호출(검색·코드 실행·API), 메모리 조회, 서브에이전트 위임을 거치며 트리 구조로 펼쳐진다. "왜 이 답변이 나왔는가"를 재구성하려면 이 트리 전체를 볼 수 있어야 한다.
+
+![평면 HTTP 로그와 여러 span으로 중첩된 LLM trace 트리 비교](/images/posts/llm-observability-langsmith-alternatives/http-log-vs-llm-trace.png)
+
+*일반 HTTP 로그와 LLM trace 구조의 차이를 본문의 trace·span 설명에 근거해 재구성한 그림입니다.*
 
 이 복잡성을 다루는 핵심 개념들:
 

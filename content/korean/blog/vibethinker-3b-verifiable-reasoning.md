@@ -3,8 +3,8 @@ title: "VibeThinker-3B: 검증 가능한 추론을 3B 모델에 압축한 실험
 meta_title: ""
 description: "Sina Weibo의 WeiboAI가 발표한 VibeThinker-3B. Qwen2.5-Coder-3B 기반 3B 모델에 다단계 RL과 자기증류를 집중 적용해 수학·코딩 벤치마크에서 frontier급 결과를 주장하는 기술 보고서입니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T18:00:00+09:00
+image: "/images/posts/vibethinker-3b-verifiable-reasoning/training-pipeline.png"
 categories: ["AI"]
 tags: ["small-language-model", "reasoning", "reinforcement-learning", "math", "coding"]
 author: "whackur"
@@ -35,6 +35,10 @@ draft: false
 ## 학습 파이프라인
 
 5단계로 구성됩니다.
+
+![Qwen2.5-Coder-3B에서 VibeThinker-3B로 이어지는 5단계 학습 파이프라인](/images/posts/vibethinker-3b-verifiable-reasoning/training-pipeline.png)
+
+*본문에 설명된 5단계 학습 순서와 단계별 핵심 역할을 재구성한 도표입니다.*
 
 ### 1. 커리큘럼 기반 2단계 SFT
 

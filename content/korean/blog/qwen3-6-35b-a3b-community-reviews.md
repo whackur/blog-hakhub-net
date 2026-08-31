@@ -3,8 +3,8 @@ title: "Qwen3.6-35B-A3B 커뮤니티 리뷰: uncensored 변종, MTP 가속, Herm
 meta_title: ""
 description: "1.2M 다운로드의 uncensored 변종부터 12GB/16GB VRAM 실측치까지. Qwen3.6-35B-A3B를 실제로 써본 커뮤니티 후기와 권장 설정을 정리했습니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T18:00:00+09:00
+image: "/images/posts/qwen3-6-35b-a3b-community-reviews/mtp-vram-speed-tradeoff.png"
 categories: ["AI"]
 tags: ["qwen", "local-llm", "moe", "mtp", "uncensored", "llama-cpp"]
 author: "whackur"
@@ -97,6 +97,10 @@ MTP(Multi-Token Prediction)는 여러 토큰을 한 번에 예측해 생성 속�
 | Q4_K_XL + MTP | 74 tok/s (acceptance ~79.5%) |
 | Q4_K_XL, MTP 없음, 짧은 컨텍스트 | 97 tok/s |
 | Q4_K_XL, MTP 없음, 128K 컨텍스트 | 56 tok/s |
+
+![16GB RTX 5080에서 MTP와 컨텍스트 조건에 따른 생성 속도 및 VRAM 병목 비교](/images/posts/qwen3-6-35b-a3b-community-reviews/mtp-vram-speed-tradeoff.png)
+
+*본문의 16GB RTX 5080 실측값과 MTP가 VRAM 여유에 따라 일으킬 수 있는 병목을 재구성한 도표입니다.*
 
 128K 컨텍스트에서 prompt processing은 약 1,584 tok/s (처리 시간 약 81초). MTP가 효과를 내려면 모델 전체가 VRAM에 올라가야 한다. MTP compute buffer 때문에 VRAM 여유가 줄어들면, MoE expert layer가 CPU로 밀리고 그 병목 때문에 MTP 없을 때보다 느려질 수 있다.
 
