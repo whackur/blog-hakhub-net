@@ -3,8 +3,8 @@ title: "Apify x402와 Coinbase 지갑 심층편: 에이전트가 웹 자동화 �
 meta_title: ""
 description: "Apify가 2만 개 넘는 Actor를 x402로 열었다. HTTP 402 결제 흐름, EIP-3009·Permit2, facilitator, Coinbase Agentic Wallet, Bazaar 발견 레이어, 보안 체크리스트, 에이전트 결제 생태계와 한국 제약을 함께 정리한다."
 date: 2026-07-05T01:10:00+09:00
-lastmod: 2026-07-06T11:32:39+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/apify-x402-agentic-payments-coinbase-wallet/x402-payment-flow.png"
 categories: ["Blockchain"]
 tags: ["x402", "agentic-payments", "apify", "coinbase", "ai-agent", "usdc", "base", "eip-3009", "stablecoin"]
 author: "whackur"
@@ -31,6 +31,10 @@ Apify는 웹 스크래핑과 브라우저 자동화를 클라우드에서 돌리
 이제 에이전트의 도구 목록은 배포 시점에 고정되지 않는다. 필요한 순간에 “Instagram profile scraper를 1달러어치만 실행하라”처럼 요청하고, 지갑 잔액과 정책이 허용하면 그 자리에서 도구를 산다. 이것이 Apify 통합의 핵심이다. 단순한 crypto checkout이 아니라, 에이전트가 런타임에 구매 가능한 tool supply layer가 열린 것이다.
 
 ## x402의 결제 흐름
+
+![에이전트가 Apify Actor를 요청하고 HTTP 402 결제 조건을 받은 뒤 결제 서명을 붙여 Actor 요청을 재시도하고, Actor가 facilitator를 통해 검증·정산한 다음 결과를 돌려주는 순서도](/images/posts/apify-x402-agentic-payments-coinbase-wallet/x402-payment-flow.png)
+
+에이전트는 402 응답의 결제 조건에 서명하고, facilitator의 검증·정산이 끝난 뒤 Actor 결과를 받는다.
 
 HTTP 402 Payment Required는 HTTP/1.1 시절부터 “나중에 결제에 쓰라”고 예약된 상태 코드였지만 오래 실사용되지 않았다. x402는 이 코드를 결제 프로토콜로 되살린다. [Coinbase Developer Platform 문서](https://docs.cdp.coinbase.com/x402/welcome)에 따르면 x402는 HTTP 위에서 stablecoin 결제를 처리하는 오픈 프로토콜이고, 계정 생성이나 API key 없이 클라이언트와 서버가 결제 조건을 주고받게 한다.
 

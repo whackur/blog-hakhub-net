@@ -3,8 +3,8 @@ title: "Robot Learning: A Tutorial (고전 로보틱스에서 VLA까지)"
 meta_title: "Robot Learning: A Tutorial 리뷰 (arXiv:2510.12403)"
 description: "Francesco Capuano 외 저자들이 Hugging Face LeRobot과 함께 공개한 로봇 학습 튜토리얼 논문. 고전 로보틱스부터 ACT, Diffusion Policy, pi0, SmolVLA까지 전체 흐름을 정리합니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/lerobot-robot-learning-tutorial/robot-learning-roadmap.png"
 categories: ["AI"]
 tags: ["lerobot", "robot-learning", "imitation-learning", "diffusion-policy", "act", "vla", "smolvla", "physical-ai"]
 author: "whackur"
@@ -27,6 +27,10 @@ draft: false
 5. **Robot Imitation Learning**: Behavioral Cloning, VAE, Diffusion Models, Flow Matching, ACT, Diffusion Policy, 비동기 추론
 6. **Generalist Robot Policies**: VLA, VLM 백본, pi0, SmolVLA, Open X-Embodiment, DROID
 7. **Conclusions**: 모델 기반에서 데이터 기반으로의 전환, 오픈 데이터셋과 표준화의 중요성
+
+![로봇 학습 튜토리얼의 개념 흐름. 고전 로보틱스에서 로봇 강화학습과 모방 학습을 거쳐 범용 VLA로 이어지고, LeRobotDataset과 저수준 제어가 모든 단계의 공통 기반이 되는 구조를 보여 준다.](/images/posts/lerobot-robot-learning-tutorial/robot-learning-roadmap.png)
+
+튜토리얼은 고전 제어를 버리는 선형 교체가 아니라, 표준 데이터와 저수준 제어 위에 RL·모방 학습·범용 VLA를 쌓는 흐름으로 읽는 편이 정확합니다.
 
 ## LeRobotDataset
 

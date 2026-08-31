@@ -3,8 +3,8 @@ title: "Hermes Agent v0.18: When a Self-Improving Agent Gets MoA"
 meta_title: ""
 description: "Hermes Agent v0.18.0, from Nous Research, refines a self-improvement loop of memory, skills, /learn, and /journey, and turns Mixture of Agents into a virtual model provider inside that same loop."
 date: 2026-07-03T17:45:00+09:00
-lastmod: 2026-07-03T17:45:00+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/hermes-agent-self-improving-agent-moa/hermes-moa-learning-loop.png"
 categories: ["AI"]
 tags: ["hermes-agent", "multi-agent", "moa", "ai-agent", "skills", "memory"]
 author: "whackur"
@@ -52,6 +52,10 @@ Mixture of Agents started as a research pattern from Together AI: stack several 
 Per the [MoA docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/mixture-of-agents/), MoA is exposed as a virtual model provider called `moa`. Each named MoA preset shows up as a selectable model in the CLI, TUI, desktop app, and gateway. Selecting a preset makes that preset's aggregator the acting model: it writes the actual response and issues tool calls. Reference models run first, purely to hand the aggregator something to work from.
 
 The sequence: Hermes resolves the selected preset, then runs the reference models without tool schemas. Neither the Hermes system prompt nor the tool-call transcript goes to them, which keeps the calls cheap and avoids providers rejecting an unfamiliar format. Reference output gets appended as private context for the aggregator, which then runs with the normal Hermes tool schema and produces the real response. If the aggregator calls a tool, Hermes executes it as usual, and the next model iteration repeats the same process over the updated conversation. Since v0.18, each reference model's full output renders as a labeled block, and the aggregator's final answer streams live.
+
+![Hermes Agent MoA and learning loop. A user turn passes through the MoA preset, reference models, and private context to the aggregator, which iterates over tool calls and results before producing the final answer, while memory, skills, learn, journey, goal, and pre_verify connect learning and verification.](/images/posts/hermes-agent-self-improving-agent-moa/hermes-moa-learning-loop.png)
+
+Reference models advise first without tools, the aggregator alone runs the tool loop, and memory plus skills carry learning beyond the current response.
 
 There are two ways to reach a preset. `/moa <prompt>` is a one-shot command: it switches to the default preset for that single turn, then restores whatever model was active before. Typing `/moa` alone just prints usage, and it no longer fuzzy-matches preset names. Switching for the whole session means going through the model picker instead, either `/model default --provider moa`, `hermes model`, the dashboard, or the MoA presets section in the desktop model dropdown.
 

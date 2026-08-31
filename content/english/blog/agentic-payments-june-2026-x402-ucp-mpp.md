@@ -3,8 +3,8 @@ title: "Agentic Payments in June 2026: x402, UCP, and MPP Implementation Progres
 meta_title: ""
 description: "A month's worth of implementation changes across x402, UCP, MPP/pay.sh, and ACP: auth-capture, builder-code attribution, idempotency hardening, and ERC-8126 going Final."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/agentic-payments-june-2026-x402-ucp-mpp/agent-payment-layer-stack.png"
 categories: ["Blockchain"]
 tags: ["agentic-payments", "x402", "ucp", "mpp", "stablecoin"]
 author: "whackur"
@@ -96,6 +96,10 @@ On the Ethereum ERC side:
 ERC-8004 itself had no ethereum/ercs process-status change in June. That is separate from deployment status: the ERC-8004 registries were already live on Ethereum mainnet as of 2026-01-29.
 
 ## The layer split
+
+![Agent payment stack showing UCP at the commerce layer, x402 at the HTTP payment layer, MPP at the execution-tool layer, ERC-8004, ERC-8126, and ERC-8273 at the identity and authorization layer, and ACP for provenance](/images/posts/agentic-payments-june-2026-x402-ucp-mpp/agent-payment-layer-stack.png)
+
+The standards cover different layers of one flow: commerce, HTTP payment, execution tooling, identity and authorization, and provenance.
 
 The June changes show agentic payments splitting across layers rather than converging on one protocol. x402 handles HTTP 402 payment challenges and facilitator settlement. UCP covers cart/checkout consent, identity, and order evidence. ERC-8004/8126/8273 handle agent identity and action-level authorization. pay.sh handles execution-surface tooling.
 

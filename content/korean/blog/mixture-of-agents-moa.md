@@ -3,8 +3,8 @@ title: "Mixture of Agents(MoA): 여러 LLM을 쌓아 GPT-4 Omni를 넘은 방법
 meta_title: ""
 description: "여러 LLM을 계층으로 배치해 집합적 강점을 끌어내는 MoA 아키텍처. 벤치마크, 변형 구조, 품질 대 다양성 트레이드오프를 정리했습니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-03T17:45:00+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/mixture-of-agents-moa/layered-aggregation-flow.png"
 categories: ["AI"]
 tags: ["moa", "llm", "multi-agent", "ensemble", "ai-architecture"]
 author: "whackur"
@@ -19,6 +19,10 @@ draft: false
 ## 계층적 구조
 
 MoA는 각 층마다 복수의 LLM이 병렬로 실행됩니다. 각 에이전트는 이전 층의 출력 전체를 컨텍스트로 받아 자신의 답변을 생성하고, aggregator가 그 결과를 합쳐 다음 층의 입력으로 넘깁니다. 같은 패턴이 층을 따라 반복되고, 마지막 층의 aggregator가 최종 답변을 작성합니다.
+
+![MoA 계층형 집계 구조. 첫 번째 층의 여러 에이전트 출력이 aggregator에 모이고, 그 결과를 받은 두 번째 층의 에이전트들이 다시 병렬로 답한 뒤 final aggregator가 최종 답변을 만드는 흐름.](/images/posts/mixture-of-agents-moa/layered-aggregation-flow.png)
+
+각 층 안에서는 에이전트가 병렬로 실행되지만, 다음 층은 이전 층의 모든 출력과 집계가 끝난 뒤 시작합니다.
 
 | 구성 요소 | 역할 |
 |---|---|

@@ -3,8 +3,8 @@ title: "TradingAgents: Reading the Paper and Code Behind an LLM Trading Desk"
 meta_title: ""
 description: "A look at TradingAgents, a multi-agent trading framework that splits work across analysts, a bull/bear debate, a trader, and a risk team. We read the paper against the code and ask how far the backtest numbers can be trusted."
 date: 2026-07-03T14:30:00+09:00
-lastmod: 2026-07-03T15:10:00+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/tradingagents-multi-agent-llm-trading/agent-decision-flow.png"
 categories: ["AI"]
 tags: ["multi-agent", "llm-agents", "trading", "langgraph", "fintech", "agent-debate"]
 author: "whackur"
@@ -38,6 +38,10 @@ The flow runs like this:
 | Researcher Team | Bull Researcher, Bear Researcher, Research Manager | Bull and bear debate, then the manager synthesizes |
 | Trader | Trader | Turn analyst and researcher output into a decision signal |
 | Risk Management Team | Aggressive, Neutral, Conservative, Portfolio Manager | Debate risk from three angles, then decide |
+
+![TradingAgents decision flow. Reports from market, social, news, and fundamentals analysts pass through the bull and bear debate, Research Manager, and Trader before an aggressive, neutral, and conservative risk debate reaches the Portfolio Manager.](/images/posts/tradingagents-multi-agent-llm-trading/agent-decision-flow.png)
+
+Structured reports, rather than a long chat history, move between stages, and each team's debate becomes input to the next decision-maker.
 
 The paper uses ReAct prompting for this flow and treats reports and documents as global state so the system does not depend only on a long message history.
 

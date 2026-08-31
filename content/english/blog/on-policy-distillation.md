@@ -3,8 +3,8 @@ title: "On-Policy Distillation: Closing the Gap Between RL and SFT"
 meta_title: ""
 description: "A review of Thinking Machines Lab's on-policy distillation: sampling trajectories from the student and scoring every token against a teacher model, with the Qwen3 technical report numbers and what it takes to reproduce the method in 2026."
 date: 2026-07-10T14:08:50+09:00
-lastmod: 2026-07-10T14:08:50+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/on-policy-distillation/student-teacher-reverse-kl-loop.png"
 categories: ["AI"]
 tags: ["llm", "post-training", "distillation", "reinforcement-learning", "reverse-kl"]
 author: "whackur"
@@ -34,6 +34,10 @@ On-policy distillation combines the two:
 | SFT | off-policy | dense |
 | Reinforcement learning | on-policy | sparse |
 | On-policy distillation | on-policy | dense |
+
+![On-policy distillation learning loop. A fixed teacher assigns per-token log-probabilities to a student-generated trajectory, and the reverse-KL signal updates the student; the side panel contrasts the sampling policy and signal density of SFT, RL, and distillation.](/images/posts/on-policy-distillation/student-teacher-reverse-kl-loop.png)
+
+The teacher scores the states the student actually visited at token granularity, combining on-policy sampling and a dense learning signal in one loop.
 
 **The student samples its own trajectory, and a fixed teacher scores every token in it.** Because scoring happens on states the student actually visited, the off-policy mismatch problem disappears. Because scoring is per-token, RL's sparse-reward problem disappears too.
 

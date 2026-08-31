@@ -3,8 +3,8 @@ title: "Chainlink CCIP EVM Contracts: Architecture from Source Code"
 meta_title: ""
 description: "A source-code walkthrough of Chainlink CCIP: how Router, OnRamp, OffRamp, TokenPool, FeeQuoter, and RMN fit together to move messages and tokens across EVM chains."
 date: 2026-06-30T17:30:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/chainlink-ccip-evm-contracts/ccip-cross-chain-architecture.png"
 categories: ["Blockchain"]
 tags: ["chainlink", "ccip", "cross-chain", "solidity", "smart-contract"]
 author: "whackur"
@@ -17,6 +17,10 @@ EVM chains are isolated by design. A contract on Arbitrum has no native way to c
 Chainlink CCIP (Cross-Chain Interoperability Protocol) applies Chainlink's DON infrastructure and an independent Risk Management Network to the problem. It supports arbitrary data payloads alongside token transfers and lets you combine both in a single transaction. This post walks through the EVM contracts: what each one does, how they connect, and what matters when you are building on top of them.
 
 ## Overall architecture
+
+![CCIP architecture from Sender, Router, and OnRamp on the source chain through the CCIP Network and RMN to OffRamp, Router, and CCIPReceiver on the destination chain, with TokenPools and FeeQuoter](/images/posts/chainlink-ccip-evm-contracts/ccip-cross-chain-architecture.png)
+
+A message moves through the source Router and OnRamp, crosses the CCIP network, then reaches CCIPReceiver through the destination OffRamp and Router.
 
 CCIP contracts split into two layers. The **interface layer** is what users and dApps touch directly. The **pipeline layer** is what the DON operates behind the scenes.
 

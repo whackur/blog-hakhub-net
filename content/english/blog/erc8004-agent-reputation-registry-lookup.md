@@ -3,8 +3,8 @@ title: "ERC-8004 Agent Reputation: On-Chain Registration and Lookup"
 meta_title: ""
 description: "ERC-8004 is a set of three registries, not a single contract. How to register feedback using giveFeedback(), aggregate it with getSummary() against a trusted client set, and what services exist today to browse ERC-8004 data."
 date: 2026-06-30T15:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/erc8004-agent-reputation-registry-lookup/reputation-write-read-flow.png"
 categories: ["Blockchain"]
 tags: ["ai-agent", "erc-8004", "reputation", "smart-contract", "onchain"]
 author: "whackur"
@@ -25,6 +25,10 @@ The Reputation Registry is initialized with an Identity Registry address via `in
 `giveFeedback()` takes no registry address parameter. You register feedback by sending a transaction directly to the Reputation Registry contract (`tx.to` is the registry address). Which Reputation Registry to use for a given network is an application-level decision. Feedback is stored in Reputation Registry storage; it does not route through the Identity Registry.
 
 ## The Reputation Registry
+
+![ERC-8004 reputation write and read flow: a client records feedback with giveFeedback, while an application supplies trusted clientAddresses to getSummary and reads the filtered aggregate](/images/posts/erc8004-agent-reputation-registry-lookup/reputation-write-read-flow.png)
+
+Writes are permissionless, but the read result is filtered by the trusted client set the application passes to `getSummary()`.
 
 The Reputation Registry is a permissionless on-chain bulletin board. Any address except the agent's owner and operators can post feedback about any registered agent. The registry makes no judgment about whether a submission is accurate.
 

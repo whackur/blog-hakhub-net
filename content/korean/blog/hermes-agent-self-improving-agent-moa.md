@@ -3,8 +3,8 @@ title: "Hermes Agent v0.18: 스스로 배우는 에이전트와 MoA가 만났을
 meta_title: ""
 description: "Nous Research의 Hermes Agent v0.18.0이 다듬은 자기개선 루프(메모리·스킬·/learn·/journey)와, MoA를 가상 모델 제공자로 에이전트 루프 안에 넣은 설계를 정리했습니다."
 date: 2026-07-03T17:45:00+09:00
-lastmod: 2026-07-03T17:45:00+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/hermes-agent-self-improving-agent-moa/hermes-moa-learning-loop.png"
 categories: ["AI"]
 tags: ["hermes-agent", "multi-agent", "moa", "ai-agent", "skills", "memory"]
 author: "whackur"
@@ -52,6 +52,10 @@ Mixture of Agents는 원래 Together AI가 제안한 연구 패턴입니다. 여
 [MoA 문서](https://hermes-agent.nousresearch.com/docs/user-guide/features/mixture-of-agents/)에 따르면 MoA는 `moa`라는 가상 모델 제공자로 노출됩니다. 이름을 붙인 MoA preset 각각이 CLI, TUI, Desktop, 게이트웨이에서 고를 수 있는 모델 하나처럼 보입니다. preset을 선택하면 그 preset의 aggregator가 실제로 응답을 쓰고 tool call을 내는 acting 모델이 됩니다. reference 모델은 먼저 실행되어 aggregator에게 참고할 분석을 건네주는 역할만 합니다.
 
 동작 순서는 다음과 같습니다. 선택된 preset을 찾고, reference 모델들을 tool schema 없이 실행합니다. 이때 Hermes 시스템 프롬프트나 tool-call transcript는 넘기지 않는데, 호출 비용을 줄이고 일부 제공자가 낯선 형식을 거부하는 상황을 피하기 위해서입니다. reference 출력은 aggregator를 위한 비공개 컨텍스트로 붙고, aggregator는 평소와 같은 Hermes tool schema를 받아 실제 응답을 만듭니다. aggregator가 tool을 호출하면 Hermes는 그 tool을 정상적으로 실행하고, 다음 모델 반복에서도 업데이트된 대화 전체를 놓고 같은 절차를 반복합니다. v0.18부터는 각 reference 모델의 전체 출력을 라벨이 붙은 블록으로 보여주고, aggregator의 최종 답변을 실시간으로 스트리밍합니다.
+
+![Hermes Agent의 MoA와 학습 루프. 사용자 턴이 MoA preset의 reference 모델과 비공개 컨텍스트를 거쳐 aggregator로 전달되고, aggregator가 도구 호출과 결과를 반복한 뒤 최종 답변을 만들며, 메모리·스킬·learn·journey·goal과 pre_verify가 학습과 검증을 연결하는 구조를 보여 준다.](/images/posts/hermes-agent-self-improving-agent-moa/hermes-moa-learning-loop.png)
+
+Reference 모델은 도구 없이 먼저 조언하고 aggregator만 실제 도구 루프를 실행하며, 메모리와 스킬은 이 응답 경로 바깥에서 다음 세션까지 학습을 이어 줍니다.
 
 preset으로 바로 전환하는 방법은 두 가지입니다. `/moa <프롬프트>`는 그 턴에만 기본 preset으로 전환해 응답을 받고 이전 모델로 돌아오는 원샷 명령입니다. 인자 없이 `/moa`만 입력하면 사용법만 출력하고, preset 이름을 유사하게 입력해도 더 이상 자동으로 매칭해주지 않습니다. 세션 내내 MoA를 쓰려면 모델 피커로 전환해야 합니다. `/model default --provider moa`처럼 provider를 `moa`로 지정하거나, `hermes model`, Dashboard, Desktop의 모델 드롭다운에서 MoA preset 섹션을 고르면 됩니다.
 

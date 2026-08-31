@@ -3,8 +3,8 @@ title: "Lighter: Ethereum 위에서 동작하는 zk-SNARK 오더북 DEX"
 meta_title: ""
 description: "Lighter는 Ethereum 위의 애플리케이션 특화 zk-rollup으로, SNARK 기반 실행 증명을 통해 CEX 수준의 오더북 UX를 비수탁 환경에서 제공하려는 DEX입니다. 구조, MEV 저감 방식, Hyperliquid와의 차이를 정리합니다."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/lighter-zk-orderbook-dex/lighter-zk-rollup-flow.png"
 categories: ["Blockchain"]
 tags: ["zk-rollup", "orderbook", "dex", "mev", "ethereum", "snark"]
 author: "whackur"
@@ -19,6 +19,10 @@ draft: false
 zk-rollup은 이 구조적 문제에 하나의 답을 제시합니다. 실제 주문 처리는 체인 바깥의 고속 실행 엔진(sequencer)이 담당하고, 그 처리 결과가 공개된 규칙대로 올바르게 계산됐다는 사실만 암호학적 증명(SNARK, Succinct Non-interactive Argument of Knowledge)으로 만들어 Ethereum에 제출합니다. Ethereum 스마트 컨트랙트가 이 증명을 검증하고 최종 상태를 확정합니다. 사용자는 오퍼레이터를 직접 신뢰하지 않아도 증명 자체로 정당성을 확인할 수 있습니다.
 
 [Lighter](https://lighter.xyz/)는 이 구조를 오더북 DEX에 특화해 설계한 프로젝트입니다. Sequencer가 저지연 실행을 맡고, Prover가 매칭 로직의 정당성을 SNARK로 증명하며, Ethereum 스마트 컨트랙트가 그 증명과 상태 루트를 검증하고 예치 자산을 보관합니다.
+
+![Lighter zk-rollup 오더북 구조. 사용자 주문이 Sequencer와 Order Book Tree에서 처리돼 soft finality를 얻고, Prover의 SNARK와 data blob을 Ethereum 컨트랙트가 검증해 canonical state root를 갱신하며, priority request와 Escape Hatch가 출금과 검열 저항 경로를 제공하는 흐름을 보여 준다.](/images/posts/lighter-zk-orderbook-dex/lighter-zk-rollup-flow.png)
+
+SNARK는 매칭 실행의 정당성을 증명하지만 네트워크 도착 순서까지 증명하지 않으며, canonical finality는 Ethereum 검증 뒤에 생깁니다.
 
 ## Hyperliquid와의 비교로 본 Lighter의 포지션
 

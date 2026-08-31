@@ -3,8 +3,8 @@ title: "Lighter: A ZK-SNARK Orderbook DEX on Ethereum"
 meta_title: ""
 description: "Lighter is an application-specific zk-rollup on Ethereum that uses SNARK-based execution proofs to deliver a CEX-style orderbook experience without custodial risk. This post covers its architecture, MEV reduction approach, and how it compares to Hyperliquid."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/lighter-zk-orderbook-dex/lighter-zk-rollup-flow.png"
 categories: ["Blockchain"]
 tags: ["zk-rollup", "orderbook", "dex", "mev", "ethereum", "snark"]
 author: "whackur"
@@ -19,6 +19,10 @@ Building a functioning orderbook on Ethereum runs into two problems immediately.
 A zk-rollup changes the equation. Order processing runs off-chain in a fast sequencer. A prover then generates a cryptographic proof, specifically a SNARK (Succinct Non-interactive Argument of Knowledge), that the processing followed the published matching rules. An Ethereum smart contract verifies that proof and settles the canonical state. Users do not have to trust the sequencer operator directly: the proof attests that the rules were followed.
 
 [Lighter](https://lighter.xyz/) applies this design to an orderbook DEX. A sequencer handles low-latency execution, a prover generates SNARK proofs for exchange operations, and Ethereum smart contracts verify those proofs and hold deposited assets.
+
+![Lighter zk-rollup orderbook architecture. User orders receive soft finality after processing by the sequencer and Order Book Tree, while an Ethereum contract verifies the prover's SNARK and data blob to update the canonical state root; priority requests and the Escape Hatch provide withdrawal and censorship-resistance paths.](/images/posts/lighter-zk-orderbook-dex/lighter-zk-rollup-flow.png)
+
+The SNARK proves execution correctness, not network arrival order, and canonical finality begins only after Ethereum verification.
 
 ## How Lighter Fits Against Hyperliquid
 

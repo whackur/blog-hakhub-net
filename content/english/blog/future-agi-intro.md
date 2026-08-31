@@ -3,8 +3,8 @@ title: "Future AGI: Evaluate, Observe, and Improve AI Agents in One Place"
 meta_title: ""
 description: "Future AGI is an open-source platform that closes the feedback loop for AI agents that break in production. Here's how it works, and how it stacks up against the alternatives."
 date: 2026-06-29T10:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/future-agi-intro/agent-improvement-loop.png"
 categories: ["AI"]
 author: "whackur"
 tags: ["ai-agent", "llm", "observability", "evals", "open-source"]
@@ -28,6 +28,10 @@ A typical LLM stack ends up scattered:
 Because each piece is a different tool, the data doesn't move. Production traces never come back as a signal for the next version, so the agent gets watched but never gets better. Future AGI merges those flows. Every trace becomes input for the next iteration.
 
 Closing the loop means something concrete here: catch a failing trace in production, add it to an eval dataset, run prompt optimization against that dataset, ship the improved prompt, and confirm the fix in fresh traces. With separate tools, every step of that cycle needs a manual export and import, and that's usually where the loop dies.
+
+![Future AGI agent-improvement loop. Production traces are monitored and turned into an evaluation dataset, then evaluation, prompt optimization, and deployment produce fresh traces that feed back into monitoring.](/images/posts/future-agi-intro/agent-improvement-loop.png)
+
+The loop closes when failed traces become evaluation and optimization inputs, and fresh post-deployment traces confirm whether the change worked.
 
 ## Six features
 

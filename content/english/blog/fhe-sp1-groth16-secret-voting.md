@@ -3,8 +3,8 @@ title: "Secret Voting Architecture with FHE, SP1, and Groth16"
 meta_title: ""
 description: "How to design on-chain secret voting using FHE for encrypted tallying, SP1 for execution proofs, and Groth16 for EVM-friendly verification, with a full security assumptions checklist."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/fhe-sp1-groth16-secret-voting/secret-voting-architecture.png"
 categories: ["Blockchain"]
 tags: ["fhe", "zk-proof", "groth16", "sp1", "voting", "privacy", "zero-knowledge", "maci", "semaphore"]
 author: "whackur"
@@ -56,6 +56,10 @@ Groth16 compresses the large execution proof into a constant-size SNARK suited f
 5. **Decryption**: after the voting period, the [KMS](https://docs.zama.ai/protocol/protocol/overview/kms) performs threshold decryption. Zama's documentation describes an example structure requiring 9 of 13 MPC nodes, with the private key secret-shared so no single party can access it directly.
 
 6. **On-chain finalization**: the Ethereum or Base contract verifies the Groth16/PLONK proof and the decryption result, then records the final tally. On L2s like Base, the same gas cost translates to a lower USD fee.
+
+![Secret-voting processing flow. A voter's FHE ciphertext moves through the host contract and coprocessor for aggregation, SP1 proves execution consistency, Groth16 or PLONK wraps the proof for Ethereum or Base verification, and the KMS threshold-decryption result becomes the final tally after voting.](/images/posts/fhe-sp1-groth16-secret-voting/secret-voting-architecture.png)
+
+FHE aggregation and KMS decryption run off-chain, while the host-contract record and final proof verification settle on Ethereum or Base.
 
 ## Other private voting patterns
 

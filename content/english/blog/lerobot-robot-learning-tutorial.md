@@ -3,8 +3,8 @@ title: "Robot Learning: A Tutorial (From Classical Robotics to Generalist Polici
 meta_title: "Robot Learning: A Tutorial (arXiv:2510.12403)"
 description: "A summary of the LeRobot tutorial paper by Capuano et al., covering the full arc from classical robotics through reinforcement learning, ACT, Diffusion Policy, and generalist VLA models including pi0 and SmolVLA."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-07-02T11:47:08+09:00
-image: ""
+lastmod: 2026-08-31T11:30:00+09:00
+image: "/images/posts/lerobot-robot-learning-tutorial/robot-learning-roadmap.png"
 categories: ["AI"]
 tags: ["lerobot", "robot-learning", "imitation-learning", "diffusion-policy", "act", "vla", "smolvla", "physical-ai"]
 author: "whackur"
@@ -27,6 +27,10 @@ The tutorial is organized into seven chapters.
 5. **Robot Imitation Learning**: Behavioral Cloning, VAE, Diffusion Models, Flow Matching, ACT, Diffusion Policy, async inference
 6. **Generalist Robot Policies**: VLA models, VLM backbones, pi0, SmolVLA, Open X-Embodiment, DROID
 7. **Conclusions**: the shift from model-based to data-driven robotics, and the role of open datasets
+
+![Conceptual roadmap of the robot-learning tutorial. It moves from classical robotics through robot reinforcement learning and imitation learning to generalist VLA policies, with LeRobotDataset and low-level control serving as shared foundations.](/images/posts/lerobot-robot-learning-tutorial/robot-learning-roadmap.png)
+
+The tutorial is not a linear replacement of classical control. It layers RL, imitation learning, and generalist VLA policies on top of standardized data and low-level control.
 
 ## LeRobotDataset
 
