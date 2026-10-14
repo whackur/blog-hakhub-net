@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="1860" viewBox="0 0 680 1860" role="img" aria-labelledby="t d">
+  <title id="t">Glamsterdam transaction gas flow (EIP-2780, EIP-8037, EIP-8038)</title>
+  <desc id="d">A transaction's single gas limit must cover the larger of its state-independent intrinsic gas and the calldata floor, and that amount must fit the 16,777,216 execution cap; other validity checks still apply. In the pre-execution phase it is split into an execution pool (gas_left, capped at 16,777,216 minus intrinsic) and a state gas reservoir holding the rest, then state-dependent runtime charges are applied. During execution, execution charges come from gas_left and state charges come from the reservoir first, spilling into gas_left. Settlement counts execution gas and state gas separately at block level, and the header gas_used is the larger of the two. The sender pays gas used times the effective gas price.</desc>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="ahs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: "Inter", "Helvetica Neue", Arial, "DejaVu Sans", sans-serif; fill: #0f172a; font-size: 17px; }
+    .h { font-size: 20px; font-weight: 700; }
+    .s { fill: #334155; }
+    .m { font-family: "JetBrains Mono", "DejaVu Sans Mono", Menlo, monospace; font-size: 16px; }
+    .warn { fill: #991b1b; }
+    .ex { fill: #1d4ed8; }
+    .st { fill: #c2410c; }
+    .b { font-weight: 700; }
+  </style>
+
+  <rect width="680" height="1860" fill="#ffffff"/>
+
+  <text x="24" y="44" style="font-size:25px;font-weight:700">Glamsterdam transaction gas flow</text>
+  <text x="24" y="72" class="s">EIP-2780 + EIP-8037 + EIP-8038 at ethereum/EIPs 5ef3801 (Last Call).</text>
+  <text x="24" y="96" class="s">Values may still change. No mainnet date is scheduled.</text>
+
+  <!-- tx.gas -->
+  <rect x="24" y="112" width="632" height="54" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="44" y="146"><tspan class="b">One gas limit: </tspan><tspan class="m">tx.gas ≤ 2^32 − 1</tspan></text>
+
+  <line x1="340" y1="166" x2="340" y2="190" stroke="#475569" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- Step 1 intrinsic -->
+  <rect x="24" y="192" width="632" height="200" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="44" y="222" class="h">1 · Intrinsic gas (EIP-2780)</text>
+  <text x="44" y="248" class="s">State-independent, charged as execution gas only</text>
+  <text x="44" y="276" class="m" xml:space="preserve">  12,000 TX_BASE_COST</text>
+  <text x="44" y="300" class="m" xml:space="preserve">+  3,000 recipient, always cold rate</text>
+  <text x="44" y="324" class="m" xml:space="preserve">   (or 12,000 CREATE_ACCESS to deploy)</text>
+  <text x="44" y="348" class="m" xml:space="preserve">+  6,000 value &gt; 0, not self, not create</text>
+  <text x="44" y="372" class="m" xml:space="preserve">+  7,816 per 7702 authorization, calldata</text>
+
+  <rect x="24" y="404" width="632" height="178" rx="10" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="44" y="432" class="warn b">Gas checks before inclusion</text>
+  <text x="44" y="458" class="warn m">tx.gas ≥ max(intrinsic, calldata floor)</text>
+  <text x="44" y="482" class="warn m">max(intrinsic, floor) ≤ 16,777,216</text>
+  <text x="44" y="506" class="warn">Each dimension must fit the block's remaining gas.</text>
+  <text x="44" y="532" class="warn">Not exhaustive: nonce, balance, fee checks remain.</text>
+  <text x="44" y="558" class="warn">Fails: the transaction is invalid and never included.</text>
+
+  <line x1="340" y1="582" x2="340" y2="606" stroke="#475569" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- Step 2 split -->
+  <rect x="24" y="608" width="632" height="70" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="44" y="636" class="h">2 · Pre-execution: split (EIP-8037)</text>
+  <text x="44" y="664" class="m">evm_gas = tx.gas − intrinsic</text>
+
+  <line x1="177" y1="678" x2="177" y2="702" stroke="#475569" stroke-width="2" marker-end="url(#ah)"/>
+  <line x1="503" y1="678" x2="503" y2="702" stroke="#475569" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- pools -->
+  <rect x="24" y="704" width="306" height="200" rx="12" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="42" y="734" class="h ex">gas_left</text>
+  <text x="42" y="760" class="s">execution pool</text>
+  <text x="42" y="786" class="m">≤ 16,777,216 − intrinsic</text>
+  <text x="42" y="814">• All execution charges</text>
+  <text x="42" y="838">• What GAS / gasleft() sees</text>
+  <text x="42" y="862">• 63/64 rule applies here</text>
+  <text x="42" y="886">• SSTORE 2,300 check uses it</text>
+
+  <rect x="350" y="704" width="306" height="200" rx="12" fill="#ffedd5" stroke="#c2410c" stroke-width="2"/>
+  <text x="368" y="734" class="h st">state_gas_reservoir</text>
+  <text x="368" y="760" class="s">only gas above the cap</text>
+  <text x="368" y="786" class="m">evm_gas − gas_left</text>
+  <text x="368" y="814">• State charges draw first</text>
+  <text x="368" y="838">• Passed whole to children</text>
+  <text x="368" y="862">• Invisible to gasleft()</text>
+  <text x="368" y="886">• Unused part goes back</text>
+
+  <line x1="480" y1="924" x2="200" y2="924" stroke="#c2410c" stroke-width="2.2" marker-end="url(#ahs)"/>
+  <text x="340" y="952" class="st" text-anchor="middle">Reservoir empty: state charges spill into gas_left</text>
+
+  <line x1="340" y1="962" x2="340" y2="986" stroke="#475569" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- Step 3 runtime -->
+  <rect x="24" y="988" width="632" height="152" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="44" y="1018" class="h">3 · Pre-execution: runtime charges (EIP-2780)</text>
+  <text x="44" y="1046">New recipient or deploy address: <tspan class="st">183,600 state</tspan></text>
+  <text x="44" y="1072">7702 authority: new account <tspan class="st">183,600 state</tspan>,</text>
+  <text x="44" y="1096">first write <tspan class="ex">9,000</tspan>, new delegation <tspan class="st">35,190 state</tspan></text>
+  <text x="44" y="1122">Delegated recipient: <tspan class="ex">delegation-target access</tspan></text>
+
+  <rect x="24" y="1150" width="632" height="100" rx="10" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="44" y="1178" class="warn b">Out of gas before the first frame</text>
+  <text x="44" y="1204" class="warn">Still included: nonce increments, sender pays.</text>
+  <text x="44" y="1230" class="warn">Pre-execution changes, incl. delegations, revert.</text>
+
+  <line x1="340" y1="1250" x2="340" y2="1274" stroke="#475569" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- Step 4 execution -->
+  <rect x="24" y="1276" width="632" height="272" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="44" y="1306" class="h">4 · EVM execution: two dimensions</text>
+  <text x="44" y="1334" class="ex b">Execution gas (EIP-8038)</text>
+  <text x="44" y="1358">cold account 3,000 · STORAGE_WRITE 10,000</text>
+  <text x="44" y="1382">value CALL 11,300 (incl. 2,300 stipend)</text>
+  <text x="44" y="1406">CREATE_ACCESS 12,000 · EXTCODESIZE/COPY +100</text>
+  <text x="44" y="1436" class="st b">State gas (EIP-8037, CPSB = 1,530)</text>
+  <text x="44" y="1460">new storage slot 64 × 1,530 = 97,920</text>
+  <text x="44" y="1484" class="s">  only if original = 0, current = 0, new ≠ 0</text>
+  <text x="44" y="1508">new account 120 × 1,530 = 183,600</text>
+  <text x="44" y="1532">deployed code 1,530 per byte</text>
+
+  <text x="24" y="1574" class="s">Undo (slot 0→x→0 with original 0, failed CALL/CREATE):</text>
+  <text x="24" y="1598" class="s">state gas is refilled to gas_left first, then the reservoir.</text>
+  <text x="24" y="1622" class="s">Revert or halt restores the frame baseline. Refills are not refunds.</text>
+
+  <line x1="340" y1="1634" x2="340" y2="1658" stroke="#475569" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- Step 5 settlement -->
+  <rect x="24" y="1660" width="632" height="178" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="44" y="1690" class="h">5 · Settlement</text>
+  <text x="44" y="1718" class="m">used = tx.gas − gas_left − reservoir</text>
+  <text x="44" y="1742" class="m">refund ≤ used / 5, then calldata floor</text>
+  <text x="44" y="1770">Fee = final gas used × effective gas price</text>
+  <text x="44" y="1794">Block: execution and state are summed apart.</text>
+  <text x="44" y="1820">Header gas_used = max(execution, state)</text>
+</svg>
