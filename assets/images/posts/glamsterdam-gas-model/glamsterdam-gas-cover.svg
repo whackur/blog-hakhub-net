@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="t d">
+  <title id="t">Glamsterdam gas model: one gas limit, two gas dimensions</title>
+  <desc id="d">tx.gas is split into gas_left, the execution pool capped at 16,777,216 minus intrinsic gas, and a state gas reservoir holding the rest. Execution gas covers EIP-8038 access and write costs; state gas covers EIP-8037 new state at 1,530 gas per byte. The block header gas_used is the larger of the two block totals. Key figures: new storage slot 97,920 state gas, new account 183,600 state gas, ETH transfer to an existing account stays 21,000.</desc>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: "Inter", "Helvetica Neue", Arial, "DejaVu Sans", sans-serif; fill: #0f172a; font-size: 26px; }
+    .m { font-family: "JetBrains Mono", "DejaVu Sans Mono", Menlo, monospace; }
+    .s { fill: #334155; }
+    .b { font-weight: 700; }
+    .ex { fill: #1d4ed8; }
+    .st { fill: #c2410c; }
+  </style>
+
+  <rect width="1200" height="630" fill="#ffffff"/>
+
+  <text x="60" y="88" style="font-size:50px;font-weight:700">Glamsterdam gas model</text>
+  <text x="60" y="134" class="s" style="font-size:28px">One gas limit, two gas dimensions (EIP-8037, EIP-8038, EIP-2780)</text>
+
+  <rect x="60" y="172" width="250" height="84" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+  <text x="185" y="226" class="m b" text-anchor="middle" style="font-size:32px">tx.gas</text>
+
+  <line x1="310" y1="196" x2="378" y2="196" stroke="#475569" stroke-width="3" marker-end="url(#ah)"/>
+  <line x1="310" y1="232" x2="378" y2="318" stroke="#475569" stroke-width="3" marker-end="url(#ah)"/>
+
+  <rect x="384" y="158" width="420" height="96" rx="12" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/>
+  <text x="408" y="198" class="b ex" style="font-size:30px">gas_left: execution</text>
+  <text x="408" y="236" class="s">up to 16,777,216 − intrinsic</text>
+
+  <rect x="384" y="276" width="420" height="96" rx="12" fill="#ffedd5" stroke="#c2410c" stroke-width="2.5"/>
+  <text x="408" y="316" class="b st" style="font-size:30px">reservoir: state gas</text>
+  <text x="408" y="354" class="s">everything above that cap</text>
+
+  <line x1="804" y1="206" x2="872" y2="250" stroke="#475569" stroke-width="3" marker-end="url(#ah)"/>
+  <line x1="804" y1="324" x2="872" y2="280" stroke="#475569" stroke-width="3" marker-end="url(#ah)"/>
+
+  <rect x="878" y="206" width="262" height="118" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+  <text x="1009" y="250" class="b" text-anchor="middle">Block gas_used</text>
+  <text x="1009" y="294" class="m" text-anchor="middle" style="font-size:24px">max(exec, state)</text>
+
+  <line x1="60" y1="412" x2="1140" y2="412" stroke="#cbd5e1" stroke-width="2"/>
+
+  <text x="60" y="462"><tspan class="b st">State gas:</tspan> 1,530 per new byte · new slot 97,920 · new account 183,600</text>
+  <text x="60" y="508"><tspan class="b ex">Execution gas:</tspan> warm slot update 2,900 → 10,100 · cold account 3,000</text>
+  <text x="60" y="554"><tspan class="b">Intrinsic:</tspan> ETH to an existing account stays 21,000</text>
+  <text x="60" y="600" class="s" style="font-size:22px">Specs in Last Call as of 2026-10-15. Values may change; no mainnet date is set.</text>
+</svg>
