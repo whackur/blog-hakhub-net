@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 1190" role="img" aria-labelledby="title desc">
+  <title id="title">Reported request routing</title>
+  <desc id="desc">Conceptual reconstruction of Anthropic's allegation: a user sends a request to Kimi, a proxy account pool forwards it to Claude, and the response returns through Kimi to the user. The exact implementation is not disclosed.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M1 1 L10 6 L1 11 Z" fill="#334155"/>
+    </marker>
+    <marker id="returnArrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M1 1 L10 6 L1 11 Z" fill="#087E8B"/>
+    </marker>
+  </defs>
+  <rect width="760" height="1190" fill="#F8FAFC"/>
+  <text x="52" y="58" fill="#102A43" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700">Reported request routing</text>
+  <text x="52" y="98" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="22">Anthropic's account · conceptual reconstruction</text>
+  <rect x="52" y="124" width="656" height="62" rx="14" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/>
+  <text x="76" y="163" fill="#7C2D12" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Anthropic report allegation, not independently verified</text>
+
+  <rect x="70" y="225" width="480" height="128" rx="20" fill="#E0F2FE" stroke="#075985" stroke-width="3"/>
+  <text x="102" y="273" fill="#0C4A6E" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">User</text>
+  <text x="102" y="316" fill="#102A43" font-family="Arial, Helvetica, sans-serif" font-size="24">Uses Kimi app or API</text>
+
+  <line x1="310" y1="354" x2="310" y2="393" stroke="#334155" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="330" y="383" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="20">request</text>
+
+  <rect x="70" y="405" width="480" height="128" rx="20" fill="#DBEAFE" stroke="#1D4ED8" stroke-width="3"/>
+  <text x="102" y="453" fill="#1E3A8A" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">Kimi endpoint</text>
+  <text x="102" y="496" fill="#102A43" font-family="Arial, Helvetica, sans-serif" font-size="24">Moonshot receives the request</text>
+
+  <line x1="310" y1="534" x2="310" y2="573" stroke="#334155" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="330" y="563" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="20">selected requests</text>
+
+  <rect x="70" y="585" width="480" height="156" rx="20" fill="#FEF3C7" stroke="#A16207" stroke-width="3"/>
+  <text x="102" y="634" fill="#713F12" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Proxy / account pool</text>
+  <text x="102" y="676" fill="#102A43" font-family="Arial, Helvetica, sans-serif" font-size="24">5,380 fraudulent accounts</text>
+  <text x="102" y="712" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="22">Most appeared in Singapore and Japan</text>
+
+  <line x1="310" y1="742" x2="310" y2="781" stroke="#334155" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="330" y="771" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="20">API request</text>
+
+  <rect x="70" y="793" width="480" height="128" rx="20" fill="#EDE9FE" stroke="#6D28D9" stroke-width="3"/>
+  <text x="102" y="841" fill="#4C1D95" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">Claude API</text>
+  <text x="102" y="884" fill="#102A43" font-family="Arial, Helvetica, sans-serif" font-size="24">Claude generates the response</text>
+
+  <line x1="310" y1="922" x2="310" y2="961" stroke="#334155" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="330" y="951" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="20">response</text>
+
+  <rect x="70" y="973" width="480" height="128" rx="20" fill="#CCFBF1" stroke="#0F766E" stroke-width="3"/>
+  <text x="102" y="1021" fill="#134E4A" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Response shown as Kimi</text>
+  <text x="102" y="1064" fill="#102A43" font-family="Arial, Helvetica, sans-serif" font-size="24">Returned through Kimi to the user</text>
+
+  <path d="M550 1037 H584 V289 H551" fill="none" stroke="#087E8B" stroke-width="4" marker-end="url(#returnArrow)"/>
+  <text x="598" y="481" fill="#075985" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">Response</text>
+  <text x="598" y="514" fill="#075985" font-family="Arial, Helvetica, sans-serif" font-size="22">returns</text>
+  <text x="598" y="547" fill="#075985" font-family="Arial, Helvetica, sans-serif" font-size="22">to user</text>
+
+  <text x="52" y="1150" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="20">Exact routing details are not disclosed in the report.</text>
+</svg>
