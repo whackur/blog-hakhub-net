@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Understanding Besu</title>
+  <desc id="desc">Besu executes EVM transactions and stores state. On Ethereum mainnet it connects to a consensus client. A separate permissioned network can use approved QBFT validators.</desc>
+  <defs>
+    <linearGradient id="background" x2="1" y2="1"><stop stop-color="#102b35"/><stop offset="1" stop-color="#071823"/></linearGradient>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9" fill="#67d5bd"/></marker>
+  </defs>
+  <style>text{font-family:Arial,Helvetica,sans-serif}.title{font-weight:700;fill:#f2f9fc}.label{font-size:25px;fill:#e0f1f4}.hint{font-size:21px;fill:#a6c4cd}.line{stroke:#67d5bd;stroke-width:3;fill:none;marker-end:url(#arrow)}</style>
+  <rect width="1200" height="630" fill="url(#background)"/>
+  <rect x="54" y="53" width="7" height="120" rx="3" fill="#67d5bd"/>
+  <text x="82" y="98" class="hint" letter-spacing="3">ETHEREUM EXECUTION CLIENT</text>
+  <text x="78" y="163" class="title" font-size="58">Understanding Besu</text>
+  <text x="80" y="211" class="label">EVM execution, shared state and network design</text>
+  <rect x="70" y="272" width="425" height="254" rx="20" fill="#173e49" stroke="#67d5bd" stroke-width="2"/>
+  <text x="104" y="327" class="title" font-size="38">Besu</text>
+  <text x="104" y="374" class="label">Transactions → EVM → State</text>
+  <path d="M104 398H459" stroke="#365c65"/>
+  <text x="104" y="440" class="hint">Java · JSON-RPC · Storage</text>
+  <text x="104" y="480" class="hint">Same client, separate ledgers</text>
+  <path d="M505 398H568V330H624" class="line"/>
+  <path d="M568 398V472H624" class="line"/>
+  <rect x="645" y="277" width="485" height="116" rx="16" fill="#132e3b" stroke="#466774"/>
+  <text x="674" y="320" class="title" font-size="28">Ethereum mainnet</text>
+  <text x="674" y="359" class="hint">Consensus client + Engine API</text>
+  <rect x="645" y="419" width="485" height="116" rx="16" fill="#132e3b" stroke="#466774"/>
+  <text x="674" y="462" class="title" font-size="28">Permissioned network</text>
+  <text x="674" y="501" class="hint">Approved validators · e.g. QBFT</text>
+  <text x="72" y="587" class="hint">Execution compatibility ≠ shared assets or identical governance</text>
+</svg>
