@@ -1,10 +1,10 @@
 ---
 title: "gs-quant: 골드만삭스가 퀀트 코드를 오픈소스로 공개한 방식과 그 경계"
 meta_title: "gs-quant 골드만삭스 오픈소스 퀀트 라이브러리 리뷰"
-description: "골드만삭스의 Python 퀀트 툴킷 gs-quant가 무엇인지, 2018년 저장소 생성부터 OSPO 출범까지의 공개 배경, 코드 구조에서 드러나는 로컬 영역과 Marquee API 영역의 경계, 커뮤니티 반응과 한계를 연구·교육 관점에서 정리합니다."
+description: "GS Quant에서 계정 없이 실행하는 시계열 계산과 상품 정의, 인증·데이터 권한이 필요한 Marquee 조회와 가격 평가를 실제 코드와 예제로 구분합니다."
 date: 2026-08-26T10:00:00+09:00
-lastmod: 2026-08-26T10:00:00+09:00
-image: "/images/posts/gs-quant-goldman-sachs-open-source-quant-library/local-vs-api-boundary-1200.png"
+lastmod: 2026-10-15T15:51:21Z
+image: "/images/posts/gs-quant-goldman-sachs-open-source-quant-library/quant-local-marquee-editorial-20261016.webp"
 categories: ["Finance"]
 tags: ["quant-finance", "open-source", "python", "goldman-sachs"]
 author: "whackur"
@@ -12,171 +12,148 @@ translationKey: "gs-quant-goldman-sachs-open-source-quant-library"
 draft: false
 ---
 
-투자은행의 트레이딩 코드가 GitHub에 올라와 있다고 하면 대부분 두 가지 반응으로 갈린다. "그걸 왜 공개하지"와 "진짜 중요한 건 안 올렸겠지". [goldmansachs/gs-quant](https://github.com/goldmansachs/gs-quant)는 이 두 반응이 모두 절반씩 맞는 사례다. 2018년 12월에 만들어진 이 저장소는 2026년 8월 기준 스타 12,000개를 넘겼고, 확인한 당일에도 push가 있을 만큼 활발하게 관리된다. 동시에 README는 가격결정과 리스크 API를 쓰려면 골드만삭스 기관 고객이어야 한다고 못박는다.
+GS Quant는 **내가 준비한 데이터의 시계열 계산과 금융 상품 객체 정의는 로컬에서 실행하고, Marquee의 데이터 조회·가격 평가·리스크 계산은 인증된 서비스로 요청하는 Python 툴킷**입니다. 공개 코드의 Apache-2.0 라이선스와 원격 서비스·데이터를 사용할 권한은 별개입니다. 설치했다고 골드만삭스의 가격 평가 서비스를 함께 받은 것은 아니지만, 계정 없이 실행할 수 있는 분석 코드도 있습니다. [공개 소스](https://github.com/goldmansachs/gs-quant)에서 이 두 영역을 함수별로 구분해야 합니다.
 
-이 글은 gs-quant를 투자 도구로 소개하는 글이 아니다. 대형 은행이 자기 퀀트 코드를 어떤 형태로, 어디까지 공개했는지를 코드 구조와 공개 이력으로 읽어 보는 연구·교육용 코드 리뷰다. 퀀트 금융 툴킷이 무슨 일을 하는지부터 시작해서, Marquee, SecDB, Slang 같은 낯선 이름을 하나씩 풀고, 커뮤니티가 왜 "API 뒤에 다 있다"고 말하는지까지 따라간다. 이 글의 수치와 인용은 2026년 8월 26일에 GitHub API, PyPI, 공식 문서, 언론 기사, Hacker News 스레드를 직접 확인한 값이다.
+예를 들어 CSV에서 읽은 가격의 수익률을 구하는 일과, 옵션의 현재 가치를 골드만삭스 모델로 평가하는 일은 요구 조건이 다릅니다. 전자는 입력값과 Python 환경으로 충분합니다. 후자는 상품 조건뿐 아니라 원격 모델과 시장 데이터, 그 서비스를 호출할 권한까지 필요합니다. 용도에 따라 필요한 것을 나누면 다음과 같습니다.
 
-## gs-quant는 골드만 엔진의 Python 인터페이스다
+| 하려는 일 | 실행 위치와 필요한 것 |
+| --- | --- |
+| 직접 준비한 가격 시계열로 수익률 계산 | 로컬 Python, 입력 데이터 |
+| 스왑의 통화·만기·명목금액을 객체로 표현 | 로컬 객체 생성, 명시한 계약 조건 |
+| 기본 `Dataset` 공급자로 Marquee 데이터 조회 | 원격 API, 세션, 데이터셋별 접근 권한 |
+| 기본 상품 구현의 `price()`·리스크 계산 | 원격 가격 평가 API, 관련 권한과 시장 데이터 |
+| 특정 거래소·통화의 휴일 달력 사용 | 휴일 데이터 조회 경로까지 확인 필요 |
 
-퀀트 금융 툴킷은 크게 세 가지 일을 한다. 시장 데이터를 가져와 정리하고, 금융 상품(옵션, 스왑, 채권 등 파생상품 포함)의 가격과 리스크를 계산하고, 그 계산을 묶어 전략을 시험하거나 포트폴리오를 관리한다. 이 중 두 번째가 가장 어렵다. 파생상품 가격결정 모델은 금리 곡선, 변동성 표면, 상관관계 같은 시장 파라미터를 끊임없이 갱신해야 하고, 은행은 이 계산 엔진을 수십 년에 걸쳐 쌓아 왔다.
+이 구분은 패키지 이름이나 폴더 목록이 아니라 아래의 [시계열 함수](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/timeseries/econometrics.py), [데이터 공급자](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/data/dataset.py), [상품의 기본 API 공급자](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/instrument/core.py), [휴일 달력 구현](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/datetime/gscalendar.py)에 근거합니다. 연구·교육용 사용 범위를 설명하며 투자 판단이나 거래 실행을 다루지는 않습니다.
 
-gs-quant는 골드만삭스의 퀀트 개발자들이 만들고 유지하는 Python 툴킷이다. README는 "quantitative finance를 위한 Python toolkit"이자 "세계에서 가장 강력한 리스크 이전(risk transfer) 플랫폼 중 하나 위에 만들어졌고, 25년의 글로벌 시장 경험으로 다듬어졌다"고 소개한다. 트레이딩 전략 개발과 파생상품 분석을 빠르게 하도록 설계됐다는 설명이 붙는다. 여기서 "플랫폼 위에"라는 표현이 이 라이브러리의 성격을 결정한다. gs-quant는 가격결정 엔진 그 자체가 아니라, 골드만 내부 엔진에 접근하는 Python 인터페이스에 가깝다.
+## 설치한 패키지와 원격 서비스의 버전은 다릅니다
 
-그 엔진이 있는 곳이 **Marquee**다. Marquee는 골드만삭스가 기관 고객에게 제공하는 디지털 플랫폼으로, PyPI의 gs-quant 홈페이지 주소도 marquee.gs.com이다. README는 API를 쓰려면 client id와 secret이 필요하고, 이는 골드만삭스 기관 고객에게 제공되며 세일즈 담당자나 Marquee Sales에 문의하라고 안내한다. [Marquee의 gs-quant 소개 페이지](https://marquee.gs.com/welcome/our-platform/gs-quant)는 FX 파생상품을 폭넓게 다룬다는 점을 내세운다.
-
-골드만이 2022년 LinuxCon Japan에서 발표한 [OSPO 소개 자료](https://static.sched.com/hosted_files/ossjapan2022/01/2022-LinuxCon-GS-OSPO.pdf)는 이 분석 도구를 골드만 내부에서 1천 명 이상의 퀀트 개발자가 매일 사용해 글로벌 트레이딩 비즈니스를 관리한다고 설명한다. 같은 문구가 [공식 문서](https://developer.gs.com/docs/gsquant/)의 Key Features에도 "Designed by our quants"라는 제목으로 실려 있다. 즉 gs-quant의 1차 사용자는 골드만 내부와 기관 고객이고, GitHub의 일반 사용자는 그 다음이다.
-
-## 공개의 역사
-
-gs-quant의 공개 시점을 하나의 날짜로 말하기는 어렵다. 저장소와 언론 보도가 보여 주는 흐름은 다음과 같다.
-
-- **2018년 12월 14일**: GitHub 저장소 생성(첫 commit "Initial commit"). 같은 달 23일에 PyPI 첫 배포(0.4.8).
-- **2019년 4월 3일**: WSJ가 "Goldman's Trading Floor Is Going Open-Source, Kind of"라는 기사를 낸다. 요지는 골드만이 그달 안에 자사 트레이더와 엔지니어가 증권 가격결정과 리스크 분석·관리에 쓰는 코드 일부를 GitHub에 공개할 계획이라는 것이었다. 같은 날 [Hacker News 스레드](https://news.ycombinator.com/item?id=19562224)가 만들어졌다. WSJ [영상](https://www.wsj.com/video/the-latest-on-goldman-sachs-open-source-trading-floor/4C614C58-03BC-4EB8-A65C-DE923E09FA90)은 개발자들이 리스크 평가와 파생상품 가격결정에 쓰이던 비공개 코드에 접근할 수 있게 됐다고 요약했다.
-- **2019년 11월 20일**: CNBC가 [골드만이 월스트리트에 소프트웨어를 무료로 내놓는다](https://www.cnbc.com/2019/11/20/goldman-sachs-is-giving-away-software-to-wall-street-for-free.html)고 보도한다. 이 기사의 주제는 gs-quant가 아니라 데이터 모델링 플랫폼 Legend(당시 Alloy)다.
-- **2020년 10월 19일**: Linux Foundation이 [골드만이 Legend를 FINOS에 오픈소스로 기부했다](https://www.linuxfoundation.org/press/press-release/goldman-sachs-open-sources-its-data-modeling-platform-through-finos)고 발표한다. FINOS(Fintech Open Source Foundation)는 금융권 오픈소스 협업을 위한 Linux Foundation 산하 재단이다.
-- **2021년**: 골드만삭스 OSPO(Open Source Program Office)가 4월에 승인(chartered)되고 8월에 공식 출범한다.
-
-저장소가 2018년 12월에 이미 존재했으니 WSJ 기사는 "처음 공개"가 아니라 공개 범위 확대의 예고로 읽는 편이 맞다. "2020년 3월 공개"라는 특정 시점 역시 이번에 확인한 어떤 언론 보도로도 뒷받침되지 않았다. 이 글에서는 위의 타임라인만 사실로 다루고 특정 공개일을 단정하지 않는다.
-
-이 흐름에서 보이는 것은 gs-quant가 단독 이벤트가 아니었다는 점이다. 2019년의 gs-quant 공개 확대, 2019~2020년의 Legend 기부, 2021년의 OSPO 설립은 골드만이 오픈소스를 일회성 홍보가 아니라 조직 기능으로 편입한 과정이다. 골드만은 지금도 [developer.gs.com의 오픈소스 포털](https://developer.gs.com/discover/open-source)에서 공개 프로젝트를 모아 보여 준다.
-
-## 코드 구조로 보는 실제 동작 방식
-
-GitHub contents API로 확인한 `gs_quant/` 패키지 하위 구조는 다음과 같다.
-
-```text
-gs_quant/
-  analytics/      api/          backtests/    config/
-  content/        data/         datetime/     documentation/
-  entities/       instrument/   interfaces/   markets/
-  mcp/            models/       quote_reports/ risk/
-  skills/         target/       session.py    priceable.py
-```
-
-공식 문서의 목차와 나란히 놓으면 구조가 읽힌다. 문서는 Overview, Getting Started, Authentication(Sessions, GS Session, Proxy), Data(Data Environment, Accessing Data, Data Analytics, Data Visualization), Pricing and Risk(Instruments, Measures, Pricing Context, Portfolios, Scenarios), Markets(Assets and SecurityMaster, Relative Dates), Hedging(Hedging Using ML), Contribute, SDK Reference 순이다. Authentication이 Data와 Pricing 앞에 온다는 점이 이 라이브러리의 사용 순서를 그대로 말해 준다.
-
-![gs-quant에서 로컬로 동작하는 timeseries·datetime·instrument 정의·backtests 골격 코드 영역과, GsSession을 거쳐 Marquee 원격 API로 호출되는 Pricing and Risk·Data·Markets·Hedging 영역을 나눈 구조도](/images/posts/gs-quant-goldman-sachs-open-source-quant-library/local-vs-api-boundary.svg)
-
-*gs-quant의 로컬 영역과 API 영역. README와 공식 문서 구조를 바탕으로 재구성한 도식이며, 모듈별 세부 동작은 저장소 코드에서 확인해야 한다.*
-
-동작 방식은 두 층으로 나뉜다.
-
-**로컬에서 도는 층.** timeseries 계열의 통계·분석 헬퍼, 영업일 계산 같은 datetime 유틸리티, 그리고 금융 상품을 타입이 있는 Python 객체로 표현하는 instrument 정의는 계정 없이 설치만 하면 쓸 수 있다. backtests와 models 디렉터리의 전략 골격 코드도 저장소 안에 있지만, 전략을 실제로 평가하는 단계는 다시 API를 부르는 구조로 보인다. README와 구조로 확인되는 범위에서는 이 정도가 순수 로컬 영역이다. Hacker News에서 한 사용자가 `timeseries/statistics.py` 안에 전염병 확산을 모델링하는 SIR/SEIR 컴파트먼트 모델 클래스가 들어 있다는 것을 발견했는데, 2020년 3월 코로나 시기에 추가된 것으로 추정하는 댓글이 있었다. 금융 툴킷에 역학 모델이 들어 있는 것이 어색해 보이지만, 로컬 계산 층이 실제로 "그냥 Python 코드"라는 점을 보여 주는 예이기도 하다.
-
-**API를 호출하는 층.** 파생상품 가격결정, 리스크 측정치, 시나리오 분석, 데이터셋 조회, SecurityMaster를 통한 자산 식별, ML 기반 헤징은 전부 Marquee 쪽 엔진이 계산한다. Python 객체는 요청을 구성하고 결과를 받아 오는 역할이다. 이 층에 들어가는 문은 `gs_quant/session.py`의 `GsSession`이다.
-
-설치는 Python 3.9 이상에서 pip로 한다.
+2026년 10월 16일 한국시간 확인 기준 최신 GitHub 릴리스는 [`release-2.2.1`](https://github.com/goldmansachs/gs-quant/releases/tag/release-2.2.1)입니다. 공개 시각은 2026년 10월 13일 10:41:56 UTC이며, [PyPI의 최신 패키지](https://pypi.org/project/gs-quant/2.2.1/)도 2.2.1입니다. PyPI 메타데이터와 README는 **Python 3.10 이상**을 요구합니다.
 
 ```bash
-pip install gs-quant
+python -m pip install "gs-quant==2.2.1"
 ```
 
-세션의 개념은 이렇게 잡으면 된다. 실제 인증 정보는 코드에 쓰지 않고 환경 변수나 별도 설정 파일로 관리하는 것이 안전하다.
+버전을 고정하면 예제와 클라이언트 구현을 다시 확인하기 쉽습니다. 다만 이 번호는 설치한 Python 코드의 버전입니다. 원격 데이터의 갱신 시점이나 서버 모델의 버전, 내 애플리케이션에 허용된 기능까지 고정하지는 않습니다. 아래 코드 근거는 이 릴리스 태그의 커밋 [`bbe7071`](https://github.com/goldmansachs/gs-quant/tree/bbe7071653ccfc0d431e11c3a31dbd511afc394f)에 연결했습니다.
+
+## 계정 없이 실행하는 시계열 계산
+
+GS Quant의 가치를 코드 독해에만 한정할 필요는 없습니다. `returns()`는 전달받은 가격 시계열을 한 관측치씩 이동한 시계열로 나누어 기본 단순수익률을 구합니다. 입력이 이미 메모리에 있다면 이 계산에 Marquee 세션은 필요하지 않습니다. [구현의 계산식](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/timeseries/econometrics.py#L273)은 `현재 가격 / 이전 가격 - 1`입니다.
 
 ```python
-from gs_quant.session import GsSession, Environment
+import pandas as pd
+from gs_quant.timeseries import returns
 
-# GsSession.use(...)로 Marquee 세션을 연다.
-# client id / secret은 기관 고객에게 발급되며,
-# 코드에 직접 쓰지 말고 환경 변수 등 외부에서 주입한다.
+prices = pd.Series(
+    [100.0, 102.0, 101.0],
+    index=pd.date_range("2026-01-05", periods=3),
+)
+print(returns(prices).dropna().round(6).tolist())
+# [0.02, -0.009804]
 ```
 
-여기서 API 게이팅이 왜 중요한지가 드러난다. 오픈소스 라이선스는 Apache-2.0이지만, 라이브러리가 하는 일의 핵심(가격결정·리스크·데이터)은 라이선스가 적용되는 코드 밖, 즉 골드만 서버 안에 있다. 코드를 읽고 수정하고 재배포할 자유는 있지만, 그 코드가 의미 있는 결과를 내려면 계약 관계가 필요하다. 오픈소스 클라이언트와 비공개 서비스의 조합이라는 점에서, 클라우드 SDK를 오픈소스로 풀고 서비스는 유료로 파는 구조와 같은 종류다.
+가상의 가격 100, 102, 101에서 두 번째 관측치의 수익률은 2%, 세 번째는 약 -0.9804%입니다. 반환값은 퍼센트 표기가 아닌 소수입니다. 첫 관측치에는 이전 가격이 없어 결측값이 생기므로 출력에서 제거했습니다. 이 예제와 다음 객체 생성 예제는 GS Quant 2.2.1, Python 3.12 환경에서 네트워크 연결을 차단한 상태로 실행했습니다. 실제 시장 데이터를 가져오거나 미래 수익을 예측한 결과가 아닙니다.
 
-패키지 구조에서 눈에 띄는 최근 변화가 `gs_quant/mcp/`다. client.py, config.py, dependencies.py, middleware.py, run.py, session_utils.py와 tools/ 디렉터리로 구성된 MCP(Model Context Protocol) 서버 통합이 들어 있다. 저장소 루트에는 Claude Code용 `.claude/skills` 디렉터리도 있고, 2026년 8월 18일에는 OpenAgentSkill에 ["Gs Quant: Finance & Market Analysis for AI Agents"](https://www.openagentskill.com/skills/goldmansachs-gs-quant)라는 이름으로 등록됐다. 은행의 퀀트 툴킷이 AI 에이전트가 호출하는 도구 형태를 갖추기 시작했다는 뜻인데, 물론 이 경로도 Marquee 계정이라는 같은 문을 지나야 한다.
+상품 객체도 같은 방식으로 구분할 수 있습니다. 다음 코드는 고정금리를 지급하는 달러 금리 스왑의 조건을 담습니다. 금리 스왑은 같은 통화에서 고정금리와 변동금리에 따른 현금흐름을 교환하는 상품입니다.
 
-## 커뮤니티 반응
+```python
+from gs_quant.instrument import IRSwap
 
-반응은 두 시점으로 나뉜다. 공개 확대가 예고된 2019년 4월과, 라이브러리가 자리 잡은 뒤의 2024년 6월이다. 두 스레드의 논점을 패러프레이즈로 정리한다.
+swap = IRSwap(
+    "Pay", "5y", "USD",
+    fixed_rate=0.03,
+    notional_amount=1_000_000,
+)
+print(swap.termination_date, swap.notional_amount)
+# 5y 1000000
+```
 
-[2019년 4월 3일 스레드](https://news.ycombinator.com/item?id=19562224)(189포인트, 댓글 96개)는 회의론이 많았다. 호의적인 쪽의 대표는 이런 논리였다. 시장보다 정확한 가격결정 기술이었다면 돈을 찍어낼 수 있으니 공개하지 않았을 테고, 결국 표준적이고 잘 알려진 가격·리스크 모델의 구현이겠지만, 그래도 직접 만드는 비용이 들기 때문에 유용하다. 반대편에는 PR이나 마케팅에 가깝다는 시선, 골드만이 잘 아는 코드를 많은 투자자가 쓰면 골드만에 유리한 방향으로 시장이 움직일 수 있다는 의심, NSA가 암호 스킴에 심은 magic number 같은 "독약"이 들어 있을지 모른다는 농담까지 있었다. 그 시점에 GitHub에는 LICENSE 파일만 올라와 있다는 지적도 나왔다. 몇 년 전 골드만 개발자가 업무 환경에서 GitHub 웹사이트조차 열 수 없었다는 일화를 들어, 가장 폐쇄적이던 회사가 바뀌는 중이라는 관찰도 있었다.
+여기에는 만기 5년, 고정금리 3%, 명목금액 100만 달러라는 입력이 들어 있을 뿐입니다. 명목금액은 현금흐름 계산의 기준이며 현재 가치가 아닙니다. 객체를 만들었다고 지급 일정과 시장 관행이 모두 확정되거나 가격이 계산되지는 않습니다. 공식 [Instruments 문서](https://developer.gs.com/docs/gsquant/pricing-and-risk/instruments/)가 설명하는 `resolve()`는 상대적인 조건과 기본 관행을 구체화하는 별도 단계입니다. 기본 구현에서는 이 단계도 서비스 경로를 사용합니다. `price()`나 `calc()`까지 로컬이라고 확대해서 해석하면 안 됩니다.
 
-가장 밀도 있는 토론은 [2024년 6월 29일 스레드](https://news.ycombinator.com/item?id=40831991)(285포인트, 댓글 60개)다. 5년 사이 질문은 "정말 공개하나"에서 "공개된 것으로 무엇을 할 수 있나"로 옮겨 갔다.
+폴더 단위의 구분도 주의해야 합니다. 날짜 유틸리티처럼 보이는 `GsCalendar`는 거래소나 통화를 지정하면 `HOLIDAY`·`HOLIDAY_CURRENCY` 데이터셋의 커버리지와 휴일 데이터를 조회합니다. [해당 코드](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/datetime/gscalendar.py#L87)는 조회 대상이 비어 있을 때만 일찍 반환합니다. “datetime 모듈은 전부 오프라인”이라는 설명으로는 실제 의존성을 놓칩니다.
 
-비판의 중심은 예상대로 API 게이팅이었다. 외부인에게 실제로 유용한 부분은 전부 골드만 데이터 API 뒤에 있어서 설계를 공부하는 용도 이상은 어렵다는 지적, 툴킷은 무료여도 데이터는 매우 비싸다는 지적이 나왔다. README가 외부에 유용한 정보보다 골드만이 무엇을 하는지 알리는 광고에 가깝다는 평가도 있었다. 실습 자료 측면에서는 영상 링크 몇 개가 있을 뿐이라 코드를 영상에서 베껴 써야 하느냐는 불만이 있었다.
+## 인증 성공과 데이터 이용 권한은 별개입니다
 
-코드 자체의 성격을 두고는 의견이 갈렸다. 기본적인 금융 데이터 구조 클래스 모음에 가깝다는 평가에, 도메인 라이브러리는 대부분 그 수준이라는 반론이 붙었다. 이 논쟁은 gs-quant의 로컬 층을 어떻게 보느냐의 문제다. 계산 엔진을 기대하면 실망하고, 잘 정리된 도메인 모델과 API 클라이언트로 보면 평가가 달라진다.
+Marquee는 골드만삭스의 서비스 플랫폼이며 GS Quant는 그 API를 호출하는 클라이언트 역할도 합니다. [README](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/README.md)는 기관 고객이 client id와 secret을 발급받는 경로를 안내합니다. [인증 문서](https://developer.gs.com/docs/gsquant/authentication/gs-session/)에서는 애플리케이션 등록과 OAuth 인증, 애플리케이션에 연결된 scope를 설명합니다. 이 안내를 패키지의 모든 기능이 기관 전용이거나 유료라는 주장으로 넓힐 수는 없습니다.
 
-스레드에서 **SecDB**와 **Slang** 이야기가 나온 것도 짚어 둘 만하다. 한 댓글은 Slang이 여전히 핵심이고 SecDB, 즉 마켓 비즈니스의 신경계를 구동한다고 설명했다. SecDB는 골드만 내부의 증권·리스크 데이터베이스 겸 계산 시스템으로, Slang은 그 위에서 쓰는 자체 언어로 알려져 있다. 이 맥락에서 gs-quant를 보면 위치가 분명해진다. gs-quant는 SecDB를 대체하거나 공개한 것이 아니고, 그 시스템의 결과물을 Python에서 받아 쓰는 바깥쪽 껍질이다. 골드만이 공개한 것은 껍질이고, 신경계는 여전히 안에 있다.
+`GsSession.use()`에 애플리케이션 자격 증명을 전달하면 세션을 초기화하고 현재 세션으로 설정합니다. [OAuth 구현](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/session.py#L1289)은 `client_credentials` 방식으로 액세스 토큰을 받아 이후 요청의 Bearer 헤더에 넣습니다. scope는 애플리케이션이 요청하는 기능 범위입니다. 코드에 scope 문자열을 추가한다고 서버가 새 권한을 부여하지는 않습니다.
 
-마지막으로 "이걸로 당신이 돈을 버는 게 아니다"라는 취지의 댓글이 있었다. 개인이 오픈소스 퀀트 코드를 만났을 때 가장 먼저 새겨야 할 문장이라고 생각한다.
+원격 예제는 이미 적절한 애플리케이션 자격 증명을 발급받았다는 조건에서 읽어야 합니다. 실제 값은 환경에서 주입하고 코드에 저장하지 않습니다.
 
-## 현재 상태와 유지보수
+```python
+import os
+from datetime import date
+from gs_quant.session import GsSession
+from gs_quant.data import Dataset
 
-2026년 8월 26일에 확인한 저장소 상태다.
+GsSession.use(
+    client_id=os.environ["MARQUEE_CLIENT_ID"],
+    client_secret=os.environ["MARQUEE_CLIENT_SECRET"],
+)
+weather = Dataset("WEATHER")
+frame = weather.get_data(
+    date(2016, 1, 1), date(2016, 1, 31), city=["Boston"]
+)
+```
 
-| 항목 | 값 |
-| --- | --- |
-| stars / forks / watchers | 12,491 / 1,669 / 164 |
-| license | Apache-2.0 |
-| 기본 브랜치 / 언어 | master / Python |
-| 저장소 생성 | 2018-12-14 |
-| 마지막 push | 2026-08-26 (확인 당일) |
-| commit 수 | 약 569개 |
-| 최신 GitHub release | release-2.1.4 (2026-08-17) |
-| PyPI | 최신 2.1.4, 첫 배포 0.4.8 (2018-12-23), 누적 버전 533개 |
+`Dataset("WEATHER")`는 데이터셋을 가리키는 객체를 만듭니다. `get_data()`가 기본 공급자인 `GsDataApi`로 조회하고 결과를 pandas DataFrame으로 돌려주는 단계입니다. 직접 다른 공급자를 지정할 수도 있으므로 모든 `Dataset` 사용을 Marquee 호출이라고 단정해서는 안 됩니다. 기본 공급자 선택과 쿼리 호출은 [Dataset 소스](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/data/dataset.py)에서 확인할 수 있습니다.
 
-최근 릴리스는 release-2.1.1(2026-07-15), 2.1.2(2026-08-03), 2.1.3(2026-08-07), 2.1.4(2026-08-17)로 수일에서 수주 간격이다. GitHub Releases API에서 확인되는 가장 오래된 태그 릴리스는 release-0.8.131(2020-05-18)인데, PyPI 첫 배포가 2018년 12월이므로 초기 버전은 GitHub Release 없이 PyPI로만 나갔다고 보는 게 자연스럽다. PyPI 누적 버전 533개는 이 라이브러리가 내부 배포 주기에 맞춰 잦은 소규모 릴리스를 반복해 왔다는 신호다.
+공식 [Datasets 안내](https://developer.gs.com/docs/gsquant/data/data-environment/datasets/)는 `WEATHER`가 모든 애플리케이션에 제공되며 별도 요청이 필요 없다고 설명합니다. 동시에 [조회 튜토리얼](https://developer.gs.com/docs/gsquant/data/accessing-data/querying-data/)은 초기화된 세션과 데이터 구독을 전제합니다. 공개 예제 데이터의 기본 접근 권한과 익명 HTTP 접근은 같은 뜻이 아닙니다. 다른 데이터셋은 카탈로그에서 이용 가능 여부와 권한을 확인해야 합니다. 이 예제는 문서·호출 형식을 확인한 코드이며 인증된 실제 응답을 검증한 것은 아닙니다.
 
-유지보수 주체는 골드만삭스로 보인다. 외부 기여가 어느 정도 받아들여지는지는 이번에 확인하지 못했으므로 수치로 말하지 않는다. 공식 문서에 Contribute 섹션이 있다는 점만 적어 둔다.
+[Apache-2.0 라이선스](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/LICENSE)는 공개 코드의 사용·수정·배포 조건을 정합니다. 특정 데이터의 조회·재배포 권한이나 서비스 요금을 대신 정하지 않습니다. “무료 패키지이므로 데이터도 자유롭게 쓴다”와 “모든 API는 유료다”는 모두 이 자료만으로 성립하지 않습니다.
 
-생태계 쪽 신호도 있다. [MSCI와 골드만삭스의 협업 발표](https://ir.msci.com/news-releases/news-release-details/goldman-sachs-and-msci-collaborate-deliver-improved-risk)는 MSCI의 리스크 팩터 모델을 골드만 API와 GS Quant로 제공한다고 밝혔다. gs-quant가 골드만 내부 모델뿐 아니라 제3자 리스크 모델의 배포 채널 역할도 한다는 뜻이다. 커뮤니티 큐레이션 쪽에서는 [HelloGitHub](https://hellogithub.com/en/repository/goldmansachs/gs-quant)가 Active 상태의 Apache-2.0 프로젝트로 등재하고 있다.
+## 가격 평가는 상품 조건을 원격 계산 요청으로 바꿉니다
 
-## 대안과 비교
+스왑의 가치를 구하려면 입력한 고정금리와 명목금액 외에도 평가일, 금리 곡선 등 평가에 필요한 시장 정보와 모델이 있어야 합니다. GS Quant의 기본 상품 구현은 [`GsRiskApi`](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/instrument/core.py)를 공급자로 사용합니다. [`price()`](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/priceable.py#L75)는 가격 측정치를 지정한 `calc()`로 이어지고, [리스크 API 구현](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/api/gs/risk.py#L63)은 세션으로 `/risk/calculate` 또는 `/risk/calculate/bulk`에 요청합니다.
 
-gs-quant를 다른 도구와 비교할 때 스타 수나 기능 개수보다 중요한 것은 **계산이 어디서 일어나는가**다.
+따라서 Python 소스에서 볼 수 있는 것은 상품 표현, 요청 구성, 결과 처리입니다. 이 경로에서 호출하는 서버 측 가격 평가 모델을 패키지 설치만으로 로컬에서 실행할 수는 없습니다. 서버의 내부 구현을 특정 사내 시스템과 동일하다고 추정할 이유도 없습니다.
 
-- **QuantLib**: C++로 짜인 완전 로컬 오픈소스 가격결정 라이브러리로, Python 바인딩이 있다. 금리 곡선 구축, 옵션 가격결정, 채권 분석 같은 계산이 전부 사용자 머신에서 돈다. 모델을 직접 고칠 수 있고 계정도 필요 없다. 대신 시장 데이터를 구해 오는 일과 모델 파라미터를 유지하는 일이 전부 사용자 몫이다.
-- **OpenBB**: HN 스레드에서 대안으로 언급된 오픈소스 금융 데이터 플랫폼이다. 여러 데이터 소스를 하나의 인터페이스로 묶는 데 초점을 둔다.
-- **QuantConnect**: 같은 스레드에서 언급된 알고리즘 트레이딩 플랫폼으로, 백테스팅 인프라와 데이터를 플랫폼이 제공한다.
+인증과 해당 상품의 평가 권한이 있는 환경에서는 앞에서 만든 `swap`을 다음처럼 평가할 수 있습니다. 반환되는 현재 가치는 계정의 접근 권한, 시장 데이터와 평가 조건에 따라 달라집니다.
 
-gs-quant의 차별점은 "은행의 프로덕션 리스크 엔진을 호출한다"는 한 가지다. 같은 모델과 같은 시장 데이터로 골드만 내부 퀀트가 보는 숫자를 받는다는 것은 다른 오픈소스 도구가 줄 수 없는 것이다. 그 대가가 API 종속성이다. QuantLib이 "엔진을 주지만 데이터는 네가 구해라"라면, gs-quant는 "엔진과 데이터를 주지만 계약을 맺어라"에 가깝다. 어느 쪽이 나은지는 목적에 따라 갈리고, 이 글에서는 세부 수치 비교를 하지 않는다.
+```python
+from datetime import date
+from gs_quant.markets import PricingContext
 
-## 한계와 리스크
+with PricingContext(pricing_date=date(2026, 1, 5)):
+    value_future = swap.price()
 
-- **핵심 기능의 계정 의존.** 가격결정, 리스크, 데이터, 마켓 조회는 Marquee client id와 secret이 필요하고, 발급 대상은 기관 고객이다. 개인 개발자가 pip install 뒤에 할 수 있는 일은 로컬 계산 층과 코드 읽기로 한정된다.
-- **오픈소스의 범위.** Apache-2.0은 저장소 안의 코드에만 적용된다. 계산 결과를 만드는 엔진은 공개 대상이 아니다. "골드만이 퀀트 코드를 오픈소스로 풀었다"는 문장은 이 범위를 명시하지 않으면 과장이 된다.
-- **유지보수 구조.** 골드만 단독 주도로 보이며, 외부 기여 수용 규모는 확인하지 못했다. 회사 전략이 바뀌면 프로젝트 방향도 바뀔 수 있는 구조다.
-- **학습 자료.** HN에서 지적된 대로 외부 사용자용 예제와 튜토리얼이 충분하다고 보기 어렵다. 공식 문서는 구조는 갖췄지만 실습은 API 접근을 전제한다.
-- **오해의 위험.** 이 라이브러리는 투자 판단을 대신해 주지 않는다. 계산 결과를 받아 오는 도구이고, 그 결과를 어떻게 해석하고 무엇을 할지는 전적으로 사용자 책임이다. 이 글도 투자 조언이 아니다.
+value = value_future.result()
+```
 
-## 독자별 활용 방식
+[`PricingContext`](https://developer.gs.com/docs/gsquant/pricing-and-risk/pricing-context/)는 평가일, 시장 데이터 기준일과 위치, 비동기·배치 처리 같은 공통 조건을 관리합니다. context 안의 계산은 블록을 나갈 때 묶어 전송하며, 안에서 받은 future의 결과는 블록 밖에서 읽습니다. `is_async`는 호출 측의 대기 방식을 조절하는 설정입니다. 로컬 객체를 만들거나 비동기 옵션을 켜는 일이 원격 계산을 오프라인 계산으로 바꾸지는 않습니다.
 
-**읽어 볼 만한 사람.** 금융 도메인 모델을 Python 타입으로 어떻게 표현하는지 궁금한 개발자, 대형 은행이 오픈소스 클라이언트와 비공개 서비스를 어떻게 나누는지 사례를 찾는 사람, MCP 통합이 금융 툴킷에서 어떤 모양으로 들어가는지 보고 싶은 사람에게 코드 자체가 교재가 된다.
+동일한 결과를 다시 얻어야 한다면 패키지 버전 외에 상품 조건과 평가일, 시장 데이터 기준일·위치, 사용한 데이터와 권한 범위도 기록해야 합니다. GitHub 커밋은 클라이언트 구현을 고정하는 근거이지 서버 모델과 데이터까지 고정됐다는 증거는 아닙니다.
 
-**써볼 만한 사람.** Marquee 계정이 있는 기관 사용자다. 이 경우 gs-quant는 골드만 엔진의 Python 인터페이스로서 본래 목적에 맞게 동작한다.
+## MCP 통합도 기존 세션을 사용합니다
 
-**기대를 조정해야 하는 사람.** 계정 없이 파생상품 가격을 계산하려는 개인이나 학생이다. 그 목적이라면 QuantLib 쪽이 맞고, gs-quant는 설계 참고용으로 곁에 두는 편이 낫다.
+2.2.1 소스에는 [실험 단계의 MCP 통합](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/mcp/README.md)이 있습니다. MCP(Model Context Protocol)는 AI 클라이언트가 도구를 호출하는 인터페이스이며, 이 구현은 FastMCP 기반 서버와 클라이언트를 제공합니다. 별도의 `mcp` 선택 의존성이 필요하고 README는 API·CLI·설정이 바뀔 수 있다고 명시합니다.
+
+인증 방식에 따라 어떤 계정으로 요청하는지도 달라집니다. `local`은 서버가 만든 한 세션을 도구 호출에 재사용합니다. `passthrough`는 요청에 전달된 인증 정보로 호출자의 세션을 구성합니다. [미들웨어 구현](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/mcp/middleware.py)에서도 이 차이가 드러납니다. AI 클라이언트를 연결해도 데이터 구독이나 가격 평가 권한이 새로 생기지 않습니다. `local`은 계산 위치를 뜻하는 이름도 아닙니다. 해당 세션을 사용하는 도구는 여전히 Marquee API를 호출할 수 있습니다.
+
+## API 의존성에 대한 비판과 용도 선택
+
+2024년 6월 29일 [Hacker News 토론](https://news.ycombinator.com/item?id=40831991)에서 `kingkongjaffa`는 유용한 기능이 GS 전용 API 뒤에 있다는 점을 비판했습니다. 같은 대화에서 `ironSkillet`은 추상화와 사용자 인터페이스, 연구자가 도구를 사용하는 방식을 코드로 공부할 가치가 있다고 설명했습니다. 둘 다 당시 사용자의 평가이며 현재 가격표나 접근 정책의 근거는 아닙니다.
+
+이 비판은 완성된 오프라인 파생상품 평가 도구를 기대할 때 특히 타당합니다. 다만 위의 수익률 계산처럼 로컬에서 실행하는 코드까지 쓸모없다는 결론으로 이어지지는 않습니다. 반대로 Marquee 접근 권한이 있는 사용자는 데이터 조회와 상품·리스크 요청을 Python 작업 흐름에 연결하는 구현을 얻습니다. 접근 권한이 있어도 원하는 상품과 데이터셋이 허용됐는지는 별도로 확인해야 합니다.
+
+목적이 **모델을 직접 실행하고 수정하는 학습**이라면 [QuantLib](https://www.quantlib.org/)도 함께 살펴볼 만합니다. C++ 기반의 오픈소스 금융 모델링·리스크 라이브러리이며 Python 바인딩을 제공합니다. 여기서의 비교 기준은 수치 정확도나 수익성이 아니라 필요한 계산 구현을 로컬에서 확보하는가입니다. 시장 데이터와 평가 가정을 준비하는 문제는 여전히 남습니다.
+
+GS Quant를 선택할 때 가장 먼저 확인할 것은 필요한 함수의 입력과 호출 경로입니다. 이미 가진 데이터를 분석할 목적이면 로컬 함수부터 실행하고, Marquee 결과가 목적이면 세션과 서비스·데이터별 권한부터 확인하는 편이 맞습니다.
 
 ## 함께 보면 좋을 자료
 
-- [Goldman Sachs 오픈소스 포털](https://developer.gs.com/discover/open-source): gs-quant 외에 골드만이 공개한 프로젝트 목록
-- [Building the Open Source Program Office at Goldman Sachs (PDF)](https://static.sched.com/hosted_files/ossjapan2022/01/2022-LinuxCon-GS-OSPO.pdf): OSPO 설립 과정과 gs-quant의 내부 위치를 설명한 LinuxCon Japan 2022 발표 자료
-- [Goldman Sachs Open Sources its Data Modeling Platform through FINOS](https://www.linuxfoundation.org/press/press-release/goldman-sachs-open-sources-its-data-modeling-platform-through-finos): 같은 시기의 Legend 기부 발표
-- [Goldman Sachs open source toolkit: GS Quant](https://dev.to/mahlonzy/goldman-sachs-open-source-toolkit-gs-quant-4mg5): DEV Community의 외부 소개 글
-- [Goldman Sachs GS-Quant: A Python Quant Toolkit Used on Wall Street](https://medium.com/coding-nexus/goldman-sachs-gs-quant-a-python-quant-toolkit-used-on-wall-street-764ef510a8d7): Medium(Coding Nexus)의 외부 리뷰
-
-## 정리
-
-gs-quant는 "골드만이 퀀트 코드를 공개했다"와 "핵심은 공개하지 않았다"가 동시에 참인 프로젝트다. 공개된 것은 도메인 모델, 시계열 헬퍼, 그리고 Marquee 엔진을 부르는 잘 만든 Python 클라이언트다. 공개되지 않은 것은 SecDB로 대표되는 계산 엔진과 데이터다. 2018년 저장소 생성, 2019년 WSJ 보도, 2020년 Legend 기부, 2021년 OSPO 출범으로 이어지는 흐름은 이 경계 설정이 즉흥이 아니라 조직 차원의 선택이었음을 보여 준다.
-
-개인 개발자에게 이 저장소의 가치는 실행보다 독해에 있다. 은행이 금융 상품을 어떤 객체로 표현하고, 어디까지를 클라이언트에 두고 어디부터를 서버에 두는지, 그리고 최근에는 MCP와 에이전트 스킬을 어떻게 얹는지를 코드로 볼 수 있다. 그 이상을 기대하면 HN 댓글이 말한 대로 실망하게 된다.
+- [GS Quant 시계열 함수 소스](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/timeseries/econometrics.py): 입력 시계열에서 어떤 계산이 수행되는지 확인하기 좋습니다.
+- [Pricing Context 공식 안내](https://developer.gs.com/docs/gsquant/pricing-and-risk/pricing-context/): 평가일·시장 데이터·future와 요청 묶음 처리의 관계를 설명합니다.
+- [QuantLib 공식 사이트](https://www.quantlib.org/): 모델 구현을 직접 다루는 금융 라이브러리를 비교할 때 참고할 자료입니다.
 
 ## 참고 자료
 
-- [goldmansachs/gs-quant](https://github.com/goldmansachs/gs-quant): GitHub, Apache-2.0. 조회일 2026-08-26
-- [gs-quant on PyPI](https://pypi.org/project/gs-quant/): PyPI 릴리스 이력. 조회일 2026-08-26
-- [GS Quant 공식 문서](https://developer.gs.com/docs/gsquant/): developer.gs.com. 조회일 2026-08-26
-- [GS Quant on Marquee](https://marquee.gs.com/welcome/our-platform/gs-quant): Goldman Sachs Marquee. 조회일 2026-08-26
-- [Goldman's Trading Floor Is Going Open-Source, Kind of](https://www.wsj.com/articles/goldmans-trading-floor-is-going-open-source-kind-of-11554285602): The Wall Street Journal, 2019-04-03 (구독 기사, 본문은 요약만 반영)
-- [The Latest on Goldman Sachs's Open-Source Trading Floor](https://www.wsj.com/video/the-latest-on-goldman-sachs-open-source-trading-floor/4C614C58-03BC-4EB8-A65C-DE923E09FA90): The Wall Street Journal 영상
-- [Goldman Sachs will open-source some of its trading software](https://news.ycombinator.com/item?id=19562224): Hacker News, 2019-04-03, 189포인트 댓글 96개. 조회일 2026-08-26
-- [GS Quant 논의 스레드](https://news.ycombinator.com/item?id=40831991): Hacker News, 2024-06-29, 285포인트 댓글 60개. 조회일 2026-08-26
-- [Goldman Sachs is giving away software to Wall Street for free](https://www.cnbc.com/2019/11/20/goldman-sachs-is-giving-away-software-to-wall-street-for-free.html): CNBC, 2019-11-20
-- [Goldman Sachs Open Sources its Data Modeling Platform through FINOS](https://www.linuxfoundation.org/press/press-release/goldman-sachs-open-sources-its-data-modeling-platform-through-finos): Linux Foundation, 2020-10-19
-- [Building the Open Source Program Office at Goldman Sachs](https://static.sched.com/hosted_files/ossjapan2022/01/2022-LinuxCon-GS-OSPO.pdf): LinuxCon Japan 2022 발표 자료
-- [Goldman Sachs and MSCI Collaborate to Deliver Improved Risk Analytics](https://ir.msci.com/news-releases/news-release-details/goldman-sachs-and-msci-collaborate-deliver-improved-risk): MSCI Investor Relations
-- [Gs Quant: Finance & Market Analysis for AI Agents](https://www.openagentskill.com/skills/goldmansachs-gs-quant): OpenAgentSkill, 2026-08-18 등록
-- [HelloGitHub: goldmansachs/gs-quant](https://hellogithub.com/en/repository/goldmansachs/gs-quant): HelloGitHub. 조회일 2026-08-26
-- [Goldman Sachs open source toolkit: GS Quant](https://dev.to/mahlonzy/goldman-sachs-open-source-toolkit-gs-quant-4mg5): Mahlon Clottey, DEV Community
-- [Goldman Sachs GS-Quant: A Python Quant Toolkit Used on Wall Street](https://medium.com/coding-nexus/goldman-sachs-gs-quant-a-python-quant-toolkit-used-on-wall-street-764ef510a8d7): Coding Nexus, Medium
+확인일은 모두 2026년 10월 16일(한국시간)입니다. 코드 링크는 별도 표시가 없으면 2.2.1 태그의 커밋 `bbe7071653ccfc0d431e11c3a31dbd511afc394f`를 가리킵니다.
+
+- [GS Quant README](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/README.md), [LICENSE](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/LICENSE): 프로젝트 범위, 요구 환경, 코드 라이선스.
+- [GitHub release-2.2.1](https://github.com/goldmansachs/gs-quant/releases/tag/release-2.2.1), [PyPI 2.2.1](https://pypi.org/project/gs-quant/2.2.1/): 릴리스와 설치 패키지의 현재 기준.
+- [Session 구현](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/session.py), [GsSession 안내](https://developer.gs.com/docs/gsquant/authentication/gs-session/): OAuth, scope, 현재 세션.
+- [Dataset 구현](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/data/dataset.py), [Datasets 안내](https://developer.gs.com/docs/gsquant/data/data-environment/datasets/), [조회 예제](https://developer.gs.com/docs/gsquant/data/accessing-data/querying-data/): 공급자, WEATHER, 데이터 접근 조건.
+- [Instruments 안내](https://developer.gs.com/docs/gsquant/pricing-and-risk/instruments/), [리스크 API 소스](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/api/gs/risk.py), [휴일 달력 소스](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/datetime/gscalendar.py): 객체 정의와 원격 호출의 경계.
+- [GS Quant MCP README](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/mcp/README.md), [인증 미들웨어](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/mcp/middleware.py): 실험 상태와 세션 재사용 방식.
+- [Hacker News 토론](https://news.ycombinator.com/item?id=40831991): 2024년 6월 29일의 API 의존성과 설계 학습에 관한 의견.
