@@ -3,7 +3,7 @@ title: "Glamsterdam's New Gas Model: EIP-8037 State Gas, EIP-8038 Access Costs, 
 meta_title: ""
 description: "How Glamsterdam splits gas into execution gas and state gas, reprices state access, and breaks up the flat 21,000 intrinsic cost. Exact parameters, the reservoir model, refunds and reverts, developer impact, and what is still undecided, from the specs as of October 15, 2026."
 date: 2026-10-15T01:19:45+09:00
-lastmod: 2026-10-15T01:19:45+09:00
+lastmod: 2026-10-15T15:36:20+09:00
 image: "/images/posts/glamsterdam-gas-model/glamsterdam-gas-cover.png"
 categories: ["Blockchain"]
 tags: ["ethereum", "glamsterdam", "gas", "evm", "eip-8037", "eip-8038", "eip-2780"]
@@ -22,9 +22,9 @@ This post walks through the three specifications as they stand on October 15, 20
 
 Three different "statuses" get mixed up in coverage of this fork. They answer different questions, so here they are separately.
 
-**EIP process status.** EIP-8037, EIP-8038 and EIP-2780 are all `Last Call`, with a `last-call-deadline` of 2026-11-01. The move to Last Call landed in a single commit dated 2026-10-06 ([ethereum/EIPs PR #12442](https://github.com/ethereum/EIPs/pull/12442)). Last Call means the text is close to final, not that it is frozen. EIP-8037 itself still says the EIP-8038 values it depends on "are not yet final", and EIP-2780 calls its own base numbers "provisional".
+**EIP process status.** The front matter at ethereum/EIPs commit `5ef3801`, checked on 2026-10-15, lists EIP-8037, EIP-8038 and EIP-2780 as `Last Call`, with a `last-call-deadline` of 2026-11-01. The move to Last Call landed in a single commit dated 2026-10-06 ([ethereum/EIPs PR #12442](https://github.com/ethereum/EIPs/pull/12442)). This label is a dated snapshot of the cited commit. Last Call means the text is close to final, not that it is frozen, and status or parameters can change before Glamsterdam activates. EIP-8037 itself still says the EIP-8038 values it depends on "are not yet final", and EIP-2780 calls its own base numbers "provisional".
 
-**Fork inclusion.** The Glamsterdam meta EIP, [EIP-7773](https://eips.ethereum.org/EIPS/eip-7773), lists all three under "EIPs Scheduled for Inclusion" (SFI). EIP-8037 was marked Considered for Inclusion in January 2026 and was already scheduled by June, according to its author in the discussion thread. EIP-2780 and EIP-8038 moved from considered to scheduled in a 2026-08-05 commit to EIP-7773. EIP-7773 itself is in `Review` status.
+**Fork inclusion.** In the [EIP-7773 commit `644b847`](https://github.com/ethereum/EIPs/blob/644b84799ba6873edcb13c0e21fdd319b4efbc08/EIPS/eip-7773.md), checked on 2026-10-15, EIP-8037, EIP-8038 and EIP-2780 all appear under "EIPs Scheduled for Inclusion" (SFI). A [2026-01-20 change](https://github.com/ethereum/EIPs/commit/34a80f249de50ab10607d51353843f609211dfcf) marked EIP-8037 Considered for Inclusion; its author said in the [discussion thread](https://ethereum-magicians.org/t/eip-8037-state-creation-gas-cost-increase/25694) that it was scheduled by June. EIP-2780 and EIP-8038 moved from considered to scheduled in a [2026-08-05 EIP-7773 change](https://github.com/ethereum/EIPs/commit/7b761e3d176730c488bfc4f1e3b261e3d93898b8). EIP-7773 itself is `Review` in the cited commit. These are process snapshots, not a guarantee of network activation.
 
 **Network activation.** EIP-7773's activation table has one filled row: Sepolia at epoch 353024, timestamp 1791294816 (2026-10-06 13:53:36 UTC). The Hoodi and Mainnet rows are blank, and the meta EIP notes that rows "will be filled as activation times are decided by client teams." The [Ethereum Foundation's testnet announcement](https://blog.ethereum.org/2026/09/17/glamsterdam-testnet-announcement) says the same thing in plain words: "Hoodi and mainnet activation dates have not yet been decided," and the announcement "does not schedule a mainnet upgrade."
 
@@ -304,6 +304,147 @@ Putting the EIPs together for a few common transactions (calldata, access lists 
 
 **Value-bearing internal `CALL` to a non-existent account.** Cold access 3,000 + `CALL_VALUE` 11,300 execution, plus 183,600 state, charged before the child frame.
 
+## Solidity examples: storage transitions
+
+The figures below are EIP-defined `SSTORE` access and write components. They are not totals for a Solidity function or a transaction receipt `gasUsed`. Under EIP-8037, `GAS` and `gasleft()` report execution gas `gas_left` only, not a total that includes the separate state-gas reservoir. Function-level usage also depends on compiler version, optimizer, `evmVersion`, emitted bytecode and cold or warm access state.
+
+### Creating a new slot from zero to nonzero
+
+```solidity
+pragma solidity ^0.8.30;
+
+contract LedgerCreation {
+    mapping(address => uint256) public balances;
+
+    function credit(uint256 amount) external {
+        balances[msg.sender] = amount;
+    }
+}
+```
+
+Assume `balances[msg.sender]` is zero at transaction start, has not been written in this transaction, and is cold on first access. `amount` is nonzero.
+
+**Before Glamsterdam.** A write to a new slot was priced by the existing `SSTORE` execution-gas schedule.
+
+**After Glamsterdam.** [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) charges 64 × 1,530, or 97,920 state gas, for the new slot. The cold access cost of 2,100 and first-write `STORAGE_WRITE` of 10,000 from [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) are separate execution-gas components.
+
+**Why it changes.** Creating durable state and accessing or writing existing state are priced in separate gas dimensions.
+
+**What to do.** Account for both dimensions when estimating and setting limits. Do not use `gasleft()` as a measure of all gas remaining in the transaction.
+
+### Updating a slot initialized in an earlier transaction
+
+```solidity
+pragma solidity ^0.8.30;
+
+contract ExistingValue {
+    uint256 public value;
+
+    function update(uint256 next) external {
+        value = next;
+    }
+}
+```
+
+Set `value` to a nonzero value in a separate earlier transaction. The call being compared passes a different, nonzero `next`.
+
+**Before Glamsterdam.** The `SSTORE` access and write component was 5,000 execution gas when cold, or 2,900 if already warm in the same transaction.
+
+**After Glamsterdam.** A first, cold access costs 2,100 + 10,000 = 12,100 execution gas. If already warm in the same transaction, it costs 100 + 10,000 = 10,100. This is an existing slot, so it incurs no EIP-8037 state gas. These figures describe only the `SSTORE` schedule, not the whole Solidity function.
+
+**Why it changes.** EIP-8038 adds `STORAGE_WRITE` on the first change when the transaction-original and current values match and the new value differs. Original and current values are transaction-scoped, and access warmth ends with the transaction.
+
+**What to do.** Keep initialization and update in separate transactions when testing this case. The earlier initialization does not make the slot warm in the current call. A read earlier in the same transaction can make the later access warm.
+
+### Deleting a nonzero slot
+
+```solidity
+pragma solidity ^0.8.30;
+
+contract ClearableBalances {
+    mapping(address => uint256) private balances;
+
+    function setBalance(address owner, uint256 amount) external {
+        balances[owner] = amount;
+    }
+
+    function clear(address owner) external {
+        delete balances[owner];
+    }
+
+    function balanceOf(address owner) external view returns (uint256) {
+        return balances[owner];
+    }
+}
+```
+
+A separate earlier transaction must store a nonzero balance in the slot before deletion.
+
+**Before Glamsterdam.** Clearing a nonzero slot added the existing 4,800 storage-clear refund to the refund counter of the deleting transaction.
+
+**After Glamsterdam.** [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) sets the same-transaction refund credit to 11,616. The 20% cap on refund credits already comes from [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529), adopted in 2021. It does not cap unused `gasLimit` returned at settlement. Unused gas and a deletion refund are separate.
+
+**Why it changes.** A deletion refund is a credit applied when the deleting transaction settles, not gas added to a call frame while it runs. Making the slot zero does not lower the access cost of a later getter.
+
+**What to do.** A later transaction pays the normal slot-read access cost even when the value is zero. A getter executed by an on-chain transaction or another contract consumes gas. Off-chain `eth_call` is an RPC simulation whose caller pays no on-chain fee, though the node still executes the code under RPC limits.
+
+### A child call with a fixed gas allowance
+
+```solidity
+pragma solidity ^0.8.30;
+
+interface IWorker {
+    function update(uint256 next) external;
+}
+
+contract Worker {
+    uint256 public value;
+
+    function update(uint256 next) external {
+        value = next;
+    }
+}
+
+contract FixedGasWrapper {
+    uint256 public marker;
+    uint256 public immutable childGasCap;
+
+    constructor(uint256 cap) {
+        childGasCap = cap;
+    }
+
+    function keepFailure(address target, uint256 markerValue, uint256 next)
+        external
+        returns (bool ok)
+    {
+        marker = markerValue;
+        (ok,) = target.call{gas: childGasCap}(
+            abi.encodeCall(IWorker.update, (next))
+        );
+    }
+
+    function revertOnFailure(address target, uint256 markerValue, uint256 next)
+        external
+    {
+        marker = markerValue;
+        (bool ok,) = target.call{gas: childGasCap}(
+            abi.encodeCall(IWorker.update, (next))
+        );
+        require(ok, "child call failed");
+    }
+}
+```
+
+Before comparing runs, initialize `Worker.value` and `FixedGasWrapper.marker` to nonzero values in earlier transactions. Each call changes them to different nonzero values. Assume the outer transaction has enough gas to forward the full fixed allowance.
+
+**Before Glamsterdam.** With the same compiler, input and cold or warm state, the child update to an existing slot uses the old execution schedule.
+
+**After Glamsterdam.** Execution gas is higher. A symbolic `childGasCap` that covers the old path but not the repriced one can let the child succeed under the old schedule and run out of gas after the change, making the low-level call return `false`. No verified threshold is claimed here. The exact boundary depends on compiler version, optimizer, `evmVersion`, emitted opcodes and cold or warm access state.
+
+**Why it changes.** Raising the outer `gasLimit` does not change the immutable `childGasCap`. `keepFailure` returns `false` and completes normally, so its earlier `marker` update persists. `revertOnFailure` uses `require(ok)`, which reverts the whole wrapper frame and rolls back that update. A child `REVERT` also returns `false`, but returns its unused forwarded gas. An exceptional halt such as OOG returns `false` and consumes the gas forwarded to the child ([EIP-140](https://eips.ethereum.org/EIPS/eip-140)).
+
+**What to do.** Re-measure fixed-gas child calls with the new schedule and the same initial state, and decide how the wrapper handles `false`. This child changes an existing nonzero value to another nonzero value, so it isolates EIP-8038 execution write cost from EIP-8037 state creation gas.
+
 ## What developers need to check
 
 The spec sections and the EF's [repricing guidance](https://blog.ethereum.org/2026/08/24/glamsterdam-repricing-testing) converge on the same list.
@@ -337,7 +478,7 @@ The first field data came after the Sepolia fork. The [community report](https:/
 ## Still undecided
 
 - **Mainnet and Hoodi activation**: not decided in any official source as of this snapshot. The [ACDT #100 agenda](https://github.com/ethereum/pm/issues/2264) asked client teams for Hoodi releases by October 16, which is preparation, not an activation time.
-- **Final parameter values**: the EIPs are in Last Call until November 1, and both EIP-8037 and EIP-2780 describe some inputs as not final or provisional.
+- **Final parameter values**: the cited commit lists the EIPs as Last Call with a November 1 deadline, and both EIP-8037 and EIP-2780 describe some inputs as not final or provisional.
 - **`eth_call` semantics** under the reservoir split across clients.
 - **A refill for same-transaction `CREATE` + `SELFDESTRUCT`**: requested, discussed at ACDE, not in the current text.
 
@@ -358,6 +499,8 @@ The early Sepolia numbers look like the usual repricing pattern, where hardcoded
 ## References
 
 - [EIP-8037: State Creation Gas Cost Increase](https://eips.ethereum.org/EIPS/eip-8037), raw text at [ethereum/EIPs `5ef3801`](https://github.com/ethereum/EIPs/blob/5ef380124bd68d09c02fa90d0de0f2455f37d5ee/EIPS/eip-8037.md), accessed 2026-10-15
+- [EIP-3529: Reduction in refunds](https://eips.ethereum.org/EIPS/eip-3529), accessed 2026-10-15
+- [EIP-140: REVERT instruction](https://eips.ethereum.org/EIPS/eip-140), accessed 2026-10-15
 - [EIP-8038: State-access gas cost update](https://eips.ethereum.org/EIPS/eip-8038), raw at [`5ef3801`](https://github.com/ethereum/EIPs/blob/5ef380124bd68d09c02fa90d0de0f2455f37d5ee/EIPS/eip-8038.md), accessed 2026-10-15
 - [EIP-2780: Resource-based intrinsic transaction gas](https://eips.ethereum.org/EIPS/eip-2780), raw at [`5ef3801`](https://github.com/ethereum/EIPs/blob/5ef380124bd68d09c02fa90d0de0f2455f37d5ee/EIPS/eip-2780.md), accessed 2026-10-15
 - [EIP-7773: Hardfork Meta - Glamsterdam](https://eips.ethereum.org/EIPS/eip-7773), raw at [`644b847`](https://github.com/ethereum/EIPs/blob/644b84799ba6873edcb13c0e21fdd319b4efbc08/EIPS/eip-7773.md), accessed 2026-10-15
