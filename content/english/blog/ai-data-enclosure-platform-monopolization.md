@@ -3,8 +3,8 @@ title: "Data Enclosure and Platform Concentration in the AI Era"
 meta_title: ""
 description: "Naver, Reddit, X and Cloudflare show how API termination, purpose restrictions, selective agreements and usage pricing can shape AI competition."
 date: 2026-10-15T16:00:00+09:00
-lastmod: 2026-10-15T17:46:01+09:00
-image: "/images/posts/ai-data-enclosure-platform-monopolization/cover.png"
+lastmod: 2026-10-15T20:23:51+09:00
+image: "/images/posts/ai-data-enclosure-platform-monopolization/platform-archives-selective-access-editorial.webp"
 categories: ["AI"]
 tags: ["data-enclosure", "platforms", "competition", "data-licensing", "ai-search", "commerce"]
 author: "whackur"
