@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1060" viewBox="0 0 1000 1060" role="img" aria-labelledby="title desc">
+  <title id="title">Besu deployment roles</title>
+  <desc id="desc">On Ethereum mainnet a consensus client connects to Besu through the Engine API. In a permissioned network Besu validators run QBFT or IBFT 2.0 consensus with their peers. Both use EVM execution and storage. Signing, RPC access control and privacy require separate design.</desc>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10" fill="#147d85"/></marker></defs>
+  <style>
+    .bg{fill:#f4f7fb}.panel{fill:#fff;stroke:#c4cfdf;stroke-width:2}.ink{fill:#14283e}.muted{fill:#40546a}.core{fill:#e5f4f2;stroke:#147d85;stroke-width:2}.line{stroke:#147d85;stroke-width:3;fill:none;marker-end:url(#arrow)}text{font-family:Arial,Helvetica,sans-serif}.heading{font-size:34px;font-weight:700}.label{font-size:27px;font-weight:700}.body{font-size:23px}.small{font-size:21px}
+    @media(prefers-color-scheme:dark){.bg{fill:#111e2e}.panel{fill:#1a2a3e;stroke:#52657d}.ink{fill:#edf3fa}.muted{fill:#c1cfdf}.core{fill:#153b3f;stroke:#60c5c5}.line{stroke:#60c5c5}}
+  </style>
+  <rect class="bg" width="1000" height="1060"/>
+  <text x="50" y="62" class="ink heading">Besu deployment roles</text>
+  <text x="50" y="100" class="muted body">One execution client, different consensus boundaries</text>
+  <rect class="panel" x="40" y="130" width="920" height="255" rx="18"/>
+  <text x="65" y="173" class="ink label">Ethereum Mainnet</text>
+  <rect class="panel" x="65" y="207" width="350" height="125" rx="12"/>
+  <text x="88" y="249" class="ink label">Consensus client</text>
+  <text x="88" y="286" class="muted body">PoS / fork choice</text>
+  <path class="line" d="M425 266H577"/>
+  <text x="442" y="233" class="muted small">Engine API</text>
+  <text x="478" y="306" class="muted small">JWT</text>
+  <rect class="core" x="595" y="207" width="340" height="125" rx="12"/>
+  <text x="619" y="249" class="ink label">Besu</text>
+  <text x="619" y="286" class="muted body">Execution / payloads</text>
+  <text x="65" y="363" class="muted small">Staking adds validator duties to the consensus-side stack.</text>
+  <rect class="panel" x="40" y="410" width="920" height="255" rx="18"/>
+  <text x="65" y="453" class="ink label">Permissioned network</text>
+  <rect class="core" x="65" y="487" width="350" height="125" rx="12"/>
+  <text x="88" y="529" class="ink label">Besu validator</text>
+  <text x="88" y="566" class="muted body">QBFT / IBFT 2.0</text>
+  <path class="line" d="M425 546H577"/>
+  <text x="441" y="511" class="muted small">BFT traffic</text>
+  <rect class="core" x="595" y="487" width="340" height="125" rx="12"/>
+  <text x="619" y="529" class="ink label">Peer validators</text>
+  <text x="619" y="566" class="muted body">Approved validator set</text>
+  <text x="65" y="643" class="muted small">This consensus path does not require a beacon consensus client.</text>
+  <rect class="panel" x="40" y="690" width="920" height="145" rx="18"/>
+  <text x="65" y="735" class="ink label">Shared Besu components</text>
+  <text x="65" y="777" class="muted body">EVM execution  ·  Transaction pool  ·  JSON-RPC / plugins</text>
+  <text x="65" y="810" class="muted body">World state and chain data  ·  Bonsai / storage configuration</text>
+  <rect class="panel" x="40" y="860" width="920" height="155" rx="18"/>
+  <text x="65" y="905" class="ink label">Design separately for each deployment</text>
+  <text x="65" y="946" class="muted body">Application signing  ·  RPC access control  ·  Data privacy</text>
+  <text x="65" y="985" class="muted body">Permissioned membership does not hide replicated EVM state.</text>
+</svg>
