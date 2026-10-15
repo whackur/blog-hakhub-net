@@ -34,15 +34,4 @@ features:
       enable: false
       label: ""
       link: ""
-
-  - title: "만든 사람"
-    image: "/images/service-3.png"
-    content: "whackur가 운영합니다. 블록체인과 AI 쪽을 주로 보고 있고, 로컬 환경에서 모델을 직접 돌려보는 걸 즐깁니다."
-    bulletpoints:
-      - "GitHub: github.com/whackur"
-      - "도메인: blog.hakhub.net"
-    button:
-      enable: true
-      label: "GitHub"
-      link: "https://github.com/whackur"
 ---

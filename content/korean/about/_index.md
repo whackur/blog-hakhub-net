@@ -2,7 +2,6 @@
 title: "HakHubNet 소개"
 meta_title: "소개"
 description: "HakHubNet — whackur의 IT 기술 블로그. AI, 블록체인/Web3, 로컬 LLM, Physical AI를 씁니다."
-image: "/images/image-placeholder.png"
 layout: "about"
 draft: false
 ---
@@ -26,10 +25,6 @@ HakHubNet은 [whackur](https://github.com/whackur)가 운영하는 IT 기술 블
 한국어를 기본으로 쓰고, 일부 글은 영어로도 올립니다. 번역이 아니라 각 언어에 맞게 다시 씁니다.
 
 ### 연락
-
-GitHub: [github.com/whackur](https://github.com/whackur)
-
-## 연락
 
 - 이메일: [whackur@gmail.com](mailto:whackur@gmail.com)
 - GitHub: [github.com/whackur](https://github.com/whackur)
