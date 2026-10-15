@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1040" viewBox="0 0 960 1040" role="img" aria-labelledby="title desc">
+<title id="title">Canton: private execution, shared synchronization</title>
+<desc id="desc">Parties use hosting participants that retain their authorized contract views. Encrypted protocol messages and confirmations pass through a common Synchronizer. Its sequencers order and deliver messages; mediators collect required confirmations and determine the outcome. All DvP input contracts must be assigned to that common Synchronizer.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#142b40}.bg{fill:#f4f8fc}.box{fill:#fff;stroke:#54738e;stroke-width:2}.sync{fill:#e4f2ef;stroke:#187a68;stroke-width:3}.muted{fill:#36556e}.line{fill:none;stroke:#187a68;stroke-width:4} @media(prefers-color-scheme:dark){.bg{fill:#102331}.box{fill:#1c3547;stroke:#85a5bf}.sync{fill:#153e39;stroke:#73d8c1}text{fill:#f0f6ff}.muted{fill:#bfd1e2}.line{stroke:#73d8c1}}</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto-start-reverse"><path d="M0 0 L6 3 L0 6" fill="#187a68"/></marker></defs>
+<rect class="bg" width="960" height="1040" rx="24"/>
+<text x="52" y="72" font-size="38" font-weight="bold">Canton Network</text>
+<text x="52" y="116" font-size="27" class="muted">Private execution · Shared synchronization</text>
+<rect class="box" x="52" y="164" width="410" height="102" rx="16"/><rect class="box" x="498" y="164" width="410" height="102" rx="16"/>
+<text x="257" y="207" text-anchor="middle" font-size="30" font-weight="bold">Party A</text><text x="257" y="244" text-anchor="middle" font-size="24">Buyer</text>
+<text x="703" y="207" text-anchor="middle" font-size="30" font-weight="bold">Party B</text><text x="703" y="244" text-anchor="middle" font-size="24">Seller</text>
+<path class="line" d="M257 270 V310" marker-end="url(#arrow)"/>
+<path class="line" d="M703 270 V310" marker-end="url(#arrow)"/>
+<rect class="box" x="52" y="322" width="410" height="160" rx="16"/><rect class="box" x="498" y="322" width="410" height="160" rx="16"/>
+<text x="257" y="367" text-anchor="middle" font-size="30" font-weight="bold">Participant A</text><text x="257" y="410" text-anchor="middle" font-size="24">Authorized contract views</text><text x="257" y="450" text-anchor="middle" font-size="24">Execution checks</text>
+<text x="703" y="367" text-anchor="middle" font-size="30" font-weight="bold">Participant B</text><text x="703" y="410" text-anchor="middle" font-size="24">Authorized contract views</text><text x="703" y="450" text-anchor="middle" font-size="24">Execution checks</text>
+<path class="line" d="M257 492 V602" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<path class="line" d="M703 492 V602" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<rect class="bg" x="90" y="526" width="780" height="42"/><text x="480" y="556" text-anchor="middle" font-size="25">Encrypted views · Confirmations · Outcome</text>
+<rect class="sync" x="52" y="620" width="856" height="256" rx="20"/>
+<text x="480" y="669" text-anchor="middle" font-size="32" font-weight="bold">Common Synchronizer</text>
+<text x="480" y="709" text-anchor="middle" font-size="24">GS or another permitted service</text>
+<text x="92" y="764" font-size="27" font-weight="bold">Sequencers</text><text x="92" y="802" font-size="24">Order + deliver messages</text>
+<text x="530" y="764" font-size="27" font-weight="bold">Mediators</text><text x="530" y="802" font-size="24">Collect checks + outcome</text>
+<text x="480" y="850" text-anchor="middle" font-size="24">Financial payload stays encrypted here</text>
+<text x="52" y="933" font-size="27" font-weight="bold">One DvP transaction: both legs or neither</text>
+<text x="52" y="979" font-size="24">All inputs assigned here; authorization + packages ready.</text>
+<text x="52" y="1015" font-size="22" class="muted">Conceptual message flow; issuers and custodians omitted.</text>
+</svg>
