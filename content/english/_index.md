@@ -34,15 +34,4 @@ features:
       enable: false
       label: ""
       link: ""
-
-  - title: "Who runs this"
-    image: "/images/service-3.png"
-    content: "whackur runs this blog. Primarily interested in blockchain and AI, with a habit of running models locally instead of relying on cloud APIs."
-    bulletpoints:
-      - "GitHub: github.com/whackur"
-      - "Domain: blog.hakhub.net"
-    button:
-      enable: true
-      label: "GitHub"
-      link: "https://github.com/whackur"
 ---
