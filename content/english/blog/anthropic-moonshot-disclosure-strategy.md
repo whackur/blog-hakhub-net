@@ -3,7 +3,7 @@ title: "Why did Anthropic publish its report on alleged Kimi-to-Claude routing?"
 meta_title: ""
 description: "Anthropic's September 2026 report alleges that Moonshot routed some Kimi requests to Claude and replayed thinking signatures to extract reasoning traces. A closer look at the claims, the API mechanics, and the possible effects of disclosure."
 date: 2026-09-15T13:30:00+09:00
-lastmod: 2026-10-15T07:36:42+00:00
+lastmod: 2026-10-15T08:25:58+00:00
 image: "/images/posts/anthropic-moonshot-disclosure-strategy/cover.png"
 categories: ["AI"]
 tags: ["llm", "distillation", "ai-security", "anthropic", "kimi"]
@@ -41,8 +41,6 @@ In an ordinary setup, a user sends a request to the Kimi app or API, Moonshot pr
 
 ![Editorial illustration of a hand placing an envelope in a blue collection box while a robot arm behind a curtain passes an envelope to another machine, representing request routing.](/images/posts/anthropic-moonshot-disclosure-strategy/routing-illustration.webp)
 
-*An illustration of request routing, not a reconstruction of the internal system. [Related account: Anthropic’s report](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf).*
-
 A proxy is a server that forwards a request on someone else's behalf. Residential proxies use IP addresses from ordinary home internet connections. Anthropic does not say whether Moonshot's account network used residential proxies. Its description of residential proxies, disposable email addresses, and virtual-card payments concerns Alibaba's accounts. Anthropic says the first Alibaba pool had nearly 5,000 accounts and shifted traffic to a second pool after the first was banned. Anthropic says some of those accounts were also funneling requests for DeepSeek and Xiaomi. There is no basis in the report for assuming Moonshot used the same setup.
 
 The report names China, Russia, and Iran as examples of unsupported countries and says signals of abuse, including accounts operating from such countries, can trigger identity checks. That makes the distinction between an apparent proxy location and the requester's actual location relevant. This general account does not establish where Moonshot's accounts were operated.
@@ -64,8 +62,6 @@ Claude API responses can include thinking blocks and a signature field. The thin
 Anthropic alleges that Moonshot saved a signature from stored exchanges, reused it in a new session, and prompted Claude to reproduce the associated reasoning trace. The report calls this cross-session replay. It also says Moonshot extracted reasoning transcripts collected through other means. This differs from ordinary API continuation, which returns the prior block unchanged in the same conversation. The report does not publish the original requests, prompts, code, or exact sequence of steps. The disclosed details are also insufficient to reproduce the conditions under which signature reuse was possible.
 
 ![Editorial illustration of a robot arm moving a sheet with an intact wax seal between two open notebooks, representing reasoning-trace reuse.](/images/posts/anthropic-moonshot-disclosure-strategy/reasoning-reuse-illustration.webp)
-
-*An illustration of reasoning-trace reuse. The wax seal is a visual metaphor. [Related account: Anthropic’s report](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf) and [Claude API thinking documentation](https://platform.claude.com/docs/en/about-claude/models/extended-thinking-models).*
 
 A final answer alone does not show which approaches the model tried or revised. Reasoning traces can include those intermediate steps, giving a collector a different kind of training material. Anthropic says summarizing reasoning makes the transcripts less useful for training another model. That does not establish that a summary always removes every failed approach, or that possessing a trace is enough to reproduce the original model's capabilities.
 

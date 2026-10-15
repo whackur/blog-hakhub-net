@@ -3,7 +3,7 @@ title: "Kimi 요청을 Claude로 보냈다는 앤트로픽 보고서, 왜 공개
 meta_title: ""
 description: "앤트로픽의 2026년 9월 보고서가 주장한 Moonshot의 Kimi 요청 중계와 추론 기록 추출을 살펴봅니다. 확인된 내용과 회사의 주장, 공개의 효과에 대한 해석을 나눠 정리합니다."
 date: 2026-09-15T13:30:00+09:00
-lastmod: 2026-10-15T07:36:42+00:00
+lastmod: 2026-10-15T08:25:58+00:00
 image: "/images/posts/anthropic-moonshot-disclosure-strategy/cover.png"
 categories: ["AI"]
 tags: ["llm", "distillation", "ai-security", "anthropic", "kimi"]
@@ -41,8 +41,6 @@ DeepSeek 사례(GTG-16001)에서 앤트로픽은 Claude Code, Agent SDK, OpenCod
 
 ![파란 접수함에 봉투를 넣는 손과 커튼 뒤 다른 기계로 봉투를 전달하는 로봇 팔로 요청 중계를 표현한 삽화입니다.](/images/posts/anthropic-moonshot-disclosure-strategy/routing-illustration.webp)
 
-*요청 중계를 표현한 삽화. 실제 내부 구조를 재현한 것은 아닙니다. [관련 내용: 앤트로픽 보고서](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf)*
-
 proxy는 요청을 대신 전달하는 중계 서버를 가리킵니다. residential proxy는 일반 가정용 인터넷 회선의 IP 주소를 출구로 사용합니다. 다만 앤트로픽은 Moonshot의 계정망에 residential proxy가 쓰였는지 구체적으로 밝히지 않았습니다. 보고서는 Alibaba의 첫 계정 풀이 5,000개에 가까웠고 residential proxy, 일회용 이메일, 가상 카드 결제 수단을 사용했다고 설명합니다. 첫 풀이 차단되자 두 번째 계정 풀로 옮겼으며, 일부 계정은 DeepSeek과 Xiaomi 요청도 중계했다고 합니다. 그 방식을 Moonshot에도 그대로 적용했다고 볼 근거는 없습니다.
 
 보고서는 중국, 러시아, 이란을 서비스 미지원 국가의 예로 들고, 해당 지역에서 운영되는 계정 등 악용 징후가 있으면 신원 확인을 요구할 수 있다고 설명합니다. proxy의 겉보기 위치와 실제 요청자의 위치를 구분해야 하는 이유입니다. 이 일반 설명으로 Moonshot 계정의 실제 운영 위치까지 확정할 수는 없습니다.
@@ -64,8 +62,6 @@ Claude API 응답에는 thinking block과 signature 필드가 들어갈 수 있�
 앤트로픽은 Moonshot이 저장된 대화에서 signature를 보관한 뒤 새 세션에서 이를 재사용하고, Claude가 해당 추론을 다시 서술하도록 유도해 전체 chain-of-thought 기록을 추출했다고 주장합니다. 보고서는 Moonshot이 저장된 교환 외에 다른 경로로 수집한 추론 기록도 추출했다고 덧붙입니다. 보고서는 이를 cross-session replay라고 부릅니다. 이 설명은 API의 정상적인 이어쓰기와 다릅니다. 보고서에는 실제 요청 전문, 프롬프트, 코드, 맥락을 어떻게 바꿨는지 공개돼 있지 않습니다. 서명 재사용이 어떤 조건에서 가능했는지도 공개된 내용만으로 재현할 수는 없습니다.
 
 ![로봇 팔이 온전한 봉인이 찍힌 종이를 펼쳐진 두 공책 사이로 옮기며 추론 기록 재사용을 표현한 삽화입니다.](/images/posts/anthropic-moonshot-disclosure-strategy/reasoning-reuse-illustration.webp)
-
-*추론 기록 재사용을 표현한 삽화. 종이의 봉인은 시각적 비유입니다. [관련 내용: 앤트로픽 보고서](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf), [Claude API thinking 문서](https://platform.claude.com/docs/en/about-claude/models/extended-thinking-models)*
 
 최종 답변만 모으면 모델이 어떤 접근을 시도하고 수정했는지는 알기 어렵습니다. 추론 기록은 그 중간 과정을 학습 자료에 포함한다는 점에서 수집 동기가 다릅니다. 앤트로픽은 보고서에서 추론을 요약하면 다른 모델의 학습에 덜 유용해진다고 설명합니다. 그렇다고 요약본이 항상 시행착오를 전부 제외한다거나, 추론 기록이 있으면 원 모델의 능력을 그대로 복제한다고 단정할 수는 없습니다.
 
