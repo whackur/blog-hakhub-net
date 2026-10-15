@@ -3,8 +3,8 @@ title: "AI 시대의 데이터 폐쇄화(Data Enclosure)와 플랫폼 독점화 
 meta_title: ""
 description: "네이버 쇼핑 검색 API 종료와 Reddit·X·Cloudflare 사례로 데이터 접근의 종료, 용도 제한, 계약과 과금이 플랫폼 경쟁에 미치는 영향을 살펴봅니다."
 date: 2026-10-15T16:00:00+09:00
-lastmod: 2026-10-15T17:46:01+09:00
-image: "/images/posts/ai-data-enclosure-platform-monopolization/cover.png"
+lastmod: 2026-10-15T20:23:51+09:00
+image: "/images/posts/ai-data-enclosure-platform-monopolization/platform-archives-selective-access-editorial.webp"
 categories: ["AI"]
 tags: ["data-enclosure", "platforms", "competition", "data-licensing", "ai-search", "commerce"]
 author: "whackur"
