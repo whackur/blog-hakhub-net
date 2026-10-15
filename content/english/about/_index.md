@@ -2,7 +2,6 @@
 title: "About HakHubNet"
 meta_title: "About"
 description: "HakHubNet — whackur's personal IT tech blog covering AI, blockchain/Web3, local LLM, and physical AI."
-image: "/images/image-placeholder.png"
 layout: "about"
 draft: false
 ---
@@ -26,10 +25,6 @@ The reason this blog exists is practical. Studying without writing things down m
 Korean is the primary language. Some posts are also available in English. These are rewrites for an English-speaking reader, not literal translations.
 
 ### Contact
-
-GitHub: [github.com/whackur](https://github.com/whackur)
-
-## Contact
 
 - Email: [whackur@gmail.com](mailto:whackur@gmail.com)
 - GitHub: [github.com/whackur](https://github.com/whackur)
