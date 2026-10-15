@@ -1,10 +1,10 @@
 ---
 title: "gs-quant: How Goldman Sachs Open-Sourced Its Quant Code, and Where the Line Is"
 meta_title: "gs-quant Review: Goldman Sachs Open-Source Quant Library"
-description: "What Goldman Sachs' Python quant toolkit gs-quant is, the history from the 2018 repo to the 2021 OSPO, the local-vs-Marquee-API boundary visible in the code structure, community reactions, and its limits, reviewed for research and education."
+description: "What GS Quant runs locally, what needs authenticated Marquee services, and how code licensing differs from data entitlements, with source-checked Python examples."
 date: 2026-08-26T10:00:00+09:00
-lastmod: 2026-08-26T10:00:00+09:00
-image: "/images/posts/gs-quant-goldman-sachs-open-source-quant-library/local-vs-api-boundary-1200.png"
+lastmod: 2026-10-15T15:51:21Z
+image: "/images/posts/gs-quant-goldman-sachs-open-source-quant-library/quant-local-marquee-editorial-20261016.webp"
 categories: ["Finance"]
 tags: ["quant-finance", "open-source", "python", "goldman-sachs"]
 author: "whackur"
@@ -12,171 +12,148 @@ translationKey: "gs-quant-goldman-sachs-open-source-quant-library"
 draft: false
 ---
 
-Tell someone that an investment bank's trading code is on GitHub and you usually get one of two reactions: "why would they do that" or "they kept the important parts, surely." [goldmansachs/gs-quant](https://github.com/goldmansachs/gs-quant) is a case where both reactions are half right. The repository was created in December 2018, passed 12,000 stars as of August 2026, and had a push on the very day I checked. The README also states plainly that you need to be an institutional client of Goldman Sachs to use the pricing and risk APIs.
+GS Quant is a Python toolkit that **runs time-series calculations on data you supply and constructs financial instrument objects locally, while sending Marquee data queries, valuations, and risk calculations to authenticated services**. Its Apache-2.0 code license is separate from permission to use those services and their data. Installing the package does not install Goldman Sachs' valuation service, but it does provide analysis code you can run without an account. The distinction needs to be made function by function in the [public source](https://github.com/goldmansachs/gs-quant).
 
-This post is a code review for research and education, not a recommendation of gs-quant as an investment tool: what a large bank chose to publish, in what form, and where it drew the line, read through the code structure and the release history. I start with what a quant finance toolkit does, unpack unfamiliar names like Marquee, SecDB, and Slang one at a time, and follow the community's complaint that "everything useful is behind the API." All numbers and citations were checked on 2026-08-26 against the GitHub API, PyPI, the official docs, press coverage, and Hacker News threads.
+Calculating returns from prices in a CSV and valuing an option with Goldman Sachs' models have different requirements. The first needs your input and a Python environment. The second also needs remote models, market data, and permission to call the service. The requirements depend on the task:
 
-## gs-quant is a Python interface to Goldman's engines
+| Task | Where it runs and what it needs |
+| --- | --- |
+| Calculate returns from prices you supply | Local Python and input data |
+| Represent a swap's currency, maturity, and notional | Local object construction and explicit contract terms |
+| Query Marquee through the default `Dataset` provider | Remote API, a session, and dataset entitlements |
+| Call `price()` or calculate risk using the default instrument implementation | Remote valuation API, relevant entitlements, and market data |
+| Use a particular exchange or currency holiday calendar | Check the holiday-data retrieval path as well |
 
-A quant finance toolkit does three broad jobs. It fetches and organizes market data, it computes prices and risk for financial instruments (including derivatives such as options and swaps), and it ties those computations together to test strategies or manage portfolios. The second job is the hard one. Derivative pricing models depend on constantly refreshed market parameters (rate curves, volatility surfaces, correlations), and banks have spent decades building the engines that do this.
+These distinctions follow the [time-series functions](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/timeseries/econometrics.py), [data provider](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/data/dataset.py), [default instrument API provider](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/instrument/core.py), and [holiday-calendar implementation](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/datetime/gscalendar.py), rather than package names or directory listings. This is a research and education discussion of the software's scope; it does not cover investment decisions or trade execution.
 
-gs-quant is a Python toolkit built and maintained by quantitative developers at Goldman Sachs. The README calls it a "Python toolkit for quantitative finance" created "on top of one of the world's most powerful risk transfer platforms" and "crafted over 25 years of experience navigating global markets," designed to speed up development of trading strategies and risk management. The phrase "on top of" defines the library's character. gs-quant is not the pricing engine itself; it is closer to a Python interface to Goldman's internal engines.
+## The installed package and remote service have separate versions
 
-Those engines live behind **Marquee**, Goldman Sachs' digital platform for institutional clients. The PyPI homepage for gs-quant points to marquee.gs.com. The README says API access requires a client id and secret, available to institutional clients, and directs readers to their sales coverage or Marquee Sales. The [Marquee page for gs-quant](https://marquee.gs.com/welcome/our-platform/gs-quant) highlights coverage of an extensive range of FX derivatives.
-
-Goldman's [OSPO presentation at LinuxCon Japan 2022](https://static.sched.com/hosted_files/ossjapan2022/01/2022-LinuxCon-GS-OSPO.pdf) describes these analytics tools as trusted daily by over a thousand quantitative developers at Goldman Sachs to manage its global trading business. The same claim appears under "Designed by our quants" in the Key Features section of the [official docs](https://developer.gs.com/docs/gsquant/). The primary users are Goldman's own quants and institutional clients. GitHub visitors come after.
-
-## The release history
-
-There is no single date on which gs-quant "went open source." The repository and the press record show this sequence:
-
-- **2018-12-14**: GitHub repository created (first commit "Initial commit"). First PyPI release, 0.4.8, on 2018-12-23.
-- **2019-04-03**: The Wall Street Journal publishes "Goldman's Trading Floor Is Going Open-Source, Kind of." In summary, Goldman planned to release on GitHub later that month some of the code its traders and engineers use to price securities and analyze and manage risk. A [Hacker News thread](https://news.ycombinator.com/item?id=19562224) appeared the same day. A WSJ [video segment](https://www.wsj.com/video/the-latest-on-goldman-sachs-open-source-trading-floor/4C614C58-03BC-4EB8-A65C-DE923E09FA90) framed it as developers gaining access to previously proprietary code used to assess risk and price derivatives.
-- **2019-11-20**: CNBC reports that [Goldman is giving away software to Wall Street for free](https://www.cnbc.com/2019/11/20/goldman-sachs-is-giving-away-software-to-wall-street-for-free.html). That story is about the data modeling platform Legend (then called Alloy), not gs-quant.
-- **2020-10-19**: The Linux Foundation announces that [Goldman has contributed Legend to FINOS](https://www.linuxfoundation.org/press/press-release/goldman-sachs-open-sources-its-data-modeling-platform-through-finos) as open source. FINOS (the Fintech Open Source Foundation) is the Linux Foundation body for open-source collaboration in financial services.
-- **2021**: Goldman Sachs' Open Source Program Office (OSPO) is chartered in April and formally launched in August.
-
-Since the repository already existed in December 2018, the WSJ story reads as a widening of scope rather than a first release. A specific "March 2020 release" date was likewise not supported by any press coverage I could find. This post treats only the timeline above as fact and does not assert a single launch date.
-
-The pattern matters more than any one date. The 2019 expansion of gs-quant, the 2019 to 2020 Legend contribution, and the 2021 OSPO show Goldman turning open source from a one-off announcement into an organizational function. The bank still lists its public projects on the [developer.gs.com open source portal](https://developer.gs.com/discover/open-source).
-
-## How it actually works, read from the code structure
-
-The `gs_quant/` package, as returned by the GitHub contents API, looks like this:
-
-```text
-gs_quant/
-  analytics/      api/          backtests/    config/
-  content/        data/         datetime/     documentation/
-  entities/       instrument/   interfaces/   markets/
-  mcp/            models/       quote_reports/ risk/
-  skills/         target/       session.py    priceable.py
-```
-
-Put this next to the official docs' table of contents and the structure becomes legible. The docs run Overview, Getting Started, Authentication (Sessions, GS Session, Proxy), Data (Data Environment, Accessing Data, Data Analytics, Data Visualization), Pricing and Risk (Instruments, Measures, Pricing Context, Portfolios, Scenarios), Markets (Assets and SecurityMaster, Relative Dates), Hedging (Hedging Using ML), Contribute, and SDK Reference. Authentication comes before Data and Pricing. That ordering is the usage order.
-
-![Diagram splitting gs-quant into a local region (timeseries and analytics helpers, datetime and instrument definitions, backtest framework code) and a remote Marquee API region (Pricing and Risk, Data, Markets and SecurityMaster, Hedging) connected through GsSession](/images/posts/gs-quant-goldman-sachs-open-source-quant-library/local-vs-api-boundary.svg)
-
-*The local and API regions of gs-quant. Reconstructed from the README and the official docs structure; per-module behavior should be confirmed in the repository code.*
-
-The library splits into two layers.
-
-**The layer that runs locally.** Statistical and analytics helpers in the timeseries family, datetime utilities such as business-day logic, and instrument definitions that represent financial products as typed Python objects all work with nothing more than a pip install. The backtests and models directories hold strategy framework code as well, though the step that actually values a strategy appears to call back into the API. Within what the README and the structure confirm, that is the purely local territory. One Hacker News user noticed that `timeseries/statistics.py` contains SIR/SEIR compartment model classes for modeling epidemic spread, and a comment guessed they were added around March 2020 during the COVID period. Epidemiology in a finance toolkit looks out of place, but it also demonstrates that the local layer really is just ordinary Python code.
-
-**The layer that calls the API.** Derivative pricing, risk measures, scenario analysis, dataset queries, asset identification through SecurityMaster, and ML-based hedging are all computed by engines on the Marquee side. The Python objects build requests and receive results. The door into this layer is `GsSession` in `gs_quant/session.py`.
-
-Installation needs Python 3.9 or later and pip.
+As checked on October 16, 2026 (KST), the latest GitHub release is [`release-2.2.1`](https://github.com/goldmansachs/gs-quant/releases/tag/release-2.2.1), published on October 13, 2026 at 10:41:56 UTC. The [latest PyPI package](https://pypi.org/project/gs-quant/2.2.1/) is also 2.2.1. Both the PyPI metadata and README require **Python 3.10 or later**.
 
 ```bash
-pip install gs-quant
+python -m pip install "gs-quant==2.2.1"
 ```
 
-The session concept is best understood like this. Real credentials should never live in code; keep them in environment variables or a separate configuration file.
+Pinning a version makes the examples and client implementation easier to revisit. This number identifies the Python code you install. It does not fix the remote data's update time, the server's model version, or the capabilities your application is allowed to use. The code evidence below links to commit [`bbe7071`](https://github.com/goldmansachs/gs-quant/tree/bbe7071653ccfc0d431e11c3a31dbd511afc394f), which the release tag resolves to.
+
+## Time-series calculations without an account
+
+GS Quant's value is not limited to reading its design. `returns()` divides the supplied price series by a series shifted by one observation to calculate simple returns by default. When the input is already in memory, this calculation needs no Marquee session. The [implementation's formula](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/timeseries/econometrics.py#L273) is `current price / previous price - 1`.
 
 ```python
-from gs_quant.session import GsSession, Environment
+import pandas as pd
+from gs_quant.timeseries import returns
 
-# GsSession.use(...) opens a Marquee session.
-# The client id and secret are issued to institutional clients.
-# Inject them from the environment instead of writing them in code.
+prices = pd.Series(
+    [100.0, 102.0, 101.0],
+    index=pd.date_range("2026-01-05", periods=3),
+)
+print(returns(prices).dropna().round(6).tolist())
+# [0.02, -0.009804]
 ```
 
-This is where API gating becomes the central fact about the project. The license is Apache-2.0, but the substance of what the library does (pricing, risk, data) sits outside the licensed code, on Goldman's servers. You are free to read, modify, and redistribute the code, but for it to produce meaningful output you need a contractual relationship. As an open-source client for a closed service, it belongs to the same family as cloud vendors that open-source their SDKs and charge for the service behind them.
+For the synthetic prices 100, 102, and 101, the second observation has a return of 2% and the third approximately -0.9804%. The function returns decimal values, not percentages. The first observation has no previous price, so its missing value is dropped from the output. This example and the object-construction example below were executed with GS Quant 2.2.1 on Python 3.12 with network connections blocked. They neither retrieve live market data nor predict future returns.
 
-The most recent notable addition to the package is `gs_quant/mcp/`. It contains client.py, config.py, dependencies.py, middleware.py, run.py, session_utils.py, and a tools/ directory: an MCP (Model Context Protocol) server integration. The repository root also has a `.claude/skills` directory for Claude Code, and on 2026-08-18 the project was listed on OpenAgentSkill as ["Gs Quant: Finance & Market Analysis for AI Agents"](https://www.openagentskill.com/skills/goldmansachs-gs-quant). A bank's quant toolkit is starting to take the shape of a tool that AI agents call. That path, of course, goes through the same Marquee account door.
+The same distinction applies to instrument objects. This code describes the terms of a US dollar interest rate swap that pays a fixed rate. An interest rate swap exchanges fixed-rate and floating-rate cash flows in the same currency.
 
-## Community reaction
+```python
+from gs_quant.instrument import IRSwap
 
-Reactions come from two moments: April 2019, when the wider release was announced, and June 2024, after the library had settled in. The main points from both threads, paraphrased:
+swap = IRSwap(
+    "Pay", "5y", "USD",
+    fixed_rate=0.03,
+    notional_amount=1_000_000,
+)
+print(swap.termination_date, swap.notional_amount)
+# 5y 1000000
+```
 
-The [2019-04-03 thread](https://news.ycombinator.com/item?id=19562224) (189 points, 96 comments) leaned skeptical. The representative favorable argument ran like this: if the pricing technology were more accurate than the market, Goldman could print money and would never publish it, so this is probably an implementation of standard, well-known pricing and risk models, but those still cost effort to build, so it is useful. On the other side were suspicions that it was mostly PR or marketing, a worry that if many investors used code Goldman knows intimately the market might move in Goldman's favor, and a joke that it might contain a "poison pill" like the magic numbers the NSA planted in cryptographic schemes. One commenter noted that at that point only a LICENSE file was on GitHub. Another recalled talking to a Goldman developer a few years earlier who could not even open the GitHub website at work, and read the announcement as a sign that one of the most closed companies was changing.
+The inputs specify a five-year maturity, a 3% fixed rate, and a $1 million notional. Notional is the basis for calculating cash flows, not the present value. Constructing the object does not establish a complete payment schedule and market conventions or calculate a price. The official [Instruments guide](https://developer.gs.com/docs/gsquant/pricing-and-risk/instruments/) describes `resolve()` as a separate step that makes relative terms and default conventions concrete. That step also uses the service path in the default implementation. Local construction does not establish that `price()` or `calc()` runs locally.
 
-The densest discussion is the [2024-06-29 thread](https://news.ycombinator.com/item?id=40831991) (285 points, 60 comments). In five years the question moved from "are they really publishing it" to "what can you do with what was published."
+Directory-level classifications are also unreliable. Although `GsCalendar` looks like a date utility, specifying an exchange or currency leads it to query coverage and holiday data from the `HOLIDAY` and `HOLIDAY_CURRENCY` datasets. The [code](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/datetime/gscalendar.py#L87) returns early when the query targets are empty. Calling the whole datetime module offline would hide this dependency.
 
-The criticism centered, predictably, on API gating. Commenters said everything useful to an outsider sits behind Goldman's data API, leaving only design study as a realistic use, and that while the toolkit is free the data is very expensive. One described the README as closer to an advertisement of what Goldman does than to information useful to outsiders. On learning materials, someone complained that there were only a few video links and asked whether they were meant to copy code off a video.
+## Authentication and data entitlements are separate
 
-Opinions split on the code itself. One view held that it amounts to a collection of basic financial data structure classes; others answered that most domain libraries are exactly that. This disagreement is really about how you view the local layer. Expect a pricing engine and you will be disappointed; view it as a well-organized domain model plus API client and the assessment changes.
+Marquee is Goldman Sachs' service platform, and GS Quant also acts as a client for its APIs. The [README](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/README.md) describes a route for institutional clients to obtain a client id and secret. The [authentication guide](https://developer.gs.com/docs/gsquant/authentication/gs-session/) explains application registration, OAuth, and application-linked scopes. Those instructions do not establish that every package feature is institutional-only or paid.
 
-The thread's mentions of **SecDB** and **Slang** are worth pausing on. One commenter explained that Slang remains central and drives SecDB, which they called the nervous system of the markets business. SecDB is widely described as Goldman's internal securities and risk database and computation system, with Slang as its in-house language. In that context gs-quant's position becomes clear. It does not replace or expose SecDB; it is the outer shell that receives that system's output in Python. Goldman published the shell. The nervous system stays inside.
+Passing application credentials to `GsSession.use()` initializes a session and makes it current. The [OAuth implementation](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/session.py#L1289) uses the `client_credentials` grant to obtain an access token, then places it in the Bearer header of subsequent requests. Scopes specify capabilities an application requests. Adding a scope string to your code does not grant a new server-side permission.
 
-Finally, one comment made the point that this is not the thing that makes you money. I think that is the first sentence anyone should internalize when encountering open-source quant code as an individual.
+The remote example assumes you have already obtained appropriate application credentials. Inject their actual values from the environment rather than storing them in code.
 
-## Current state and maintenance
+```python
+import os
+from datetime import date
+from gs_quant.session import GsSession
+from gs_quant.data import Dataset
 
-Repository status as checked on 2026-08-26:
+GsSession.use(
+    client_id=os.environ["MARQUEE_CLIENT_ID"],
+    client_secret=os.environ["MARQUEE_CLIENT_SECRET"],
+)
+weather = Dataset("WEATHER")
+frame = weather.get_data(
+    date(2016, 1, 1), date(2016, 1, 31), city=["Boston"]
+)
+```
 
-| Item | Value |
-| --- | --- |
-| stars / forks / watchers | 12,491 / 1,669 / 164 |
-| license | Apache-2.0 |
-| default branch / language | master / Python |
-| created | 2018-12-14 |
-| last push | 2026-08-26 (the day of the check) |
-| commits | about 569 |
-| latest GitHub release | release-2.1.4 (2026-08-17) |
-| PyPI | latest 2.1.4, first release 0.4.8 (2018-12-23), 533 versions total |
+`Dataset("WEATHER")` creates an object referring to a dataset. `get_data()` performs the query through the default provider, `GsDataApi`, and returns a pandas DataFrame. You can explicitly supply another provider, so not every use of `Dataset` is necessarily a Marquee call. The default provider selection and query dispatch are visible in the [Dataset source](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/data/dataset.py).
 
-Recent releases came at intervals of days to weeks: release-2.1.1 (2026-07-15), 2.1.2 (2026-08-03), 2.1.3 (2026-08-07), 2.1.4 (2026-08-17). The oldest tagged release visible through the GitHub Releases API is release-0.8.131 (2020-05-18); since PyPI shows a first release in December 2018, the early versions evidently shipped to PyPI without GitHub Releases. The 533 cumulative PyPI versions suggest a cadence of frequent small releases tied to an internal cycle.
+The official [Datasets guide](https://developer.gs.com/docs/gsquant/data/data-environment/datasets/) says `WEATHER` is available to all applications without an explicit access request. The [query tutorial](https://developer.gs.com/docs/gsquant/data/accessing-data/querying-data/) also assumes an initialized session and a data subscription. A default entitlement to public example data does not mean anonymous HTTP access. For other datasets, check availability and entitlements in the catalog. This example was checked against the documentation and call signatures; an authenticated response was not tested.
 
-Maintenance appears to be led by Goldman Sachs. I could not verify how much external contribution is accepted, so I am not quoting a figure. The official docs do have a Contribute section.
+The [Apache-2.0 license](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/LICENSE) governs use, modification, and distribution of the public code. It does not set service fees or grant retrieval and redistribution rights for a particular dataset. Neither “the package is free, so all data can be used freely” nor “every API is paid” follows from these sources.
 
-There are ecosystem signals too. An [MSCI and Goldman Sachs collaboration announcement](https://ir.msci.com/news-releases/news-release-details/goldman-sachs-and-msci-collaborate-deliver-improved-risk) states that MSCI's risk factor models will be available via Goldman Sachs APIs and GS Quant, which means gs-quant serves as a distribution channel for third-party risk models as well as Goldman's own. On the curation side, [HelloGitHub](https://hellogithub.com/en/repository/goldmansachs/gs-quant) lists it as an Active, Apache-2.0 project.
+## Valuation turns instrument terms into a remote request
 
-## Alternatives and how they differ
+Valuing the swap requires more than its stated fixed rate and notional: it also needs a valuation date, market information such as interest rate curves, and a model. GS Quant's default instrument implementation uses [`GsRiskApi`](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/instrument/core.py) as its provider. [`price()`](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/priceable.py#L75) delegates to `calc()` with a price measure, and the [risk API implementation](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/api/gs/risk.py#L63) sends a session request to `/risk/calculate` or `/risk/calculate/bulk`.
 
-When comparing gs-quant with other tools, the question that matters more than star counts or feature lists is **where the computation happens**.
+The Python source exposes instrument representation, request construction, and result handling. Installing the package does not let you execute the server-side valuation models used by this path locally. Nor does the call path establish that the server's internal implementation is identical to a particular proprietary in-house system.
 
-- **QuantLib**: a fully local open-source pricing library written in C++ with Python bindings. Curve construction, option pricing, and bond analytics all run on your machine. You can modify the models and you need no account. In exchange, sourcing market data and maintaining model parameters is entirely your job.
-- **OpenBB**: an open-source financial data platform mentioned as an alternative in the HN thread, focused on unifying many data sources behind one interface.
-- **QuantConnect**: an algorithmic trading platform also mentioned in the thread, where the platform provides backtesting infrastructure and data.
+In an environment with authentication and entitlement to value the instrument, the earlier `swap` can be evaluated as follows. The returned present value depends on account entitlements, market data, and valuation conditions.
 
-gs-quant's distinguishing feature is exactly one thing: it calls a bank's production risk engine. Getting the same numbers Goldman's internal quants see, from the same models and the same market data, is something no other open-source tool offers. The price is API dependency. If QuantLib says "here is the engine, bring your own data," gs-quant says "here are the engine and the data, sign a contract." Which is better depends on your purpose, and this post does not attempt a detailed numerical comparison.
+```python
+from datetime import date
+from gs_quant.markets import PricingContext
 
-## Limits and risks
+with PricingContext(pricing_date=date(2026, 1, 5)):
+    value_future = swap.price()
 
-- **Core functionality depends on an account.** Pricing, risk, data, and market lookups need a Marquee client id and secret, issued to institutional clients. After pip install, an individual developer is limited to the local computation layer and reading code.
-- **Scope of the open source.** Apache-2.0 covers only the code in the repository. The engines that produce the results are not part of the release. The sentence "Goldman open-sourced its quant code" is an exaggeration unless this scope is stated.
-- **Maintenance structure.** It appears to be Goldman-led, and the scale of external contribution could not be verified. If the company's strategy changes, the project's direction can change with it.
-- **Learning materials.** As HN pointed out, examples and tutorials for outside users are thin. The official docs have structure, but hands-on practice presumes API access.
-- **Risk of misunderstanding.** The library does not make investment decisions for you. It fetches computed results; how you interpret them and what you do next is entirely your responsibility. This post is not investment advice.
+value = value_future.result()
+```
 
-## Who it fits, by use
+[`PricingContext`](https://developer.gs.com/docs/gsquant/pricing-and-risk/pricing-context/) manages shared conditions such as valuation date, market-data date and location, and asynchronous or batch processing. Calculations made inside the context are grouped for dispatch when the block exits; read the futures' results outside the block. `is_async` controls how the caller waits. Creating a local object or enabling asynchronous behavior does not turn the remote calculation into an offline one.
 
-**Worth reading for**: developers curious how financial domain models are expressed as Python types, anyone looking for a case study in how a large bank splits an open-source client from a closed service, and anyone who wants to see what an MCP integration looks like inside a finance toolkit. The code itself is the textbook.
+To reproduce a result, record more than the package version: preserve the instrument terms, valuation date, market-data date and location, the data used, and the scope of your entitlements. A GitHub commit pins the client implementation; it is not evidence that the server model and data are fixed too.
 
-**Worth trying for**: institutional users with a Marquee account. For them gs-quant does what it was built to do, as the Python interface to Goldman's engines.
+## MCP integration uses the existing sessions
 
-**Adjust expectations if**: you are an individual or student hoping to price derivatives without an account. For that goal QuantLib is the right fit, and gs-quant is better kept nearby as a design reference.
+The 2.2.1 source includes an [experimental MCP integration](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/mcp/README.md). MCP, the Model Context Protocol, gives AI clients an interface for calling tools. This implementation supplies a FastMCP-based server and client. It needs the separate `mcp` optional dependencies, and its README warns that the API, CLI, and configuration may change.
+
+The authentication mode determines whose account makes requests. `local` reuses one server-created session for tool calls. `passthrough` constructs the caller's session from authentication material passed in the request. The [middleware implementation](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/mcp/middleware.py) shows this distinction. Connecting an AI client does not create a new data subscription or valuation entitlement. Nor does `local` describe where calculations run: tools using that session can still call Marquee APIs.
+
+## API dependency and choosing a use case
+
+In the June 29, 2024 [Hacker News discussion](https://news.ycombinator.com/item?id=40831991), `kingkongjaffa` criticized useful functionality being behind GS-specific APIs. In the same conversation, `ironSkillet` described the value of studying the abstractions, user interfaces, and how researchers interact with the tool. These are dated user assessments, not evidence of current prices or access policies.
+
+The criticism is particularly relevant if you expect a complete offline derivatives valuation tool. It does not establish that locally executable code, such as the returns example, has no use. Users with Marquee access instead get an implementation that connects data retrieval and instrument or risk requests to Python workflows. Access alone still does not establish entitlement to every instrument or dataset.
+
+For **learning to execute and modify models yourself**, [QuantLib](https://www.quantlib.org/) is also worth examining. It is an open-source C++ library for financial modeling and risk management with Python bindings. The comparison here concerns whether the calculation implementation is available locally, rather than numerical accuracy or profitability. You still need to supply market data and valuation assumptions.
+
+The first thing to check when choosing GS Quant is the input and call path of the functions you need. Start with local functions if you want to analyze data you already have. If you need Marquee results, establish the session and service or dataset entitlements first.
 
 ## Further reading
 
-- [Goldman Sachs open source portal](https://developer.gs.com/discover/open-source): Goldman's public projects beyond gs-quant
-- [Building the Open Source Program Office at Goldman Sachs (PDF)](https://static.sched.com/hosted_files/ossjapan2022/01/2022-LinuxCon-GS-OSPO.pdf): LinuxCon Japan 2022 slides on the OSPO and gs-quant's internal role
-- [Goldman Sachs Open Sources its Data Modeling Platform through FINOS](https://www.linuxfoundation.org/press/press-release/goldman-sachs-open-sources-its-data-modeling-platform-through-finos): the Legend contribution from the same period
-- [Goldman Sachs open source toolkit: GS Quant](https://dev.to/mahlonzy/goldman-sachs-open-source-toolkit-gs-quant-4mg5): an outside introduction on DEV Community
-- [Goldman Sachs GS-Quant: A Python Quant Toolkit Used on Wall Street](https://medium.com/coding-nexus/goldman-sachs-gs-quant-a-python-quant-toolkit-used-on-wall-street-764ef510a8d7): an outside review on Medium (Coding Nexus)
-
-## Summary
-
-gs-quant is a project where "Goldman published its quant code" and "Goldman kept the core" are both true. What was published: the domain model, timeseries helpers, and a well-built Python client for the Marquee engines. What was not: the computation engines represented by SecDB, and the data. The sequence from the 2018 repository, through the 2019 WSJ coverage and the 2020 Legend contribution, to the 2021 OSPO shows that this boundary was an organizational choice rather than an improvisation.
-
-For an individual developer, the value of this repository is in reading rather than running. You can see how a bank represents financial instruments as objects, where it puts the client-server line, and, lately, how it layers on MCP and agent skills. Expect more than that and, as the HN comments warned, you will be disappointed.
+- [GS Quant time-series source](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/timeseries/econometrics.py): useful for following the calculations performed on an input series.
+- [Official Pricing Context guide](https://developer.gs.com/docs/gsquant/pricing-and-risk/pricing-context/): explains valuation dates, market data, futures, and grouped requests.
+- [QuantLib official site](https://www.quantlib.org/): a reference for comparing libraries that expose model implementations directly.
 
 ## References
 
-- [goldmansachs/gs-quant](https://github.com/goldmansachs/gs-quant): GitHub, Apache-2.0. Accessed 2026-08-26
-- [gs-quant on PyPI](https://pypi.org/project/gs-quant/): PyPI release history. Accessed 2026-08-26
-- [GS Quant official documentation](https://developer.gs.com/docs/gsquant/): developer.gs.com. Accessed 2026-08-26
-- [GS Quant on Marquee](https://marquee.gs.com/welcome/our-platform/gs-quant): Goldman Sachs Marquee. Accessed 2026-08-26
-- [Goldman's Trading Floor Is Going Open-Source, Kind of](https://www.wsj.com/articles/goldmans-trading-floor-is-going-open-source-kind-of-11554285602): The Wall Street Journal, 2019-04-03 (paywalled; summarized only)
-- [The Latest on Goldman Sachs's Open-Source Trading Floor](https://www.wsj.com/video/the-latest-on-goldman-sachs-open-source-trading-floor/4C614C58-03BC-4EB8-A65C-DE923E09FA90): The Wall Street Journal video
-- [Goldman Sachs will open-source some of its trading software](https://news.ycombinator.com/item?id=19562224): Hacker News, 2019-04-03, 189 points, 96 comments. Accessed 2026-08-26
-- [GS Quant discussion thread](https://news.ycombinator.com/item?id=40831991): Hacker News, 2024-06-29, 285 points, 60 comments. Accessed 2026-08-26
-- [Goldman Sachs is giving away software to Wall Street for free](https://www.cnbc.com/2019/11/20/goldman-sachs-is-giving-away-software-to-wall-street-for-free.html): CNBC, 2019-11-20
-- [Goldman Sachs Open Sources its Data Modeling Platform through FINOS](https://www.linuxfoundation.org/press/press-release/goldman-sachs-open-sources-its-data-modeling-platform-through-finos): Linux Foundation, 2020-10-19
-- [Building the Open Source Program Office at Goldman Sachs](https://static.sched.com/hosted_files/ossjapan2022/01/2022-LinuxCon-GS-OSPO.pdf): LinuxCon Japan 2022 slides
-- [Goldman Sachs and MSCI Collaborate to Deliver Improved Risk Analytics](https://ir.msci.com/news-releases/news-release-details/goldman-sachs-and-msci-collaborate-deliver-improved-risk): MSCI Investor Relations
-- [Gs Quant: Finance & Market Analysis for AI Agents](https://www.openagentskill.com/skills/goldmansachs-gs-quant): OpenAgentSkill, listed 2026-08-18
-- [HelloGitHub: goldmansachs/gs-quant](https://hellogithub.com/en/repository/goldmansachs/gs-quant): HelloGitHub. Accessed 2026-08-26
-- [Goldman Sachs open source toolkit: GS Quant](https://dev.to/mahlonzy/goldman-sachs-open-source-toolkit-gs-quant-4mg5): Mahlon Clottey, DEV Community
-- [Goldman Sachs GS-Quant: A Python Quant Toolkit Used on Wall Street](https://medium.com/coding-nexus/goldman-sachs-gs-quant-a-python-quant-toolkit-used-on-wall-street-764ef510a8d7): Coding Nexus, Medium
+All sources were checked on October 16, 2026 (KST). Unless otherwise stated, code links point to commit `bbe7071653ccfc0d431e11c3a31dbd511afc394f` from the 2.2.1 tag.
+
+- [GS Quant README](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/README.md), [LICENSE](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/LICENSE): project scope, requirements, and code license.
+- [GitHub release-2.2.1](https://github.com/goldmansachs/gs-quant/releases/tag/release-2.2.1), [PyPI 2.2.1](https://pypi.org/project/gs-quant/2.2.1/): the current release and installable package baseline.
+- [Session implementation](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/session.py), [GsSession guide](https://developer.gs.com/docs/gsquant/authentication/gs-session/): OAuth, scopes, and current sessions.
+- [Dataset implementation](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/data/dataset.py), [Datasets guide](https://developer.gs.com/docs/gsquant/data/data-environment/datasets/), [query example](https://developer.gs.com/docs/gsquant/data/accessing-data/querying-data/): providers, WEATHER, and data access conditions.
+- [Instruments guide](https://developer.gs.com/docs/gsquant/pricing-and-risk/instruments/), [risk API source](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/api/gs/risk.py), [holiday-calendar source](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/datetime/gscalendar.py): the boundary between object definition and remote calls.
+- [GS Quant MCP README](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/mcp/README.md), [authentication middleware](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/mcp/middleware.py): experimental status and session reuse.
+- [Hacker News discussion](https://news.ycombinator.com/item?id=40831991): June 29, 2024 opinions on API dependency and learning from the design.

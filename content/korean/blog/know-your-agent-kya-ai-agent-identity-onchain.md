@@ -1,10 +1,10 @@
 ---
 title: "KYA(Know Your Agent): AI 에이전트 신원 검증, 표준 경쟁과 온체인 실태"
 meta_title: ""
-description: "KYC의 실사 프레임을 AI 에이전트에 적용한 KYA 개념을 정리하고, ERC-8004·Visa TAP·Trulioo·Sumsub의 표준 경쟁, NIST·EU·싱가포르 규제 신호, 평판 레지스트리 vouch spam 같은 온체인 실태를 짚습니다."
+description: "AI 에이전트의 신원·인증·권한·평판을 구분하고, ERC-8004의 표준 상태와 실제 메인넷 활동, Visa TAP·Trulioo·Sumsub이 제공하는 검증의 범위와 한계를 설명합니다."
 date: 2026-08-27T10:00:00+09:00
-lastmod: 2026-08-27T10:00:00+09:00
-image: "/images/posts/know-your-agent-kya-ai-agent-identity-onchain/kya-four-approaches-1200.png"
+lastmod: 2026-10-15T15:36:42Z
+image: "/images/posts/know-your-agent-kya-ai-agent-identity-onchain/kya-identity-editorial-20261016.webp"
 categories: ["Blockchain"]
 tags: ["ai-agent", "kya", "identity", "erc-8004", "reputation", "compliance"]
 author: "whackur"
@@ -12,133 +12,113 @@ translationKey: "know-your-agent-kya-ai-agent-identity-onchain"
 draft: false
 ---
 
-은행 계좌를 열 때 신분증을 내고, 거래소에 가입할 때 얼굴을 찍는 절차를 KYC(Know Your Customer)라고 부릅니다. 이 절차는 1989년 FATF 설립 이후 금융의 진입점에서 불법 자금을 걸러내는 표준 관행이 됐습니다. 이제 사람이 아니라 AI 에이전트가 계약을 맺고, 결제를 보내고, DEX에서 토큰을 바꾸는 시대가 오면서 같은 질문이 다시 나옵니다. 지금 내 API에 결제 요청을 보낸 이 에이전트는 누구이고, 누가 만들었고, 어디까지 권한을 받았는가. 이 질문에 답하는 신뢰 계층을 업계는 KYA(Know Your Agent)라고 부르기 시작했습니다.
+AI 에이전트가 신원 인증서나 온체인 등록 번호를 제시해도, 그 사실만으로 결제나 데이터 접근을 허용해서는 안 됩니다. **어느 에이전트인지, 요청자가 그 신원을 통제하는지, 지금 하려는 행동을 위임받았는지, 과거 평가를 얼마나 믿을지**는 서로 다른 확인입니다. KYA(Know Your Agent)는 이런 확인을 묶어 부르는 이름입니다. ERC-8004는 식별자와 공개된 신뢰 신호를 제공하고, Visa TAP이나 신원 검증 업체는 요청·조직·사람을 확인하는 다른 방식을 제공합니다. 최종 접근 결정은 서비스를 제공하는 쪽에 남습니다. [ERC-8004 명세](https://eips.ethereum.org/EIPS/eip-8004)와 [Trulioo의 제품 설명](https://www.trulioo.com/products/kya-verification)도 각각 등록과 검증이 보장하는 범위를 제한합니다.
 
-이 블로그는 앞서 [ERC-8004·8126·8196 신뢰 스택](/blog/ai-agent-wallet-trust-stack-erc-8004-8126-8196/)과 [ERC-8004 평판 레지스트리 조회 실무](/blog/erc8004-agent-reputation-registry-lookup/)를 다뤘습니다. 이 글은 개별 스펙을 다시 설명하지 않습니다. 대신 KYC/AML 실사(due diligence, 거래 상대를 사전에 조사하고 위험을 평가하는 절차) 관행에서 출발해서, 온체인 레지스트리를 그 실사의 한 구현 방식으로 놓고 표준 경쟁, 규제 신호, 실제 온체인 데이터가 말해주는 것을 종합합니다.
+*표준 상태와 제품 설명 확인: 2026년 10월 16일 KST. 과거 측정 결과에는 별도의 관찰 기간을 표시했습니다.*
 
-## KYA가 무엇인가
+## 신원·인증·권한·평판의 구분
 
-KYA는 KYC의 AI 에이전트 버전입니다. 에이전트가 자율적으로 계약·결제·거래를 실행하기 전에 "이 에이전트가 누구인지"를 사전에 검증하는 신뢰 계층으로, 2025년부터 주목받기 시작했습니다. [Agentica 위키](https://agentica.wiki/articles/know-your-agent)(2026-03-18 갱신)는 KYA를 여섯 차원으로 정리합니다.
+쇼핑 에이전트가 상품을 검색하다가 구매 API를 호출했다고 가정해 보겠습니다. 등록 번호가 맞는지 확인하는 것과 구매를 승인하는 것은 다른 작업입니다.
 
-| 차원 | 확인하는 것 |
-|------|------------|
-| 신원(identity) | 이 에이전트가 고유하게 식별되는가 |
-| 소유자 바인딩(ownership binding) | 어느 사람 또는 조직이 이 에이전트에 책임지는가 |
-| 권한 범위(authorization scope) | 무엇을 할 수 있도록 위임받았는가 |
-| 출처·무결성(provenance) | 어떤 모델·코드로 만들어졌고 변조되지 않았는가 |
-| 런타임 준수(runtime compliance) | 실행 중에도 정책 안에 머무는가 |
-| 감사 가능성(auditability) | 나중에 행동을 추적하고 책임을 물을 수 있는가 |
+| 구분 | 확인하는 내용 | 구매 요청에서 필요한 증거 |
+| --- | --- | --- |
+| 신원(identity) | 어떤 에이전트를 가리키는가 | 레지스트리 주소와 에이전트 ID, 운영 조직 정보 |
+| 인증(authentication) | 요청자가 해당 신원의 키나 자격 증명을 통제하는가 | 서명 검증, 신뢰하는 발급자·키와의 연결, 요청의 유효 시간 |
+| 권한(authorization) | 이 주체가 이 행동을 해도 되는가 | 사용자가 허용한 상점·상품·금액·기간, 재위임 조건 |
+| 평판(reputation) | 과거 평가가 이번 결정에 얼마나 도움이 되는가 | 평가자, 평가 대상 작업, 점수 단위, 근거와 철회 여부 |
 
-KYC와 나란히 놓으면 차이가 보입니다. KYC는 신분증과 주소처럼 잘 바뀌지 않는 속성을 한 번 확인합니다. KYA의 여섯 차원 가운데 셋(권한 범위, 런타임 준수, 감사 가능성)은 등록 시점이 아니라 실행 중에 계속 검사해야 하는 항목입니다. 에이전트는 모델 업데이트 한 번으로 행동이 바뀌기 때문에, 한 번 통과한 검증이 다음 주에도 유효하다고 보기 어렵습니다. 이 점이 뒤에 나오는 비판 대부분의 뿌리입니다.
+가령 사용자가 특정 상점에서 총 10만 원까지, 30분 동안만 구매하도록 허용했다면 유효한 에이전트 서명도 12만 원짜리 주문을 정당화하지 못합니다. 이 금액과 시간은 권한 설계의 예시입니다. 검색 권한과 구매 권한을 나누고, 구매 API나 지갑이 실행 직전에 조건을 검사해야 합니다. 좋은 평판이 있다고 한도를 넘겨도 되는 것은 아닙니다.
 
-KYA가 모든 곳에 필요한 것은 아닙니다. [Tiger Research의 2026년 보고서](https://reports.tiger-research.com/p/2026-know-your-agent-eng)는 Google·OpenAI·Coinbase 같은 중앙 플랫폼 안에서는 플랫폼 계정에 이미 붙어 있는 KYC로 충분하다고 봅니다. KYA가 필요한 지점은 플랫폼 밖입니다. 개별 배포된 자율 에이전트가 DEX, 에이전트 간(A2A) 결제, 상거래 사이트에 접촉할 때 상대방은 이 에이전트를 보증해 줄 플랫폼이 없습니다. 같은 보고서는 KYC가 금융 시장 진입의 전제 조건이 된 것처럼 KYA 인프라 보유 여부가 다음 라운드 시장 진입을 결정할 것이라고 전망합니다. 전망은 전망이고, 아래 규제 섹션에서 보듯 아직 어떤 관할권도 이를 강제하지는 않습니다.
+운영자 확인도 별도입니다. 키를 통제하는 주소를 알아도 그 뒤의 법인이나 사람을 바로 알 수는 없습니다. 모델·코드의 출처를 기록하는 일 역시 요청 서명과 다릅니다. [NIST는 에이전트에 사용자 자격 증명을 그대로 넘기거나 넓은 권한을 오래 유지하는 관행](https://www.nist.gov/blogs/cybersecurity-insights/back-future-why-agentic-ai-needs-strong-identity-foundation)이 책임 추적과 접근 통제를 약화한다고 지적합니다. 중앙 플랫폼 안에서도 이 구분은 필요합니다.
 
-## 표준 경쟁 구도
+## ERC-8004가 연결하는 정보
 
-KYA라는 이름은 하나지만 "신뢰를 어디에 고정하는가"는 진영마다 다릅니다. 네 가지 접근이 눈에 띕니다.
+[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004)는 Identity, Reputation, Validation 레지스트리를 정의합니다. Identity는 ERC-721 토큰으로 에이전트를 식별하고, Reputation은 피드백을 기록하며, Validation은 검증 요청과 검증자의 응답을 연결합니다. 결제 자체는 명세의 범위 밖입니다.
 
-![ERC-8004 온체인 레지스트리, Visa TAP 서명 HTTP 요청, Trulioo 인증기관 모델, Sumsub 검증된 인간 바인딩 네 가지 KYA 접근의 신뢰 앵커·상태·수치 비교표](/images/posts/know-your-agent-kya-ai-agent-identity-onchain/kya-four-approaches.svg)
+Identity를 조회할 때는 `agentId`만으로 부족합니다. 같은 번호가 여러 체인과 레지스트리에 존재할 수 있으므로 체인·레지스트리를 나타내는 `agentRegistry`와 `agentId`를 함께 사용합니다. 토큰의 `agentURI`가 가리키는 등록 파일에는 이름과 설명, Agent2Agent(A2A)의 AgentCard나 Model Context Protocol(MCP) 서비스 주소, 지원하는 신뢰 방식 등이 들어갑니다. 이 정보는 상대를 찾는 출발점이며, 선언한 기능이 실제로 동작하거나 안전하다는 보증은 아닙니다.
 
-*네 접근이 신뢰를 고정하는 지점(온체인 레지스트리, 서명된 HTTP 요청, 인증기관, 검증된 인간)을 비교한 정리도. 수치는 본문 출처 기준입니다.*
+등록 파일과 서비스 주소의 연결도 확인해야 합니다. 명세에는 서비스 도메인에 `/.well-known/agent-registration.json`을 게시하고 등록 정보를 맞춰 보는 선택적 도메인 검증 절차가 있습니다. 아무 도메인이나 등록 파일에 적는 것과 그 도메인을 통제한다는 증거는 다릅니다. 소유자나 승인된 관리자가 `agentURI`를 바꿀 수도 있으므로, 중요한 거래에서는 조회 시점의 파일과 소유권을 기록하는 편이 좋습니다.
 
-### 온체인 레지스트리: ERC-8004와 그 위의 계층
+`agentWallet`은 **대금을 받는 주소**입니다. 등록 때는 소유자 주소로 설정되고, 다른 주소로 바꾸려면 새 지갑의 통제권을 EIP-712 서명 또는 스마트 컨트랙트 지갑의 ERC-1271 검증으로 증명해야 합니다. 토큰이 이전되면 이 연결은 해제됩니다. 이는 수취 주소의 연결 절차이며, 사용자 자산을 지출할 권한이나 운영자의 실명을 증명하지 않습니다. [참조 구현](https://github.com/erc-8004/erc-8004-contracts)도 이 초기화·변경·이전 규칙을 설명합니다.
 
-[ERC-8004 "Trustless Agents"](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8004.md)는 에이전트 신원을 ERC-721 토큰으로 등록하고, 평판 신호와 독립 검증 결과를 각각 별도 레지스트리에 쌓는 구조입니다. 등록 파일(`agentURI`가 가리키는 JSON)에는 A2A/MCP/ENS/DID 같은 서비스 엔드포인트, `x402Support`, `supportedTrust` 필드가 들어가고, `agentWallet`(에이전트가 실제로 자산을 다루는 지갑 주소)은 EIP-712/ERC-1271 서명으로만 바인딩되며 NFT가 이전되면 자동으로 해제됩니다. 신뢰 모델은 플러그형이라 평판, 스테이킹 기반 재실행, zkML, TEE attestation(신뢰 실행 환경이 발행하는 무결성 증명) 가운데 골라 쓸 수 있습니다.
+Validation은 작업 입력과 출력 등의 자료에 대한 요청 해시를 남기고 지정한 검증자가 응답하도록 하는 인터페이스입니다. 재실행, 영지식 머신러닝(zkML) 증명, 신뢰 실행 환경(TEE) 기반 검증 등을 연결할 수 있지만, 레지스트리가 그 모든 검증을 자동 수행하지는 않습니다. 무엇을 검증했는지, 어떤 검증자를 신뢰하는지까지 확인해야 합니다.
 
-상태를 정확히 쓰면 이렇습니다. ERC-8004는 표준 프로세스상 Draft 단계이지만, 2026-01-29 이더리움 메인넷에 배포된 뒤 30개 이상 체인에 싱글톤으로 올라가 실제로 쓰이고 있으며 2026년 6월 기준 등록 수가 약 9만 건입니다. 스펙이 바뀔 수 있다는 것과 배포가 살아 있다는 것은 별개의 사실이고, 둘 다 참입니다.
+## 표준 상태와 메인넷 활동은 서로 다른 증거입니다
 
-KYA의 여섯 차원에 대응시키면 ERC-8004는 신원과 (부분적으로) 소유자 바인딩을 맡습니다. 그 위의 [ERC-8126 "AI Agent Verification"](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8126.md)(Final, 2026-01-15 생성)이 5종 검증과 0~100 리스크 스코어로 출처·무결성 검증을 담당하고, [ERC-8196 "AI Agent Authenticated Wallet"](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8196.md)(Final, 2026-03-14 생성)이 정책 바인딩 실행과 불변 감사 추적으로 런타임 준수와 감사 가능성을 채웁니다. 세 표준의 인터페이스와 검증 유형은 [기존 글](/blog/ai-agent-wallet-trust-stack-erc-8004-8126-8196/)에 정리해 두었습니다.
+공식 원문의 상태와 구현 저장소가 보여 주는 배포 정보를 구분하면 다음과 같습니다.
 
-한 가지 짚을 점은 이 스택에 인간 신원 바인딩이 없다는 것입니다. NFT 소유자 주소는 있지만 그 주소 뒤에 누가 있는지는 스펙이 묻지 않습니다. [Concordium](https://www.concordium.com/article/erc-8004-explained-what-it-solves-and-the-gap-it-leaves)은 이 빈칸을 책임(accountability) 갭이라고 부르며 대응 표준 CIS-8004를 내놓았습니다. 에이전트 간 통신 프로토콜인 A2A/MCP는 KYA 자체가 아니라 상호보완 관계입니다. 통신은 A2A/MCP가, 발견과 신뢰는 ERC-8004가 맡는 분업입니다.
+| 문서 | 공식 프로세스 상태 | 문서가 다루는 범위 | 상태만으로 판단할 수 없는 것 |
+| --- | --- | --- | --- |
+| [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) | Draft | 에이전트 식별·평판·검증 레지스트리 | 배포된 버전의 일치 여부, 사용량, 서비스 품질 |
+| [ERC-8126](https://eips.ethereum.org/EIPS/eip-8126) | Final | AI Agent Verification | 실제 검증 사업자의 배포와 검증 품질 |
+| [ERC-8196](https://eips.ethereum.org/EIPS/eip-8196) | Final | 정책에 맞는 증명을 동반한 지갑 실행과 위임 | 특정 지갑의 구현·운영·채택 여부 |
 
-### 결제 네트워크: Visa TAP과 Mastercard Agent Pay
+Draft여도 컨트랙트를 배포하고 사용할 수 있습니다. Final은 [EIP 프로세스의 문서 상태](https://eips.ethereum.org/EIPS/eip-1)이며, 네트워크 활성화나 보안 인증을 뜻하지 않습니다. 이 세 문서를 모든 KYA 서비스가 반드시 함께 구현해야 하는 단일 스택으로 볼 근거도 없습니다.
 
-[Visa Trusted Agent Protocol(TAP)](https://developer.visa.com/use-cases/trusted-agent-protocol)은 2025-10-14 Visa와 Cloudflare가 함께 [발표](https://investor.visa.com/news/news-details/2025/Visa-Introduces-Trusted-Agent-Protocol-An-Ecosystem-Led-Framework-for-AI-Commerce/default.aspx)했습니다. 블록체인은 전혀 쓰지 않습니다. Web Bot Auth 기반 HTTP 메시지 서명으로 에이전트 신원을 요청 헤더에 서명해 보내고, 상점 쪽이 이를 검증합니다. 서명은 세 종류입니다. 에이전트 자체의 정당성(legitimacy), 위임자(delegator, 이 에이전트를 시킨 사람), 결제 수단(payment method). 런치 파트너는 Adyen, Ant International, Checkout.com 등 12곳입니다. 배경에는 미국 리테일 사이트의 AI 트래픽이 4,700% 급증했다는 수치가 있습니다. 상점 입장에서 봇을 전부 막을 수도, 전부 받을 수도 없으니 "좋은 봇"을 구별할 서명이 필요해진 것입니다.
+ERC-8004의 [참조 구현 저장소](https://github.com/erc-8004/erc-8004-contracts)는 Ethereum과 Base 메인넷의 Identity·Reputation 주소를 공개합니다. Ethereum Identity 주소 `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`에서는 **2026년 10월 15일 15:17:23 UTC, 블록 26,198,758의 성공한 등록 트랜잭션**에 `Registered` 이벤트와 `agentId = 54155`가 기록됐습니다. [해당 트랜잭션](https://eth.blockscout.com/tx/0x97c640ad052770b66f9744c1318555ccd894e2e0cea215c41dbd86754aa34308)은 명세만 존재하는 단계가 아니라 실제 등록 호출이 있다는 구체적인 증거입니다. [Reputation 주소의 로그](https://eth.blockscout.com/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63?tab=logs)에서도 `NewFeedback` 이벤트가 확인됩니다.
 
-Mastercard는 2025년 4월 Agent Pay를 발표했습니다. SD-JWT 기반의 검증 가능한 의도(verifiable intent)를 3레이어 8개 제약 유형으로 표현하고, 2026년 1월 Agent Suite로 확장했습니다. Santander(EU), DBS/UOB(싱가포르) 배포가 보고됐습니다.
+이 이벤트로 유료 고객 수나 자율적으로 일하는 에이전트 수를 계산할 수는 없습니다. ID는 식별 번호이고, 등록은 서비스 실행과 다릅니다. 참조 저장소는 Validation Registry 부분이 TEE 커뮤니티와 논의하며 갱신 중이라고도 경고합니다. 배포 목록에 있는 Identity·Reputation을 근거로 세 레지스트리가 같은 수준으로 운영된다고 확대 해석해서는 안 됩니다.
 
-두 결제 네트워크 접근은 KYA의 "소유자 바인딩"과 "권한 범위"를 카드 네트워크가 이미 가진 가맹점·발급사 관계 위에 얹습니다. 신뢰의 뿌리는 체인이 아니라 네트워크 운영자입니다.
+등록과 실제 서비스의 차이는 실증 연구에서도 드러납니다. Xiong 등의 [ERC-8004 연구 v2](https://arxiv.org/html/2606.26028v2)는 배포 초기부터 **2026년 5월 13일까지** Ethereum·BNB Smart Chain(BSC)·Base를 관찰했습니다. 본문의 분류 기준인 ‘읽을 수 있는 등록 파일이 정해진 `type` 값을 갖고 서비스를 하나 이상 선언한 경우’는 각 체인 등록의 약 **3%·4%·15%**였습니다. 이는 해당 기간과 분류 기준의 결과입니다. 서비스 선언을 과업 수행 능력으로 보거나, 이 비율을 10월의 가동률로 읽으면 안 됩니다.
 
-### 신원 벤더: Trulioo의 인증기관 모델과 Sumsub
+## 평판은 평가자와 단위까지 읽어야 합니다
 
-Trulioo는 SSL 인증기관(CA) 모델을 그대로 빌려 왔습니다. DPA(Digital Personhood Authority)가 DAP(Digital Agent Passport)를 발급하고, 상대방은 브라우저가 TLS 인증서를 확인하듯 이 여권을 확인합니다. Trulioo가 PYMNTS Intelligence와 함께 리스크·컴플라이언스 리더 350명을 조사한 결과, 기업 약 90%가 봇 관리를 주요 과제로 꼽았고 낡은 신원 통제로 연간 약 1,000억 달러 손실이 난다고 추정했습니다. 벤더 공동 조사라는 점은 감안해서 읽어야 합니다.
+[Reputation 명세](https://eips.ethereum.org/EIPS/eip-8004#reputation-registry)의 `value`와 `valueDecimals`는 범용 숫자 표현입니다. 예를 들어 `9977`과 `2`는 `99.77`을 나타내지만, 가동률인지 점수인지는 태그와 근거를 봐야 합니다. 응답 시간과 별점, 누적 매출을 한 점수처럼 평균 내면 의미가 사라집니다.
 
-Sumsub은 2026년 1월 AI Agent Verification을 출시했습니다. 접근은 가장 KYC에 가깝습니다. 에이전트를 검증된 인간 신원에 바인딩하고, 그 인간에게 liveness 체크(실제 사람이 지금 앞에 있는지 확인)를 요구합니다. "이 에이전트의 행동에 법적으로 책임지는 사람"을 즉시 지목해야 하는 자리에 맞는 설계입니다. Prove도 공유 신뢰 레지스트리 기반의 Verified Agent 솔루션을 내놓았습니다.
+에이전트 소유자와 승인된 운영자는 자신의 에이전트에 피드백을 남길 수 없습니다. 그러나 이 제한이 한 주체의 여러 주소 생성을 막지는 못합니다. 명세도 Sybil 공격 가능성을 인정하며, `getSummary`에는 비어 있지 않은 `clientAddresses` 목록을 요구합니다. 집계하는 쪽이 어떤 평가자를 신뢰하는지 선택해야 한다는 뜻입니다.
 
-### 메타데이터 표준과 인덱서
+근거 파일도 세심하게 읽어야 합니다. `feedbackURI`와 `feedbackHash`는 선택 항목입니다. 특히 **`feedbackHash = 0`만으로 근거가 없다고 단정할 수 없습니다.** IPFS처럼 콘텐츠 자체로 주소를 정하는 URI는 별도 해시를 생략할 수 있습니다. 반대로 해시가 있다고 평가 내용이 사실이 되는 것도 아닙니다. 해시는 파일의 무결성을 확인하는 수단입니다.
 
-[AgentFacts](https://agentfacts.org/kya/)(Jared Grogan, [arXiv 2506.13794](https://arxiv.org/abs/2506.13794))는 특정 체인이나 벤더에 묶이지 않는 10-카테고리 메타데이터 표준입니다. Identity/Capability/Compliance/Provenance 네 기둥 아래 DID, EU AI Act 분류, NIST AI RMF 정렬 필드를 두어, 위의 어느 진영이 이기든 붙일 수 있는 공통 서술 계층을 노립니다.
+실제 의사결정에서는 신뢰하는 평가자의 기록을 고르고, 태그·단위·철회 여부를 확인한 뒤, 필요한 경우 근거 파일을 가져와 무결성과 작업 내용을 대조하는 순서가 적절합니다. 결제 증거가 붙어 있어도 결제 사실과 결과 품질은 구분해야 합니다. 명세에 있는 선택적 `proofOfPayment`도 품질 보증서가 아닙니다.
 
-[knowyouragent.network](https://knowyouragent.network/)는 반대로 이미 온체인에 있는 것을 읽는 쪽입니다. 12개 체인에서 15만 개 이상 에이전트를 인덱스하고, 지갑 tenure(주소가 활동한 기간), 소유권 이력, ERC-8004 사기 탐지를 합쳐 RNWY 스코어를 냅니다. 레지스트리가 게시판이라면 이런 인덱서가 실제 실사 도구 역할을 하는 구조입니다.
+## Visa·Trulioo·Sumsub이 확인하는 대상
 
-## 온체인 실태
+이 접근들은 같은 기능을 놓고 겨루는 완전한 대체재가 아닙니다. 레지스트리에 등록된 에이전트가 HTTP 요청에 서명하면서 별도의 조직 검증도 받을 수 있습니다.
 
-표준 문서와 벤더 발표를 떠나 실제 레지스트리에 무엇이 쌓여 있는지 보면 KYA의 현재 위치가 더 정직하게 보입니다. [Blokz의 온체인 감사](https://www.blokz.dev/articles/erc-8004-agent-registries-onchain)(2026-06-12 시점)가 좋은 출발점입니다.
+| 접근 | 확인 방법과 신뢰하는 주체 | 적용할 때 남는 조건 |
+| --- | --- | --- |
+| ERC-8004 | 온체인 소유권과 공개된 피드백·검증 기록 | 요청 인증, 운영자 실사, 평가자 선정과 실행 권한은 별도 |
+| Visa Trusted Agent Protocol(TAP) | 공개 키와 HTTP 메시지 서명으로 에이전트 요청·행동 맥락 확인 | 키의 신뢰성, 요청의 유효성, 상점의 정책 판단 필요 |
+| Trulioo KYA | 개발 조직 확인과 에이전트 정보를 서명된 DAP에 연결 | Alpha 제품의 제공 범위와 자격 증명 상태, 접근 정책 확인 |
+| Sumsub AI Agent Verification | 자동화 탐지와 위험 평가, 검증된 사람과의 연결 | 위험에 따른 추가 검사와 필요한 시점의 사람 확인 |
 
-등록 규모는 Base 약 55,210건, 이더리움 메인넷 약 34,437건으로 합치면 약 89,600건이고, 메인넷 런치 후 19주 만의 수치입니다. 홀더는 Base 16,652 / 이더리움 8,573이라 홀더 하나가 평균 3.3~4개 에이전트를 들고 있습니다. 개인이 하나씩 등록한 것이 아니라 플랫폼이 대량 민팅한 결과입니다. 비용은 진입 장벽이 되지 못합니다. Base에서 ERC-4337 번들로 등록하면 273,820 gas, 총 수수료 0.0000017 ETH, ETH 1,667달러 기준 약 0.0028달러입니다. 실제 등록 예로 agentId 55,210 "Bob — Crypto Trading Agent"(0xWork 플랫폼)는 registration-v1 파일에 9 USDC 서비스 가격을 명시합니다.
+[Visa의 공식 저장소](https://github.com/visa/trusted-agent-protocol)는 RFC 9421 기반 HTTP 메시지 서명과 키 레지스트리, 상점의 검증 흐름을 예제로 제공합니다. 상점은 요청에서 서명 대상 문자열을 재구성하고 공개 키로 검증합니다. 시간과 세션 정보, 도메인·행동 맥락을 확인하는 것도 필요합니다. 이 방식의 핵심은 요청을 검증하는 것이며, ERC-8004 등록을 전제로 하지 않습니다. 공개된 샘플 구현을 전체 가맹점의 도입 실적으로 볼 수도 없습니다.
 
-문제는 평판 레지스트리입니다. Blokz는 단일 에이전트(id 25,975)에 48초 동안 피드백 이벤트 10개가 들어온 사례를 잡아냈습니다. 전부 value=1, tag는 miner-vouch/botcoin, 그리고 `feedbackHash`가 0x0이었습니다. feedbackHash가 0이라는 것은 이 피드백을 뒷받침하는 증거를 어디에도 커밋하지 않았다는 뜻입니다. 개별 "클라이언트" 주소가 수천 번씩 vouch(보증 피드백)를 남기는 패턴도 확인됐습니다. 이런 vouch spam이 가능한 이유는 스펙이 Sybil 저항(한 주체가 여러 신원을 만들어 신호를 부풀리는 공격에 대한 방어)을 온체인이 아니라 오프체인 집계에 위임했기 때문입니다. 컨트랙트는 누구의 피드백이든 받아 적습니다.
+[Trulioo의 현재 제품 페이지](https://www.trulioo.com/products/kya-verification)는 DAP를 **Digital Agent Profile**이라고 부릅니다. 개발 조직의 기업 신원 확인(KYB)·자금세탁방지(AML) 검사와 도메인 통제 확인, 에이전트의 목적·권한 등 정보를 묶고, 기간과 범위를 정한 서명 자격 증명 및 상태 조회를 설명합니다. 페이지는 KYA를 Alpha로 표시하며 조직 도메인이 활성화된 경우 등록할 수 있다고 안내합니다. 업체도 자격 증명이 향후 안전한 행동을 보장하지 않으며 접근 결정은 이용 조직이 내린다고 명시합니다.
 
-Blokz의 결론은 평판 레지스트리를 "이벤트 버스처럼 소비하라"는 것입니다. 신뢰하는 클라이언트 주소를 allowlist로 두고, feedbackHash가 0이 아닌 것만 고르고, feedbackURI의 증거를 확인한 다음에야 집계하라는 처방입니다. 감사 글의 문장을 빌리면, "평판이라는 단어가 컨트랙트 이름에 있다고 신뢰 문제가 풀린 게 아니다." 이 처방을 실제 조회 코드로 옮기는 방법은 [평판 레지스트리 조회 글](/blog/erc8004-agent-reputation-registry-lookup/)에서 다뤘습니다.
+[Sumsub의 2026년 1월 29일 발표](https://sumsub.com/newsroom/sumsubs-ai-agent-verification-introduces-agent-to-human-binding-to-establish-human-accountability-in-ai/)는 에이전트 활동을 검증된 사람과 연결하는 접근입니다. 먼저 자동화를 탐지하고 위험을 평가하며, 위험이 높은 경우 등에 필요한 추가 검사로 실제 사람이 있는지 확인하는 liveness 검사를 요구할 수 있다고 설명합니다. 모든 행동마다 얼굴 확인을 받는 방식으로 일반화해서는 안 됩니다. 사람과의 연결은 책임 추적에 도움이 되는 정보지만, 특정 행위의 법적 책임을 그 연결만으로 확정하지는 못합니다.
 
-학계도 같은 데이터를 보고 있습니다. [arXiv 2606.26028](https://arxiv.org/abs/2606.26028)은 Ethereum, BNB/BSC, Base 3개 체인에서 2026-05-13까지의 Identity·Reputation 이벤트, 오프체인 등록 파일, x402 결제까지 크롤링한 실증 연구입니다. 온체인 KYA를 논할 때 벤더 백서가 아니라 이런 측정 데이터를 근거로 삼을 수 있게 된 것은 올해의 변화입니다.
+## 실행 시점에 남는 통제
 
-## 규제·정책 신호
+KYA를 도입할 때는 등록 방식보다 먼저 허용할 행동을 정하는 편이 실용적입니다. 공개 문서 검색, 개인정보 열람, 결제는 잘못 실행됐을 때의 영향이 다르기 때문입니다. 앞의 구매 예시라면 다음 조건을 실제 API나 지갑이 집행해야 합니다.
 
-KYA를 법으로 요구하는 곳은 아직 없습니다. 다만 방향을 보여 주는 신호는 셋 있습니다.
+1. 등록 정보·조직 자격 증명과 요청 서명을 확인하고, 키나 자격 증명이 만료·철회됐으면 거부합니다.
+2. 위임한 사람, 허용 상점, 총액과 유효 기간을 구매 요청에 대조합니다. 하위 에이전트로 넘길 때는 원래보다 넓은 권한을 주지 않습니다.
+3. 중복 요청과 한도 소비를 실행 시점에 처리합니다. 이미 쓴 예산을 평판이나 과거 승인으로 다시 사용할 수 없게 합니다.
+4. 판단에 사용한 정책·자격 증명·작업 버전과 실행 결과를 기록합니다. 모델·프롬프트·도구가 바뀌면 이전 검증이 무엇까지 설명하는지 다시 평가합니다.
 
-미국 NIST NCCoE는 2026-02-05 개념 논문 ["Accelerating the Adoption of Software and AI Agent Identity and Authorization"](https://csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd)(Initial Public Draft)을 냈고 코멘트를 2026-04-02까지 받았습니다. AI Agent Standards Initiative의 일부로, 앞선 RFI에 930건 이상이 제출됐습니다. 논문은 에이전트 신원, 위임 체인(사람이 에이전트에, 에이전트가 다른 에이전트에 권한을 넘기는 사슬) 권한, 감사 요건을 명시적으로 다룹니다. KYA의 여섯 차원과 상당 부분 겹치는 주제입니다.
+이 순서는 특정 표준의 의무 절차가 아니라, 신원 확인과 행동 허가를 분리하는 설계 예시입니다. [NIST의 현재 프로젝트 허브](https://pages.nist.gov/nccoe-ai-identity/)도 기존 신원·권한 표준을 에이전트에 적용하는 실무 지침과 SP 1800 계열 가이드를 목표로 제시합니다. 이를 법으로 의무화된 KYA 인증 제도로 읽어서는 안 됩니다. NIST는 사람 승인을 지나치게 자주 요구하면 승인 피로 때문에 통제가 약해진다는 점도 [지적합니다](https://www.nist.gov/blogs/cybersecurity-insights/back-future-why-agentic-ai-needs-strong-identity-foundation).
 
-EU AI Act는 고위험 AI 시스템의 행동 로그에 운영자 신원을 기록하도록 의무화합니다. "에이전트 신원 검증"이라는 이름은 아니지만, 로그에 운영자를 남기려면 결국 에이전트와 운영자를 바인딩하는 무언가가 있어야 합니다. 싱가포르는 최초의 국가 단위 agentic AI 거버넌스 프레임워크를 발표했습니다.
+공개 레지스트리에 실명이나 상세 작업 기록을 남기는 방식도 신중히 정해야 합니다. 식별자와 공개 주소를 연결하는 정보는 장기 추적을 쉽게 만들 수 있습니다. 필요한 증명과 공개 범위를 구분하고 민감한 자료는 접근을 통제하는 설계가 적절합니다.
 
-[Agentica](https://agentica.wiki/articles/know-your-agent)에 따르면 2026년 3월 시점에 KYA를 명시적으로 요구하는 관할권은 없고, 조직들은 규제에 앞서 선제적으로 도입하는 중입니다. 위 벤더 움직임을 규제 대응으로 읽으면 과합니다. 지금은 규제가 아니라 상거래 사이트의 봇 트래픽과 결제 네트워크의 사기 비용이 KYA를 끌고 있습니다.
-
-## 비판과 열린 문제
-
-KYA에 대한 비판은 대부분 "KYC 비유가 어디서 깨지는가"로 정리됩니다.
-
-**Sybil 저항.** 온체인 레지스트리 진영의 가장 큰 약점입니다. 등록 비용이 0.003달러 수준이고 평판 피드백은 누구나 남길 수 있으니, 위의 vouch spam은 버그가 아니라 설계의 자연스러운 결과입니다. 스펙은 필터링을 애플리케이션에 맡기고, 그 필터링을 누가 어떤 기준으로 하는지는 다시 오프체인 신뢰 문제로 돌아옵니다. Visa TAP이나 Sumsub은 이 문제를 겪지 않지만, 대신 네트워크 운영자나 벤더가 유일한 관문이 됩니다.
-
-**프라이버시.** 소유자 바인딩을 강하게 할수록 에이전트의 모든 거래가 특정 사람에게 연결됩니다. Sumsub 방식은 이를 정면으로 받아들이고, ERC-8126은 PDV(Private Data Verification)로 검증 상세를 ZKP로 숨기고 결과를 에이전트 지갑 보유자만 열람하게 하는 절충을 둡니다. 어느 쪽도 "책임은 물을 수 있되 일상 거래는 추적되지 않는" 지점을 아직 깔끔하게 잡지 못했습니다.
-
-**파편화.** 네 진영이 서로 다른 신뢰 앵커를 쓰고, 지금까지 어느 하나로 수렴할 신호는 없습니다. 카드 결제를 하는 에이전트는 TAP 서명이, DEX를 쓰는 에이전트는 ERC-8004 등록이, 규제 금융을 만나는 에이전트는 Sumsub류 인간 바인딩이 각각 필요해질 수 있습니다. AgentFacts 같은 메타데이터 계층이 접착제를 자처하지만 채택은 별개 문제입니다.
-
-**에이전트 행동의 가변성.** KYC는 사람이 내일도 같은 사람이라는 가정 위에 섭니다. 에이전트는 모델 교체, 프롬프트 수정, 도구 추가로 행동이 바뀝니다. 등록 시점의 검증이 실행 시점의 안전을 말해 주지 않기 때문에 ERC-8196 같은 런타임 정책 계층이 따로 필요해졌습니다.
-
-**강제력 부재.** 어떤 관할권도 KYA를 요구하지 않는 지금, 도입은 자발적이고 따라서 불균등합니다. 성실한 운영자만 등록하고 악의적인 운영자는 등록하지 않는다면, 레지스트리는 좋은 에이전트 목록이 될 뿐 나쁜 에이전트를 걸러내는 필터는 되지 못합니다. KYC가 효과를 낸 것은 자발적이어서가 아니라 의무였기 때문입니다.
-
-## 커뮤니티 반응
-
-KYA 자체를 놓고 벌어진 활발한 커뮤니티 토론은 아직 확인하지 못했습니다. Hacker News에는 Esther Dyson의 Substack 글 ["Know Your .agent?"](https://estherdyson.substack.com/p/know-your-agent)가 2026-05-06 올라왔지만 댓글은 0개였습니다. 2026-02-23의 x402 API Show HN에서는 서버가 ERC-8004 Agent #18763으로 Base에 등록된 사례가 보이는데, 이는 "실제로 쓰는 사람이 있다"는 신호이지 KYA 논쟁은 아닙니다. 이 글이 커뮤니티 후기 대신 Blokz 감사와 arXiv 실증 연구를 비판의 근거로 쓴 이유입니다.
+온체인 기록이 주는 이점은 서로 다른 조직이 같은 식별자와 기록을 조회할 수 있다는 데 있습니다. 그 기록에서 신뢰할 평가자의 평가를 고르고, 현재 요청을 인증하고, 위임 범위 안에서 실행하도록 만드는 일은 서비스를 운영하는 쪽의 책임으로 남습니다.
 
 ## 함께 보면 좋을 자료
 
-- [AI 에이전트 신뢰 스택: ERC-8004, ERC-8126, ERC-8196](/blog/ai-agent-wallet-trust-stack-erc-8004-8126-8196/): 이 글이 재설명하지 않은 세 표준의 인터페이스와 검증 유형 (이 블로그)
-- [ERC-8004 에이전트 평판: 온체인 등록과 조회](/blog/erc8004-agent-reputation-registry-lookup/): 평판 레지스트리를 allowlist와 증거 확인으로 필터링하는 실무 (이 블로그)
-- [Tiger Research: 2026 Know Your Agent](https://reports.tiger-research.com/p/2026-know-your-agent-eng): KYC 역사와 견줘 KYA 시장을 전망한 보고서
-- [AgentFacts KYA 페이지](https://agentfacts.org/kya/): 체인·벤더 중립 메타데이터 표준
-- [NIST NCCoE 개념 논문](https://csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd): 에이전트 신원·위임·감사에 대한 미국 표준 기관의 초안
-
-## 정리
-
-KYA는 새 기술이 아니라 오래된 규제 관행을 새 행위자에게 옮기는 시도입니다. 그 과정에서 KYC 비유는 절반만 맞습니다. 신원과 소유자 바인딩은 옮겨지지만, 권한 범위·런타임 준수·감사 가능성은 등록 한 번으로 끝나지 않는 지속 검사의 문제입니다.
-
-온체인 진영은 배포 속도에서 앞서 있습니다. ERC-8004는 30개 이상 체인에서 약 9만 건 등록을 모았습니다. 다만 그 숫자의 상당 부분이 플랫폼 대량 민팅이고 평판 레지스트리에는 증거 없는 vouch가 쌓이고 있어서, "레지스트리에 있다"와 "믿을 수 있다"는 여전히 다른 말입니다. 결제 네트워크와 신원 벤더는 각자 이미 가진 관계(가맹점, KYC 고객)를 앵커로 삼아 Sybil 문제를 우회하지만, 그 대가로 단일 관문에 의존합니다.
-
-제 판단으로는, 당장 에이전트를 운영하거나 에이전트 트래픽을 받는 쪽이 할 일은 진영을 고르는 것이 아닙니다. 어떤 레지스트리든 이벤트 버스로 취급하고 자기 기준으로 필터링하는 습관, 그리고 에이전트와 책임자를 바인딩하는 기록을 지금부터 남기는 일입니다. 규제가 오면 그 기록이 필요할 것이고, 오지 않더라도 사고가 났을 때 필요할 것입니다.
+- [ERC-8004 참조 구현](https://github.com/erc-8004/erc-8004-contracts): 배포 주소, 등록·평판 조회 흐름과 Validation의 갱신 상태.
+- [Visa TAP 샘플 구현](https://github.com/visa/trusted-agent-protocol): 요청 서명과 상점 검증을 구성하는 예제.
+- [NIST 에이전트 신원·권한 리소스 허브](https://pages.nist.gov/nccoe-ai-identity/): 기업 환경의 신원·위임·접근 통제 논의.
 
 ## 참고 자료
 
-- [ERC-8004: Trustless Agents](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8004.md): ethereum/ERCs, Draft(표준 프로세스), 2026-01-29 메인넷 배포, 조회일 2026-08-27
-- [ERC-8126: AI Agent Verification](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8126.md): ethereum/ERCs, Final, 조회일 2026-08-27
-- [ERC-8196: AI Agent Authenticated Wallet](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8196.md): ethereum/ERCs, Final, 조회일 2026-08-27
-- [2026 Know Your Agent](https://reports.tiger-research.com/p/2026-know-your-agent-eng): Tiger Research, 조회일 2026-08-27
-- [ERC-8004 Agent Registries On-chain](https://www.blokz.dev/articles/erc-8004-agent-registries-onchain): Blokz, 2026-06-12 시점 감사, 조회일 2026-08-27
-- [Know Your Agent](https://agentica.wiki/articles/know-your-agent): Agentica 위키, 2026-03-18 갱신, 조회일 2026-08-27
-- [AgentFacts KYA](https://agentfacts.org/kya/) 및 [arXiv 2506.13794](https://arxiv.org/abs/2506.13794): Jared Grogan, 조회일 2026-08-27
-- [Visa Trusted Agent Protocol](https://developer.visa.com/use-cases/trusted-agent-protocol) 및 [발표 보도자료](https://investor.visa.com/news/news-details/2025/Visa-Introduces-Trusted-Agent-Protocol-An-Ecosystem-Led-Framework-for-AI-Commerce/default.aspx): Visa, 2025-10-14, 조회일 2026-08-27
-- [Accelerating the Adoption of Software and AI Agent Identity and Authorization](https://csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd): NIST NCCoE, Initial Public Draft 2026-02-05, 조회일 2026-08-27
-- [knowyouragent.network](https://knowyouragent.network/): RNWY 스코어 인덱서, 조회일 2026-08-27
-- [ERC-8004 Explained: What It Solves and the Gap It Leaves](https://www.concordium.com/article/erc-8004-explained-what-it-solves-and-the-gap-it-leaves): Concordium(CIS-8004), 조회일 2026-08-27
-- [arXiv 2606.26028](https://arxiv.org/abs/2606.26028): ERC-8004 3체인 실증 연구, 조회일 2026-08-27
-- [Know Your .agent?](https://estherdyson.substack.com/p/know-your-agent): Esther Dyson, 2026-05-06, 조회일 2026-08-27
+아래 자료는 2026년 10월 16일 KST에 확인했습니다.
+
+- [ERC-8004: Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004), [공식 raw 원문](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8004.md): 식별·평판·검증과 보안상 제한.
+- [ERC-8126: AI Agent Verification](https://eips.ethereum.org/EIPS/eip-8126), [ERC-8196: AI Agent Authenticated Wallet](https://eips.ethereum.org/EIPS/eip-8196), [EIP-1](https://eips.ethereum.org/EIPS/eip-1): 인터페이스와 표준 프로세스 상태.
+- [ERC-8004 contracts](https://github.com/erc-8004/erc-8004-contracts): 배포 목록과 참조 구현.
+- [Ethereum 등록 트랜잭션](https://eth.blockscout.com/tx/0x97c640ad052770b66f9744c1318555ccd894e2e0cea215c41dbd86754aa34308), [Reputation 로그](https://eth.blockscout.com/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63?tab=logs): 실제 레지스트리 활동의 사례.
+- [Can Trustless Agents Be Trusted? v2](https://arxiv.org/html/2606.26028v2): Xiong 외, 2026년 7월 8일 개정. 5월 13일까지의 3체인 관찰, 특히 등록 파일 분류와 연구 한계.
+- [Visa Trusted Agent Protocol](https://github.com/visa/trusted-agent-protocol): 공식 설명과 샘플 구현.
+- [Trulioo KYA](https://www.trulioo.com/products/kya-verification): Digital Agent Profile, Alpha 제공 조건과 검증 범위.
+- [Sumsub AI Agent Verification](https://sumsub.com/newsroom/sumsubs-ai-agent-verification-introduces-agent-to-human-binding-to-establish-human-accountability-in-ai/): 위험에 따른 사람 확인과 에이전트 연결.
+- [NIST 프로젝트 허브](https://pages.nist.gov/nccoe-ai-identity/), [Back to the Future: Why Agentic AI Needs a Strong Identity Foundation](https://www.nist.gov/blogs/cybersecurity-insights/back-future-why-agentic-ai-needs-strong-identity-foundation): 프로젝트 목표와 신원·권한 관리의 실패 양상.
