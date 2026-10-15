@@ -1,10 +1,10 @@
 ---
 title: "Robot Learning: A Tutorial (From Classical Robotics to Generalist Policies)"
 meta_title: "Robot Learning: A Tutorial (arXiv:2510.12403)"
-description: "A summary of the LeRobot tutorial paper by Capuano et al., covering the full arc from classical robotics through reinforcement learning, ACT, Diffusion Policy, and generalist VLA models including pi0 and SmolVLA."
+description: "Connect demonstration collection, ACT training, and physical evaluation with LeRobot, including control, imitation and reinforcement learning, VLAs, action chunks, data distributions, and safety conditions."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
-image: "/images/posts/lerobot-robot-learning-tutorial/robot-learning-roadmap.png"
+lastmod: 2026-10-16T01:03:42+09:00
+image: "/images/posts/lerobot-robot-learning-tutorial/robot-learning-editorial-20261016.webp"
 categories: ["AI"]
 tags: ["lerobot", "robot-learning", "imitation-learning", "diffusion-policy", "act", "vla", "smolvla", "physical-ai"]
 author: "whackur"
@@ -12,118 +12,178 @@ translationKey: "lerobot-robot-learning-tutorial"
 draft: false
 ---
 
-"Robot Learning: A Tutorial" ([arXiv:2510.12403](https://arxiv.org/abs/2510.12403)) is a paper-length tutorial by Francesco Capuano, Caroline Pascal, Adil Zouitine, Thomas Wolf, and Michel Aractingi, from the University of Oxford and Hugging Face. It covers the full arc of robot learning methods, from classical dynamics-based control through reinforcement learning, imitation learning, and generalist vision-language-action models, using the Hugging Face LeRobot library throughout.
+A practical way to start robot learning is to teleoperate one task, train an imitation policy such as ACT, and evaluate it on the same hardware under controlled conditions. Classical control handles joints and motion; the learned policy selects actions from observations. A VLA adds language instructions and pretraining, but calibration, data collection, and physical evaluation remain necessary. LeRobot’s official documentation also recommends [ACT as a first policy](https://huggingface.co/docs/lerobot/en/act).
 
-Robot learning has a steep entry barrier. Control theory, RL, generative models, and large-scale pretraining all intersect in a single problem, and every paper assumes a different slice of that background. What this tutorial does well is connect those pieces into one narrative and attach runnable LeRobot code to each step. An interactive version is hosted on Hugging Face Space at [lerobot/robot-learning-tutorial](https://huggingface.co/spaces/lerobot/robot-learning-tutorial), with code examples embedded in each chapter.
+[Robot Learning: A Tutorial](https://arxiv.org/abs/2510.12403v1), by Francesco Capuano, Caroline Pascal, Adil Zouitine, Thomas Wolf, and Michel Aractingi, connects these roles across classical robotics, reinforcement learning, imitation learning, and generalist policies. The verified paper version is v1, submitted on October 14, 2025. The practical workflow uses **official LeRobot documentation and source checked on October 16, 2026 (KST)**. The paper’s examples and today’s CLI should not be assumed to use the same version.
 
-## Tutorial structure
+## The roles of control, imitation, and reinforcement learning
 
-The tutorial is organized into seven chapters.
+In classical robotics, forward kinematics (FK) computes the end-effector pose from joint values; inverse kinematics (IK) finds joint values for a desired pose. A planner chooses a path, and a feedback controller reduces the difference between measured and target values. When friction and contact change throughout a task, engineering the environment model and perception pipeline becomes expensive. Learning provides a way to fit relationships between observations and actions from data. Robot kinematics, motor control, and workspace constraints still apply. This combination is a central point of the tutorial’s [classical robotics section](https://arxiv.org/html/2510.12403v1#S2).
 
-1. **Foreword**: modern ML is important for autonomous robots, but classical robotics knowledge is not obsolete
-2. **Introduction / LeRobotDataset**: the LeRobot library and its standardized dataset format for robot learning research
-3. **Classical Robotics**: FK/IK, motion planning, feedback loops, and the limits of dynamics-based methods
-4. **Robot Reinforcement Learning**: MDP formulation, HIL-SERL, simulator issues, and reward design challenges
-5. **Robot Imitation Learning**: Behavioral Cloning, VAE, Diffusion Models, Flow Matching, ACT, Diffusion Policy, async inference
-6. **Generalist Robot Policies**: VLA models, VLM backbones, pi0, SmolVLA, Open X-Embodiment, DROID
-7. **Conclusions**: the shift from model-based to data-driven robotics, and the role of open datasets
+| Approach | What is learned or designed | Suitable starting conditions | Main burden |
+|---|---|---|---|
+| Classical control and planning | Models, targets, paths, and error-correction rules | Geometry and operating conditions can be specified well | Modeling contact, perception, and environmental changes |
+| Imitation learning (IL) | Relationships between demonstrated observations and actions | A person can repeatedly demonstrate the intended behavior | Unseen states and missing recovery behavior |
+| Reinforcement learning (RL) | A policy that increases cumulative reward through interaction | Rewards, resets, and exploration boundaries can be managed | Physical trial and error, reward errors, and supervision |
+| VLA | A policy producing actions from images, language, and robot state | A pretrained model can be adapted to the hardware and task | Data compatibility, action representation, and inference latency |
 
-![Conceptual roadmap of the robot-learning tutorial. It moves from classical robotics through robot reinforcement learning and imitation learning to generalist VLA policies, with LeRobotDataset and low-level control serving as shared foundations.](/images/posts/lerobot-robot-learning-tutorial/robot-learning-roadmap.png)
+VLA stands for Vision-Language-Action and describes model inputs and structure. IL and RL describe learning methods. Fine-tuning a VLA on demonstrations is also imitation learning. Treating these as four mutually exclusive algorithms obscures the choice.
 
-The tutorial is not a linear replacement of classical control. It layers RL, imitation learning, and generalist VLA policies on top of standardized data and low-level control.
+Behavioral Cloning (BC) uses supervised learning to predict demonstrated actions from demonstrated observations. ACT and Diffusion Policy are policy families that serve this objective; they need not be understood as separate algorithms attached after BC. RL instead optimizes expected cumulative reward in a decision process involving states, actions, transitions, rewards, and a discount factor. The tutorial discusses TRPO, PPO, SAC, and TD-MPC, but coverage in the paper does not mean that every method has an equivalent LeRobot real-robot CLI. The paper’s [definitions of imitation and reinforcement learning](https://arxiv.org/html/2510.12403v1) should be distinguished from the features of an installed version.
 
-## LeRobotDataset
+## Action chunks and feedback frequency
 
-LeRobot is an open-source, end-to-end robotics library from Hugging Face. It vertically integrates low-level real robot control, data loading and inference optimizations, and state-of-the-art robot learning methods in PyTorch.
+The first difficulty in imitation learning is the data distribution. A gripper that slightly misses its target can enter a state absent from the demonstrations, where its next prediction may also be wrong. This distribution shift and compounding error may not be apparent from training loss. Demonstrations can also contain several valid behaviors. If people move around an object on either side, a regressor predicting one average action can head toward the obstacle. The tutorial’s [BC discussion](https://arxiv.org/html/2510.12403v1#S4) separates these two problems.
 
-`LeRobotDataset` is the standardized dataset format the tutorial builds on. Robot data is an awkward time series: camera frames, joint states, and actions arrive at different frequencies, and for years every lab stored them in its own format, which made reproduction and comparison painful. LeRobotDataset splits the problem into three layers.
+**ACT (Action Chunking with Transformers)** predicts several future actions from current images and joint state. During training, a conditional variational autoencoder (CVAE) represents demonstration variability with a latent variable; at inference, that variable is set to zero. The original ACT temporal-ensembling procedure predicts a new chunk at every timestep and takes a weighted average of predictions for the same execution time. Chunking therefore does not inherently mean fewer model calls. The [ACT project](https://tonyzhaozh.github.io/aloha/) and [LeRobot ACT documentation](https://huggingface.co/docs/lerobot/en/act) describe this design.
 
-| Component | Role |
-|---|---|
-| Tabular data | joint states and actions as low-dimensional, high-frequency data via Parquet |
-| Visual data | camera frames stored as concatenated MP4, organized by episode, camera, and chunk |
-| Metadata | JSON schema, fps, normalization stats, episode boundaries, task labels |
+**Diffusion Policy** generates action sequences through iterative denoising conditioned on observations. It can represent multiple valid behaviors and uses receding-horizon control: execute part of a predicted sequence, then plan again from fresh observations. Generation time and observation-update frequency must be considered together. These properties follow the method described on the [official project site](https://diffusion-policy.cs.columbia.edu/).
 
-The format supports `delta_timestamps` for declaring observation history and future action windows, and streaming access so large HF-hosted datasets can be used without downloading them in full. Supported platforms range from low-cost arms like SO-100 and ALOHA-2 to humanoids, simulation datasets, and self-driving car datasets.
+If the entire chunk executes before another observation reaches the policy, that interval is open loop from the policy’s perspective. For example, 30 actions executed at 30 Hz span one second. This is an illustration of the connection between chunk length and responsiveness, not a recommended setting for a particular model. Low-level joint feedback can continue throughout that interval; incorporating a new image showing that an object has moved is a separate matter.
 
-## Classical robotics and its limits
+Asynchronous inference computes the next chunk while the current one executes. LeRobot’s [Real-Time Chunking (RTC)](https://huggingface.co/docs/lerobot/en/rtc) uses the overlapping actions from the previous chunk to condition the next chunk in supported flow-matching policies. Overlapping computation with execution and aligning actions in time are the essential mechanisms. Observation age when inference finishes and the remaining action queue also matter. Asynchrony alone guarantees neither safety nor task success.
 
-The tutorial distinguishes three robot motion categories: manipulation, locomotion, and mobile manipulation. Classical methods rely on FK/IK, motion planning, control theory, and feedback loops. The approach writes down the dynamics of the robot and its environment explicitly, then computes trajectories on top of that model.
+## Connecting LeRobotDataset to hardware configuration
 
-As long as the model is accurate, this is precise and predictable. Contact-rich manipulation is where it breaks down. Every grasp, push, and insertion changes the contact dynamics, and once obstacles and real-time environment changes enter the picture, the number of terms you would have to model explicitly stops being manageable. The tutorial describes this as an explosion of engineering overhead. Learning-based approaches offer generalization across tasks and embodiments, reduced dependence on domain expertise, and the ability to learn from historical trajectory data. The foreword is equally clear about the other direction: classical robotics knowledge is not obsolete, and learned policies still execute on top of classical low-level control.
+LeRobot is Hugging Face’s open-source library connecting robot hardware, data collection, training, and inference. The current [LeRobotDataset v3 documentation](https://huggingface.co/docs/lerobot/en/lerobot-dataset-v3) describes Parquet for states, actions, and timestamps; MP4 for camera video; and metadata for schemas, normalization statistics, and episode boundaries. Multiple episodes can share a file, so one file must not be treated as one episode.
 
-## Robot reinforcement learning
+A learner receives more than video. Keys such as `observation.state`, `action`, and `observation.images.front`, together with their dimensions and ordering, form a data contract. `delta_timestamps` specifies windows of past observations or future actions relative to a reference time. Large datasets can be streamed, but the storage format does not establish whether another robot’s actions are meaningful for yours.
 
-RL frames robotics as a Markov Decision Process with states, actions, dynamics, rewards, discount, and initial state distribution, then learns a policy that maximizes expected reward. The tutorial covers continuous-control approaches including TRPO, PPO, SAC, and TD-MPC, all of which appear in the LeRobot context.
+The examples use an SO-101 follower and leader with one fixed OpenCV camera. The follower performs the task, while the person moves the leader to provide demonstration commands. Other hardware needs the appropriate types, drivers, and calibration from its [robot-specific guide](https://huggingface.co/docs/lerobot/en/so101). The commands below were checked against documentation and source; they were not executed on physical hardware for this post.
 
-The tutorial lists the reasons RL that works in simulation stalls in front of a physical robot:
+### Installation and device discovery
 
-- **Sample inefficiency**: trial-and-error takes hundreds of thousands of steps, and physical robots wear out and break long before that.
-- **Unsafe exploration**: near-random actions early in training can damage the robot or its surroundings.
-- **Hardware reset costs**: someone has to put the objects and the scene back after every episode.
-- **Reward design**: "the object was grasped well" is hard to define from sensor signals alone.
-- **Simulator-to-real gap**: differences between simulated and real physics break policies trained in simulation.
+Prepare a separate Python 3.12 environment and a platform-appropriate PyTorch installation. The CUDA example assumes an NVIDIA GPU with a compatible driver. Check the [installation guide](https://huggingface.co/docs/lerobot/en/installation) for platform-specific FFmpeg/TorchCodec video-decoding requirements. This source installation pins the inspected commit and includes hardware, training, and Feetech dependencies.
 
-**HIL-SERL** (Human-in-the-Loop Sample-Efficient Real-World RL) is presented as an approach that tackles these head-on: prior demonstration data provides a starting point, a human intervenes during online training to correct unsafe exploration, and sample-efficient RL brings real-world training time into a practical range.
+```bash
+git clone https://github.com/huggingface/lerobot.git
+cd lerobot
+git checkout 297774fca4e3ad0aa34e7425fbf937111637e77b
+python -m pip install -e '.[core_scripts,training,feetech]'
+lerobot-find-port
+lerobot-find-cameras opencv
+```
 
-## Robot imitation learning
+Port discovery identifies a device by asking you to disconnect its USB connection. Check camera indices directly as well. The `FOLLOWER_PORT`, `LEADER_PORT`, and `CAMERA_INDEX` values below must be replaced with your devices; do not guess ports before sending robot commands. Linux also requires access permissions for the serial devices. New-motor ID and baud-rate setup, along with assembly, must be completed using the SO-101 guide before calibration.
 
-Imitation learning trains a policy from expert demonstrations (observation-action pairs) without reward design or online exploration. It avoids the risks of RL but inherits two weaknesses.
+### Calibration and teleoperation
 
-The first is covariate shift. Small policy errors push the robot into states the demonstrations never covered, and in those unfamiliar states the errors grow, compounding step by step. The second is multimodal demonstrations. In the same situation, one demonstrator passes an obstacle on the left and another on the right. A point-wise policy averages the two and steers straight into the obstacle, an action that is physically incoherent. This is why the tutorial keeps returning to generative-model-based policies: the policy has to learn the distribution of actions, not their average.
+Calibration makes equivalent leader and follower poses map to consistent joint values. It requires moving the hardware to measure its range, so clear the surrounding space and follow the official procedure. Keep the same device IDs through collection and evaluation: LeRobot uses them to identify calibration files.
 
-### Behavioral Cloning
+```bash
+FOLLOWER_PORT=/dev/ttyACM0
+LEADER_PORT=/dev/ttyACM1
+CAMERA_INDEX=0
+CAMERAS="{front: {type: opencv, index_or_path: ${CAMERA_INDEX}, width: 640, height: 480, fps: 30}}"
 
-Learns the observation-to-action mapping from demonstrations with supervised learning. Simple to implement and a good starting point, but it carries both weaknesses above, and demonstration quality is a hard ceiling on performance.
+lerobot-calibrate --robot.type=so101_follower \
+  --robot.port="$FOLLOWER_PORT" --robot.id=tutorial_follower
+lerobot-calibrate --teleop.type=so101_leader \
+  --teleop.port="$LEADER_PORT" --teleop.id=tutorial_leader
 
-### ACT (Action Chunking with Transformers)
+lerobot-teleoperate \
+  --robot.type=so101_follower --robot.port="$FOLLOWER_PORT" \
+  --robot.id=tutorial_follower --robot.cameras="$CAMERAS" \
+  --teleop.type=so101_leader --teleop.port="$LEADER_PORT" \
+  --teleop.id=tutorial_leader --display_data=true
+```
 
-ACT predicts short sequences of actions (chunks) rather than single-step actions. A VAE absorbs the variability of action trajectories into a latent variable; a transformer decoder predicts the next chunk from visual observations. Chunk-level prediction means the model is queried less often, and fewer queries means fewer opportunities for errors to compound.
+First check that the arm moves in the expected direction and that the gripper and object are visible. The [official collection guide](https://huggingface.co/docs/lerobot/en/il_robots) recommends a setup in which a person can perform the task from the camera images alone. Moving a camera during demonstrations also changes the observation conditions.
 
-### Diffusion Policy
+### A small recording and data inspection
 
-Diffusion Policy models the action distribution via denoising. It handles multimodal cases naturally, where a point-wise policy would produce a physically incoherent average. The cost is latency: actions only come out after multi-step denoising, so deploying it in a real-time control loop requires solving the inference delay separately.
+This five-episode trial checks storage paths and feature keys. It does not establish that there is enough training data. Hub uploading is disabled, allowing local collection without logging in. `example-user` is a placeholder identifier; replace it with a repository you control if you later upload.
 
-### Flow Matching
+```bash
+DATASET_ID=example-user/cube-pickplace
+DATA_ROOT="$PWD/data/cube-pickplace"
 
-Flow Matching is a generative modeling approach used for continuous action generation. Its weight in the field is growing through the VLA family, and pi0 is the notable adopter discussed later in the tutorial.
+lerobot-record \
+  --robot.type=so101_follower --robot.port="$FOLLOWER_PORT" \
+  --robot.id=tutorial_follower --robot.cameras="$CAMERAS" \
+  --teleop.type=so101_leader --teleop.port="$LEADER_PORT" \
+  --teleop.id=tutorial_leader --display_data=true \
+  --dataset.repo_id="$DATASET_ID" --dataset.root="$DATA_ROOT" \
+  --dataset.single_task="Put the cube in the bin" \
+  --dataset.num_episodes=5 --dataset.fps=30 \
+  --dataset.push_to_hub=false
+```
 
-### Async inference
+Inspect whether video, joint state, and actions align; whether the object is occluded; and whether success and failure segments were recorded as intended. The official guide suggests 50 episodes with 10 per position as a starting point for a first grasping task. That is advice for a particular collection setup, not a universal minimum or a guarantee of success. Repeat each starting position sufficiently, then introduce changes such as object location and lighting one at a time once the baseline works. This makes failures easier to diagnose.
 
-Async inference decouples action planning from action execution: the policy computes the next chunk while the robot executes the current one. That makes it the practical route for deploying inference-heavy generative policies in latency-sensitive control loops.
+The following code checks state and action dimensions and image tensors in the same local dataset. Matching dimensions alone do not establish correct joint order or action units, so inspect the metadata too.
 
-## Generalist robot policies
+```python
+import os
+from lerobot.datasets import LeRobotDataset
 
-The tutorial frames the current direction of robot learning as a move toward the pre-train-and-adapt paradigm that transformed NLP and computer vision. The obstacle is data heterogeneity. Unlike text, robot data is strongly tied to embodiment, task, and environment. Naively mixing data from robots with different joint configurations can cause negative transfer, where more data makes the policy worse.
+dataset = LeRobotDataset(
+    "example-user/cube-pickplace",
+    root=os.path.join(os.getcwd(), "data/cube-pickplace"),
+)
+sample = dataset[0]
+for key in ("observation.state", "action", "observation.images.front"):
+    print(key, sample[key].shape)
+```
 
-Key large-scale data efforts discussed in the tutorial:
+### ACT training and bounded physical evaluation
 
-| Dataset | Scale |
-|---|---|
-| Open X-Embodiment | 60 datasets, 22 embodiments, 21 institutions, 1.4M trajectories |
-| DROID | 75,000+ in-the-wild human demonstrations |
-| RT-1 | 130k human-recorded trajectories, 13 robots, 17 months |
+After inspecting data quantity and quality, train ACT using the same dataset path. The 10,000 steps and batch size of 8 below illustrate a run configuration, not a convergence criterion. Adjust them for GPU memory, evaluation results, and the task. Data and training outputs remain local.
 
-**pi0** uses a Gemma/PaliGemma-class VLM backbone combined with an action expert and Flow Matching. The tutorial describes it as trained on over 10M trajectories and positions it as a leading candidate for language-conditioned, cross-task, cross-embodiment robot policies.
+```bash
+lerobot-train \
+  --dataset.repo_id="$DATASET_ID" --dataset.root="$DATA_ROOT" \
+  --policy.type=act --policy.device=cuda \
+  --output_dir=outputs/train/act_cube --job_name=act_cube \
+  --batch_size=8 --steps=10000 \
+  --policy.push_to_hub=false --wandb.enable=false
+```
 
-**SmolVLA** is a smaller, more efficient VLA with async inference support in LeRobot examples. Related Hugging Face models include `fracapuano/smolvla_async` and `lerobot/smolvla_base`.
+Check that the checkpoint exists, then run a short evaluation with the same calibration ID and camera configuration. The `base` strategy executes actions without automatically recording evaluation video. Keep a separate trial log, or configure the documented `episodic` strategy when recording is needed. The [inspected deployment CLI source](https://github.com/huggingface/lerobot/blob/297774fca4e3ad0aa34e7425fbf937111637e77b/src/lerobot/scripts/lerobot_rollout.py) defines `lerobot-rollout` as the entry point for real-robot policy execution.
 
-The tutorial traces the development timeline from BC-Zero through RT-1, RT-2, OpenVLA, to pi0 and SmolVLA, situating each model in the broader trend toward larger datasets and more expressive architectures.
+```bash
+lerobot-rollout \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_cube/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower --robot.port="$FOLLOWER_PORT" \
+  --robot.id=tutorial_follower --robot.cameras="$CAMERAS" \
+  --task="Put the cube in the bin" --fps=30 --duration=10
+```
 
-## Conclusions
+`--duration=10` puts a 10-second limit on the policy execution loop. The [configuration defaults](https://github.com/huggingface/lerobot/blob/297774fca4e3ad0aa34e7425fbf937111637e77b/src/lerobot/rollout/configs.py#L340) to `return_to_initial_position=True`, and [`base` teardown](https://github.com/huggingface/lerobot/blob/297774fca4e3ad0aa34e7425fbf937111637e77b/src/lerobot/rollout/strategies/base.py#L90) receives this setting, so shutdown may include additional motion back to the starting pose. This time limit is neither a physical emergency stop nor a guarantee that all motion ends exactly after 10 seconds.
 
-Read as practical guidance, the tutorial's conclusions map cleanly onto choices a newcomer faces. For single-task imitation learning, BC combined with ACT or Diffusion Policy is the realistic baseline. If you need RL on physical hardware, a design that injects human intervention and prior data, in the style of HIL-SERL, is close to a precondition. If the goal is generalization across tasks and robots, fine-tuning a generalist VLA like pi0 or SmolVLA is the current frontier. And whichever path you take, the authors' consistent message is that standard formats like LeRobotDataset and open datasets are what keep the entry cost down.
+Start with soft objects and a workspace in which a person can stop execution immediately. Repeat the training starting conditions, then separately test predefined positions absent from the demonstrations. Record successes/attempts, human interventions, collisions or drops, starting positions, and the checkpoint. If failures repeat under the same conditions, checking occlusion, action representation, observation delay, and missing recovery demonstrations is more useful than simply increasing training steps.
+
+## VLA transfer and its limits
+
+VLAs combine pretrained visual and language understanding with robot action generation. [π₀](https://www.physicalintelligence.company/blog/pi0) combines a PaliGemma-based VLM and an action expert, using flow matching to generate continuous actions. Flow matching learns a vector field describing movement between noise and target actions; at inference, following that field generates action samples. [SmolVLA](https://huggingface.co/docs/lerobot/en/smolvla) also uses a VLM and an action expert. The official `lerobot/smolvla_base` model is a starting point for fine-tuning on your own data.
+
+This design reuses visual and language pretraining for robotics, but changing an instruction does not make the same task work on every arm. Joint count and ordering, absolute positions versus relative displacements, units, camera keys, and normalization statistics must match. Recognizing an object’s location is also different from controlling contact and force during a grasp. The tutorial’s [generalist-policy section](https://arxiv.org/html/2510.12403v1#S5) discusses embodied-data heterogeneity and negative transfer from indiscriminate mixing.
+
+[Open X-Embodiment](https://robotics-transformer-x.github.io/) pools data across robots to study transfer; [DROID](https://droid-dataset.github.io/) provides manipulation data collected in varied real environments. Their value depends on action representations and environmental coverage as well as collection size. For data from another embodiment, format conversion alone should not be assumed sufficient for deployment.
+
+## Conditions for physical reinforcement learning
+
+RL can be considered when exploring improvements beyond demonstrations or optimizing a policy against a success criterion. However, simulated friction, contact, and sensors differ from physical conditions, while real exploration incurs wear and object-reset costs. A misspecified reward may produce behavior that increases a score without accomplishing the intended task. Simulation success therefore cannot establish physical safety.
+
+LeRobot’s [HIL-SERL guide](https://huggingface.co/docs/lerobot/en/hilserl) combines prior demonstrations, a visual success classifier, an online actor with human intervention, and a SAC learner. Human corrections and real interactions enter training, while workspace bounds, resets, and success detection require separate configuration. Human intervention is neither the only approach to RL nor an automatic safety certification. It is one design for physical learning with supervision and a means to interrupt execution.
+
+Physical precautions also apply to imitation-policy evaluation. Secure the arm, organize cables, clear the workspace, and keep hands and people away from gripper and joint pinch points. Within the capabilities supported by the manufacturer and hardware, limit speed, action changes, and joint and end-effector ranges; establish how to cut power safely. A recording program’s quit key is not a physical emergency stop. These operating recommendations apply independently of the learning algorithm.
+
+Consistency between observations and actions matters more to a first experiment than the model name. Connecting demonstration collection, data inspection, ACT training, and repeated evaluation on one task also makes it possible to tell what improves when VLA fine-tuning or online RL is introduced.
 
 ## Further reading
 
-- [arXiv:2510.12403](https://arxiv.org/abs/2510.12403): "Robot Learning: A Tutorial", Capuano et al., full paper
-- [LeRobot interactive tutorial](https://huggingface.co/spaces/lerobot/robot-learning-tutorial): Hugging Face Space with runnable chapter examples
-- [huggingface/lerobot](https://github.com/huggingface/lerobot): LeRobot library, GitHub
-- [Open X-Embodiment](https://robotics-transformer-x.github.io/): large-scale cross-embodiment robot dataset collection
+- [ACT and ALOHA](https://tonyzhaozh.github.io/aloha/): the original work on action chunks and precise bimanual manipulation.
+- [Diffusion Policy](https://diffusion-policy.cs.columbia.edu/): action distributions and receding-horizon control.
+- [Open X-Embodiment](https://robotics-transformer-x.github.io/) and [DROID](https://droid-dataset.github.io/): compare the robots and environments represented in the data.
 
 ## References
 
-- Francesco Capuano, Caroline Pascal, Adil Zouitine, Thomas Wolf, Michel Aractingi, "Robot Learning: A Tutorial," [arXiv:2510.12403](https://arxiv.org/abs/2510.12403), DOI: [10.48550/arXiv.2510.12403](https://doi.org/10.48550/arXiv.2510.12403)
-- Hugging Face Space: [lerobot/robot-learning-tutorial](https://huggingface.co/spaces/lerobot/robot-learning-tutorial) (interactive version)
-- [huggingface/lerobot](https://github.com/huggingface/lerobot): GitHub repository
-- [Open X-Embodiment](https://robotics-transformer-x.github.io/): cross-embodiment robotics dataset
+Sources below were checked on October 16, 2026 (KST). The command examples use LeRobot commit `297774fca4e3ad0aa34e7425fbf937111637e77b` as their source baseline.
+
+- Capuano, Pascal, Zouitine, Wolf, Aractingi, [Robot Learning: A Tutorial, arXiv:2510.12403v1](https://arxiv.org/abs/2510.12403v1), submitted October 14, 2025.
+- Hugging Face, [Installation](https://huggingface.co/docs/lerobot/en/installation), [SO-101 setup and calibration](https://huggingface.co/docs/lerobot/en/so101), [Cameras](https://huggingface.co/docs/lerobot/en/cameras), [Real-world imitation learning](https://huggingface.co/docs/lerobot/en/il_robots).
+- Hugging Face, [LeRobotDataset v3](https://huggingface.co/docs/lerobot/en/lerobot-dataset-v3), [ACT](https://huggingface.co/docs/lerobot/en/act), [SmolVLA](https://huggingface.co/docs/lerobot/en/smolvla), [RTC](https://huggingface.co/docs/lerobot/en/rtc), [HIL-SERL](https://huggingface.co/docs/lerobot/en/hilserl).
+- Hugging Face, [Inspected LeRobot source](https://github.com/huggingface/lerobot/tree/297774fca4e3ad0aa34e7425fbf937111637e77b).
+- Physical Intelligence, [Introducing π₀](https://www.physicalintelligence.company/blog/pi0).

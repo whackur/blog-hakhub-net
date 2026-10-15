@@ -1,10 +1,10 @@
 ---
 title: "Robot Learning: A Tutorial (고전 로보틱스에서 VLA까지)"
 meta_title: "Robot Learning: A Tutorial 리뷰 (arXiv:2510.12403)"
-description: "Francesco Capuano 외 저자들이 Hugging Face LeRobot과 함께 공개한 로봇 학습 튜토리얼 논문. 고전 로보틱스부터 ACT, Diffusion Policy, pi0, SmolVLA까지 전체 흐름을 정리합니다."
+description: "LeRobot으로 시연 수집부터 ACT 학습과 실물 평가까지 연결합니다. 고전 제어, 모방·강화학습, VLA의 역할과 행동 묶음·데이터 분포·안전 조건을 설명합니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
-image: "/images/posts/lerobot-robot-learning-tutorial/robot-learning-roadmap.png"
+lastmod: 2026-10-16T01:03:42+09:00
+image: "/images/posts/lerobot-robot-learning-tutorial/robot-learning-editorial-20261016.webp"
 categories: ["AI"]
 tags: ["lerobot", "robot-learning", "imitation-learning", "diffusion-policy", "act", "vla", "smolvla", "physical-ai"]
 author: "whackur"
@@ -12,118 +12,178 @@ translationKey: "lerobot-robot-learning-tutorial"
 draft: false
 ---
 
-"Robot Learning: A Tutorial"([arXiv:2510.12403](https://arxiv.org/abs/2510.12403))은 Francesco Capuano, Caroline Pascal, Adil Zouitine, Thomas Wolf, Michel Aractingi가 쓴 논문 형식의 튜토리얼입니다. University of Oxford와 Hugging Face 소속 저자들이 LeRobot 라이브러리를 바탕으로 고전 로보틱스부터 강화학습, 모방 학습, Vision-Language-Action(VLA) 모델까지 로봇 학습의 전체 흐름을 한 편에 담았습니다.
+로봇 학습을 시작한다면, 한 작업을 사람이 원격 조작해 시연하고 ACT 같은 모방 학습 정책을 훈련한 뒤 같은 장치에서 제한된 조건으로 평가하는 경로가 합리적입니다. 고전 제어는 관절과 움직임을 다루고, 학습 정책은 관측에서 다음 행동을 고릅니다. VLA는 여기에 언어 지시와 사전학습을 더하지만, 보정·데이터 수집·실물 검증을 대신하지 않습니다. LeRobot 공식 문서도 첫 정책으로 [ACT를 권장](https://huggingface.co/docs/lerobot/en/act)합니다.
 
-로봇 학습은 진입 장벽이 높은 분야입니다. 제어 이론, 강화학습, 생성 모델, 대규모 사전학습이 한 문제 안에 얽혀 있고, 논문마다 전제하는 배경지식이 다릅니다. 이 튜토리얼의 가치는 그 조각들을 하나의 서사로 잇고, 단계마다 LeRobot으로 바로 실행할 수 있는 코드를 붙여 놓았다는 데 있습니다. Hugging Face Space([lerobot/robot-learning-tutorial](https://huggingface.co/spaces/lerobot/robot-learning-tutorial))에서 인터랙티브 웹 버전으로도 볼 수 있습니다.
+Francesco Capuano, Caroline Pascal, Adil Zouitine, Thomas Wolf, Michel Aractingi의 [Robot Learning: A Tutorial](https://arxiv.org/abs/2510.12403v1)은 이 관계를 고전 로보틱스, 강화학습, 모방 학습, 범용 정책으로 연결합니다. 확인한 논문 버전은 2025년 10월 14일 제출된 v1입니다. 실행 절차는 **2026년 10월 16일(KST) 확인한 LeRobot 공식 문서와 소스**를 기준으로 합니다. 논문의 예제와 현재 CLI를 같은 버전으로 가정하면 안 됩니다.
 
-## 튜토리얼 구성
+## 제어·모방 학습·강화학습의 역할
 
-튜토리얼은 7개 챕터로 구성됩니다.
+고전 로보틱스에서 순기구학(FK)은 관절값으로 말단 위치를 계산하고, 역기구학(IK)은 원하는 말단 위치에 대응하는 관절값을 구합니다. 계획기는 경로를 정하고 피드백 제어기는 측정값과 목표값의 오차를 줄입니다. 물체의 마찰과 접촉 상태가 계속 바뀌는 작업에서는 환경 모델과 인식 처리를 직접 설계하는 비용이 커집니다. 학습은 이런 관측과 행동의 관계를 데이터로 익히는 방법입니다. 그렇더라도 로봇의 기구학, 모터 제어와 작업 공간 제약은 남습니다. [튜토리얼의 고전 로보틱스 절](https://arxiv.org/html/2510.12403v1#S2)이 강조하는 결합입니다.
 
-1. **Foreword**: 현대 ML이 자율 로봇 개발에 중요해졌지만, 고전 로보틱스 지식도 여전히 필요하다는 관점 제시
-2. **Introduction / LeRobotDataset**: LeRobot 라이브러리와 표준화된 로봇 학습 데이터 포맷 소개
-3. **Classical Robotics**: FK/IK, 모션 계획, 피드백 루프, 동역학 기반 접근의 한계
-4. **Robot Reinforcement Learning**: MDP 기반 로봇 RL, HIL-SERL, 실제 환경 RL의 난점
-5. **Robot Imitation Learning**: Behavioral Cloning, VAE, Diffusion Models, Flow Matching, ACT, Diffusion Policy, 비동기 추론
-6. **Generalist Robot Policies**: VLA, VLM 백본, pi0, SmolVLA, Open X-Embodiment, DROID
-7. **Conclusions**: 모델 기반에서 데이터 기반으로의 전환, 오픈 데이터셋과 표준화의 중요성
+| 접근 | 학습하거나 설계하는 것 | 맞는 출발 조건 | 주요 부담 |
+|---|---|---|---|
+| 고전 제어·계획 | 모델, 목표, 경로, 오차 보정 규칙 | 기하와 작업 조건을 잘 정의할 수 있음 | 접촉·인식·환경 변화의 모델링 |
+| 모방 학습(IL) | 시연의 관측과 행동 관계 | 사람이 원하는 행동을 반복 시연할 수 있음 | 시연 밖 상태와 복구 행동의 부족 |
+| 강화학습(RL) | 상호작용으로 얻는 누적 보상을 높이는 정책 | 보상·리셋·탐색 범위를 관리할 수 있음 | 실물 시행착오, 보상 오류, 감독 비용 |
+| VLA | 영상·언어·로봇 상태에서 행동을 만드는 정책 | 사전학습 모델을 자신의 장치와 작업에 적응시킬 수 있음 | 데이터·행동 표현·추론 지연의 적합성 |
 
-![로봇 학습 튜토리얼의 개념 흐름. 고전 로보틱스에서 로봇 강화학습과 모방 학습을 거쳐 범용 VLA로 이어지고, LeRobotDataset과 저수준 제어가 모든 단계의 공통 기반이 되는 구조를 보여 준다.](/images/posts/lerobot-robot-learning-tutorial/robot-learning-roadmap.png)
+VLA(Vision-Language-Action)는 입력과 모델 구조를 가리키며 IL과 RL은 학습 방법을 가리킵니다. VLA를 시연으로 미세조정하는 것도 모방 학습입니다. 이들을 서로 배타적인 네 알고리즘으로 비교하면 선택 기준이 흐려집니다.
 
-튜토리얼은 고전 제어를 버리는 선형 교체가 아니라, 표준 데이터와 저수준 제어 위에 RL·모방 학습·범용 VLA를 쌓는 흐름으로 읽는 편이 정확합니다.
+행동 복제(Behavioral Cloning, BC)는 시연의 관측을 입력으로 받아 시연 행동을 예측하도록 지도 학습합니다. ACT와 Diffusion Policy도 이 목적을 수행하는 정책 계열입니다. BC에 별도 알고리즘을 붙이는 단계로 이해할 필요는 없습니다. RL은 상태·행동·전이·보상·할인율을 포함한 의사결정 문제에서 기대 누적 보상을 최적화합니다. 논문은 TRPO·PPO·SAC·TD-MPC 등을 설명하지만, 논문에서 다룬다는 사실이 모두 동일한 LeRobot 실물 CLI로 제공된다는 뜻은 아닙니다. [모방 학습과 강화학습의 정의](https://arxiv.org/html/2510.12403v1)는 실제 설치 기능과 구분해서 읽어야 합니다.
 
-## LeRobotDataset
+## 행동 묶음과 피드백 주기
 
-LeRobot은 Hugging Face가 개발한 오픈소스 end-to-end 로봇 학습 라이브러리입니다. 실제 로봇 하드웨어의 저수준 제어, 데이터 로딩과 추론 최적화, PyTorch 기반 SOTA 알고리즘 구현까지 수직으로 통합합니다.
+모방 학습의 첫 난점은 데이터 분포입니다. 집게가 목표를 조금 빗나가면 시연에 없는 상태에 도달하고, 그 상태에서 다음 예측도 틀릴 수 있습니다. 이런 분포 변화와 오차 누적은 훈련 손실만으로 드러나지 않습니다. 또 사람이 같은 물체를 왼쪽이나 오른쪽으로 우회했다면, 두 행동을 하나의 평균으로 예측하는 회귀 모델은 장애물 쪽으로 향할 수 있습니다. [튜토리얼의 BC 설명](https://arxiv.org/html/2510.12403v1#S4)은 이 두 문제를 구분합니다.
 
-`LeRobotDataset`은 이 라이브러리의 표준 데이터셋 포맷입니다. 로봇 데이터는 카메라 프레임, 관절 상태, 행동이 서로 다른 주기로 뒤섞인 시계열이라, 연구실마다 제각각인 저장 방식이 재현과 비교를 막는 고질적인 문제였습니다. LeRobotDataset은 이를 세 층으로 나눠 정리합니다.
+**ACT(Action Chunking with Transformers)**는 현재 영상과 관절 상태로 미래 행동 여러 개를 한 번에 예측합니다. 훈련 때 조건부 변분 오토인코더(CVAE)가 시연의 변동을 잠재 변수로 표현하고, 추론 때는 잠재 변수를 0으로 설정합니다. 원래 ACT의 temporal ensembling은 매 시점 새 행동 묶음을 예측해 같은 시각을 가리키는 예측들을 가중 평균합니다. 행동을 묶는다고 항상 모델 호출이 줄어드는 것은 아닙니다. [ACT 공식 프로젝트](https://tonyzhaozh.github.io/aloha/)와 [LeRobot의 ACT 설명](https://huggingface.co/docs/lerobot/en/act)이 이 구조를 설명합니다.
 
-| 구성 | 역할 |
-|---|---|
-| Tabular data | joint state, action 등 저차원 고주파 데이터 (Parquet 기반) |
-| Visual data | 카메라 프레임을 MP4로 묶어 저장, episode/camera/chunk 기준 조직 |
-| Metadata | JSON 스키마, fps, normalization stats, episode 경계, task 레이블 |
+**Diffusion Policy**는 관측에 조건화한 잡음 제거를 반복해 행동 시퀀스를 생성합니다. 서로 다른 유효 행동을 표현하는 데 적합하며, 예측한 시퀀스의 일부를 실행하고 새 관측으로 다시 계획하는 receding-horizon 제어를 사용합니다. 반복 생성에 걸리는 시간과 관측 갱신 주기를 함께 고려해야 합니다. [공식 프로젝트](https://diffusion-policy.cs.columbia.edu/)의 방법 설명에 근거한 특성입니다.
 
-`delta_timestamps`로 과거 관측 히스토리와 미래 action window를 선언적으로 지정할 수 있고, Hugging Face 허브에 호스팅된 대규모 데이터셋에는 전체를 내려받지 않고 스트리밍으로 접근할 수 있습니다. SO-100, ALOHA-2 같은 저가 플랫폼부터 휴머노이드, 시뮬레이션, 자율주행 데이터셋까지 지원합니다.
+묶음 전체를 실행할 때까지 재관측하지 않으면 그 구간은 정책 관점에서 개방 루프가 됩니다. 예를 들어 30Hz로 실행하는 행동 30개는 1초 분량입니다. 이 계산은 특정 모델의 권장값이 아니라, 묶음 길이가 반응 지연과 연결된다는 예입니다. 저수준 관절 피드백이 계속 동작하더라도 물체가 움직였다는 새 영상 정보가 정책에 반영되는 시점은 별개입니다.
 
-## 고전 로보틱스와 그 한계
+비동기 추론은 현재 묶음을 실행하는 동안 다음 묶음을 계산합니다. LeRobot의 [Real-Time Chunking(RTC)](https://huggingface.co/docs/lerobot/en/rtc)은 지원하는 flow-matching 정책에서 이전 행동과 새 묶음의 겹치는 구간을 조건으로 삼아 연결을 조정합니다. 연산과 실행의 겹침, 행동의 시간 정렬이 핵심입니다. 추론이 끝났을 때 관측이 얼마나 오래됐는지, 큐에 실행할 행동이 남았는지까지 확인해야 합니다. 비동기화만으로 안전성이나 성공률을 보장하지는 않습니다.
 
-튜토리얼은 로봇 모션을 manipulation(조작), locomotion(이동), mobile manipulation(둘의 결합)으로 구분합니다. 고전 방법론은 FK/IK, 모션 계획, 제어 이론, 피드백 루프로 문제를 풉니다. 로봇과 환경의 동역학을 수식으로 명시하고, 그 모델 위에서 궤적을 계산하는 방식입니다.
+## LeRobotDataset과 장치 설정의 연결
 
-이 접근은 모델이 정확한 동안에는 정밀하고 예측 가능하게 동작합니다. 문제는 접촉이 많은 조작 task입니다. 물체를 쥐고 밀고 끼우는 순간마다 접촉 동역학이 달라지고, 장애물과 실시간 환경 변화까지 더해지면 명시적으로 모델링해야 할 항이 감당하기 어렵게 늘어납니다. 튜토리얼은 이 지점을 engineering overhead의 폭발로 설명합니다. 학습 기반 접근의 강점은 task와 embodiment를 넘나드는 일반화, 도메인 전문 지식 의존도 감소, 이미 쌓인 시연 데이터의 재활용입니다. 다만 서문에서 못 박듯이 고전 로보틱스가 쓸모없어졌다는 이야기는 아닙니다. 학습된 정책도 결국 고전적인 저수준 제어 위에서 실행됩니다.
+LeRobot은 로봇 연결부터 수집·학습·추론까지 연결하는 Hugging Face의 오픈소스 라이브러리입니다. 현재 공식 [LeRobotDataset v3 문서](https://huggingface.co/docs/lerobot/en/lerobot-dataset-v3)는 상태·행동·타임스탬프를 Parquet에, 카메라 영상을 MP4에 저장하고 스키마·정규화 통계·에피소드 경계를 메타데이터로 관리합니다. 여러 에피소드가 한 파일을 공유할 수 있으므로 파일 하나를 에피소드 하나로 취급하면 안 됩니다.
 
-## 로봇 강화학습
+학습기가 보는 것은 단순한 동영상이 아닙니다. `observation.state`, `action`, `observation.images.front` 같은 키와 각 값의 차원·순서가 계약을 이룹니다. `delta_timestamps`는 기준 시각에 대한 과거 관측이나 미래 행동의 시간 창을 지정합니다. 대규모 데이터는 스트리밍으로 읽을 수 있지만, 데이터가 다른 로봇에도 의미가 있는지는 저장 형식이 해결하지 않습니다.
 
-RL은 로봇 문제를 MDP(Markov Decision Process)로 모델링합니다. 상태, 행동, 동역학, 보상, 할인율, 초기 상태 분포를 정의하고 기대 보상을 최대화하는 정책을 학습합니다. 연속 제어 알고리즘으로는 TRPO, PPO, SAC, TD-MPC가 LeRobot 맥락에서 언급됩니다.
+실습에는 SO-101 follower와 leader, 고정된 OpenCV 카메라 하나를 예로 듭니다. follower가 실제 작업을 수행하고 사람이 움직이는 leader가 시연 명령을 보냅니다. 다른 장치를 쓰면 [해당 로봇 안내](https://huggingface.co/docs/lerobot/en/so101)에 맞춰 타입·드라이버·보정을 바꿔야 합니다. 아래 명령은 문서와 소스를 대조한 예시이며, 이 글을 위해 실제 하드웨어에서 실행한 결과는 아닙니다.
 
-시뮬레이터에서 잘 되던 RL이 실제 로봇 앞에서 자주 막히는 이유를 튜토리얼은 이렇게 정리합니다.
+### 설치와 포트·카메라 확인
 
-- **샘플 비효율**: 시행착오가 수십만 스텝 단위로 필요한데, 실물 로봇은 그만큼 돌리면 마모되고 고장 납니다.
-- **위험한 탐색**: 학습 초기의 무작위에 가까운 행동이 로봇 자신이나 주변 환경을 부술 수 있습니다.
-- **리셋 비용**: 에피소드가 끝날 때마다 사람이 물체와 환경을 원위치로 되돌려야 합니다.
-- **보상 설계**: "물체를 잘 집었다"를 센서 신호만으로 정의하기 어렵습니다.
-- **sim-to-real gap**: 시뮬레이터 물리와 실제 물리의 차이가 학습된 정책을 무너뜨립니다.
+별도 Python 3.12 환경과 플랫폼에 맞는 PyTorch를 준비합니다. CUDA 예시는 NVIDIA GPU와 호환 드라이버가 전제입니다. 영상 디코딩용 FFmpeg/TorchCodec의 플랫폼 조건도 [설치 문서](https://huggingface.co/docs/lerobot/en/installation)에서 확인해야 합니다. 다음 소스 설치는 확인한 커밋을 고정하며, 하드웨어·학습·Feetech 의존성을 함께 설치합니다.
 
-**HIL-SERL**(Human-in-the-Loop Sample-Efficient Real-World RL)은 이 난점을 정면으로 다루는 접근으로 소개됩니다. 사전 시연 데이터로 출발점을 만들고, 온라인 학습 중에 사람이 개입해 위험한 탐색을 교정하며, 샘플 효율이 높은 RL로 실물 학습 시간을 실용적인 범위까지 끌어내립니다.
+```bash
+git clone https://github.com/huggingface/lerobot.git
+cd lerobot
+git checkout 297774fca4e3ad0aa34e7425fbf937111637e77b
+python -m pip install -e '.[core_scripts,training,feetech]'
+lerobot-find-port
+lerobot-find-cameras opencv
+```
 
-## 로봇 모방 학습
+포트 탐색은 안내에 따라 해당 USB 연결을 분리해 장치를 식별합니다. 카메라 번호도 직접 확인합니다. 아래 `FOLLOWER_PORT`, `LEADER_PORT`, `CAMERA_INDEX` 값은 자신의 장치로 바꿀 자리이며, 포트를 추측해서 로봇 명령을 보내면 안 됩니다. Linux에서는 시리얼 장치 접근 권한도 필요합니다. 새 모터의 ID·baudrate 설정과 조립은 보정 이전에 SO-101 가이드대로 마쳐야 합니다.
 
-모방 학습은 보상 설계 없이 전문가 시연(observation-action pair)에서 정책을 배웁니다. RL의 탐색 위험을 피할 수 있지만, 두 가지 약점이 따라옵니다.
+### 보정 후 원격 조작
 
-첫째는 covariate shift입니다. 정책의 작은 오차가 로봇을 시연 데이터에 없던 상태로 밀어 넣고, 그 낯선 상태에서는 더 큰 오차가 나오는 악순환이 생깁니다. 둘째는 multimodal demonstration입니다. 같은 상황에서 어떤 시연자는 장애물을 왼쪽으로, 어떤 시연자는 오른쪽으로 피해 갑니다. 이를 point-wise 정책으로 평균 내면 장애물 한가운데로 향하는, 물리적으로 성립하지 않는 행동이 나옵니다. 튜토리얼이 생성 모델 기반 정책을 강조하는 이유가 여기 있습니다. 행동의 평균이 아니라 행동의 분포를 배워야 하기 때문입니다.
+보정은 leader와 follower의 같은 자세가 일관된 관절값으로 해석되게 합니다. 장치를 움직여 범위를 읽는 절차이므로 주변을 비우고 공식 안내를 따라 수행합니다. 이후 같은 장치에서는 아래 ID를 수집과 평가까지 유지합니다. LeRobot은 ID를 보정 파일 식별에 사용합니다.
 
-### Behavioral Cloning
+```bash
+FOLLOWER_PORT=/dev/ttyACM0
+LEADER_PORT=/dev/ttyACM1
+CAMERA_INDEX=0
+CAMERAS="{front: {type: opencv, index_or_path: ${CAMERA_INDEX}, width: 640, height: 480, fps: 30}}"
 
-전문가 시연의 observation-action 매핑을 지도 학습으로 배웁니다. 구현이 단순해서 출발점으로 좋지만, 위의 두 약점을 그대로 안고 갑니다. 시연 품질이 곧 성능의 상한이기도 합니다.
+lerobot-calibrate --robot.type=so101_follower \
+  --robot.port="$FOLLOWER_PORT" --robot.id=tutorial_follower
+lerobot-calibrate --teleop.type=so101_leader \
+  --teleop.port="$LEADER_PORT" --teleop.id=tutorial_leader
 
-### ACT (Action Chunking with Transformers)
+lerobot-teleoperate \
+  --robot.type=so101_follower --robot.port="$FOLLOWER_PORT" \
+  --robot.id=tutorial_follower --robot.cameras="$CAMERAS" \
+  --teleop.type=so101_leader --teleop.port="$LEADER_PORT" \
+  --teleop.id=tutorial_leader --display_data=true
+```
 
-단일 행동 대신 짧은 행동 시퀀스(chunk)를 예측합니다. VAE가 행동 궤적의 변동성을 잠재 변수로 흡수하고, 트랜스포머 디코더가 시각 관측에서 다음 chunk를 생성합니다. chunk 단위로 예측하면 제어 스텝마다 모델을 호출하지 않아도 되고, 호출 횟수가 줄어드는 만큼 오차가 누적될 기회도 줄어듭니다. compounding error를 완화하는 구조적 장치입니다.
+여기서 팔이 예상 방향으로 움직이는지, 집게와 물체가 영상에 보이는지부터 확인합니다. [공식 수집 가이드](https://huggingface.co/docs/lerobot/en/il_robots)는 카메라 영상만 보고도 사람이 작업을 수행할 수 있는 구성을 권합니다. 시연 도중 카메라를 옮기면 관측 조건도 달라집니다.
 
-### Diffusion Policy
+### 소규모 수집과 데이터 점검
 
-행동 분포를 denoising 과정으로 모델링합니다. 같은 상황에 여러 타당한 행동이 존재하는 multimodal 케이스를 point-wise 정책보다 자연스럽게 처리합니다. 대가는 지연 시간입니다. multi-step denoising을 거쳐야 행동이 나오기 때문에, 실시간 제어 루프에 넣으려면 추론 지연을 따로 해결해야 합니다.
+다음은 저장 경로와 키를 확인하는 5개 에피소드의 시험 수집입니다. 충분한 학습 데이터라는 뜻은 아닙니다. Hub 업로드를 끄므로 로그인 없이 로컬 수집 경로를 사용합니다. `example-user`는 실제 계정 대신 넣은 식별자이며, 업로드할 때는 자신이 권한을 가진 저장소로 바꿉니다.
 
-### Flow Matching
+```bash
+DATASET_ID=example-user/cube-pickplace
+DATA_ROOT="$PWD/data/cube-pickplace"
 
-연속 행동 생성에 쓰이는 생성 모델링 기법으로, VLA 계열 모델에서 비중이 커지고 있습니다. pi0 같은 최신 VLA가 채택한 방식입니다.
+lerobot-record \
+  --robot.type=so101_follower --robot.port="$FOLLOWER_PORT" \
+  --robot.id=tutorial_follower --robot.cameras="$CAMERAS" \
+  --teleop.type=so101_leader --teleop.port="$LEADER_PORT" \
+  --teleop.id=tutorial_leader --display_data=true \
+  --dataset.repo_id="$DATASET_ID" --dataset.root="$DATA_ROOT" \
+  --dataset.single_task="Put the cube in the bin" \
+  --dataset.num_episodes=5 --dataset.fps=30 \
+  --dataset.push_to_hub=false
+```
 
-### 비동기 추론 (Async Inference)
+저장한 에피소드에서 영상·관절 상태·행동이 맞물리는지, 물체가 가려지지 않는지, 성공과 실패 구간이 의도대로 기록됐는지 확인합니다. 공식 가이드는 첫 집기 작업에 50개 에피소드, 위치별 10개를 출발점으로 제안합니다. 이는 특정 수집 구성을 위한 권고이며 모든 작업의 최소 표본이나 성공 보장이 아닙니다. 시작 위치별 반복을 확보하고, 안정된 뒤 물체 위치와 조명 같은 변화를 하나씩 늘리는 편이 실패 원인을 구분하기 쉽습니다.
 
-action planning과 action execution을 분리합니다. 로봇이 현재 chunk를 실행하는 동안 정책이 다음 chunk를 계산하는 구조라서, 추론이 무거운 생성 모델 기반 정책을 저지연 제어 루프에 배포할 때 현실적인 해법이 됩니다.
+아래 코드는 같은 로컬 데이터에서 상태·행동 차원과 영상 텐서를 확인합니다. 숫자만 맞아도 관절 순서나 행동 단위가 틀릴 수 있으므로 메타데이터와 함께 봐야 합니다.
 
-## Generalist Robot Policies
+```python
+import os
+from lerobot.datasets import LeRobotDataset
 
-로봇 학습도 CV/NLP처럼 사전학습 후 미세조정(pre-train-and-adapt) 패러다임으로 이동하고 있다는 것이 튜토리얼의 진단입니다. 걸림돌은 데이터의 이질성입니다. 텍스트와 달리 로봇 데이터는 embodiment, task, 환경에 강하게 종속됩니다. 관절 구성이 다른 로봇의 데이터를 그대로 섞으면 오히려 성능이 떨어지는 negative transfer가 일어날 수 있습니다.
+dataset = LeRobotDataset(
+    "example-user/cube-pickplace",
+    root=os.path.join(os.getcwd(), "data/cube-pickplace"),
+)
+sample = dataset[0]
+for key in ("observation.state", "action", "observation.images.front"):
+    print(key, sample[key].shape)
+```
 
-대규모 공개 데이터 프로젝트들이 이 문제를 공동으로 풀어가고 있습니다.
+### ACT 학습과 제한된 실물 평가
 
-| 데이터셋 | 규모 |
-|---|---|
-| Open X-Embodiment | 22개 embodiment, 21개 기관, 60개 데이터셋, 1.4M trajectories |
-| DROID | 75,000건 이상의 in-the-wild human demonstrations |
-| RT-1 | 130k human-recorded trajectories, 13 robots, 17 months |
+수집량과 품질을 점검한 뒤 같은 데이터 경로로 ACT를 학습합니다. 아래 10,000스텝과 batch size 8은 실행 구성을 보여 주는 값이며 수렴 기준이 아닙니다. GPU 메모리, 검증 결과와 작업에 맞게 조정합니다. 학습 결과와 데이터는 로컬에 유지합니다.
 
-**pi0**는 Gemma/PaliGemma 계열 VLM 백본에 action expert와 Flow Matching을 결합한 모델입니다. 10M 이상의 trajectory로 학습했다고 소개되며, language-conditioned, cross-task, cross-embodiment 정책의 대표 사례로 다뤄집니다.
+```bash
+lerobot-train \
+  --dataset.repo_id="$DATASET_ID" --dataset.root="$DATA_ROOT" \
+  --policy.type=act --policy.device=cuda \
+  --output_dir=outputs/train/act_cube --job_name=act_cube \
+  --batch_size=8 --steps=10000 \
+  --policy.push_to_hub=false --wandb.enable=false
+```
 
-**SmolVLA**는 작고 효율적인 VLA로, LeRobot 예제에서 비동기 추론을 지원합니다. 관련 Hugging Face 모델로는 `fracapuano/smolvla_async`와 `lerobot/smolvla_base`가 있습니다.
+저장된 체크포인트가 있는지 확인한 다음, 동일한 보정 ID와 카메라 설정으로 짧게 평가합니다. `base` 전략은 행동을 실행하지만 평가 영상을 자동 기록하지 않습니다. 별도 시험 기록을 남기거나 기록이 필요한 경우 공식 문서의 `episodic` 전략을 구성합니다. [현재 배포 CLI 소스](https://github.com/huggingface/lerobot/blob/297774fca4e3ad0aa34e7425fbf937111637e77b/src/lerobot/scripts/lerobot_rollout.py)는 `lerobot-rollout`을 실물 정책 실행 진입점으로 정의합니다.
 
-튜토리얼은 BC-Zero에서 RT-1, RT-2, OpenVLA를 거쳐 pi0, SmolVLA에 이르는 흐름을 타임라인으로 정리하며, 더 큰 데이터셋과 더 표현력 있는 아키텍처라는 방향성을 짚습니다.
+```bash
+lerobot-rollout \
+  --strategy.type=base \
+  --policy.path=outputs/train/act_cube/checkpoints/last/pretrained_model \
+  --robot.type=so101_follower --robot.port="$FOLLOWER_PORT" \
+  --robot.id=tutorial_follower --robot.cameras="$CAMERAS" \
+  --task="Put the cube in the bin" --fps=30 --duration=10
+```
 
-## 정리
+`--duration=10`은 정책 실행 루프에 10초 제한을 둡니다. [설정의 기본값](https://github.com/huggingface/lerobot/blob/297774fca4e3ad0aa34e7425fbf937111637e77b/src/lerobot/rollout/configs.py#L340)은 `return_to_initial_position=True`이며, [`base` 종료 처리](https://github.com/huggingface/lerobot/blob/297774fca4e3ad0aa34e7425fbf937111637e77b/src/lerobot/rollout/strategies/base.py#L90)에도 이 값이 전달되므로 종료 중 시작 자세로 복귀하는 추가 움직임이 생길 수 있습니다. 이 시간 제한은 물리적 비상정지 기능이나 모든 움직임이 정확히 10초 뒤 끝난다는 보장이 아닙니다.
 
-로봇 학습을 시작하는 입장에서 튜토리얼의 결론은 실용적인 선택 지침으로 읽힙니다. 단일 task 모방 학습이라면 BC에 ACT나 Diffusion Policy를 결합하는 구성이 현실적인 기준점입니다. 실물 환경에서 RL을 돌려야 한다면 HIL-SERL처럼 사람 개입과 사전 데이터를 끼워 넣는 설계가 사실상 전제 조건입니다. 여러 task와 로봇을 아우르는 일반화가 목표라면 pi0, SmolVLA 같은 generalist VLA를 미세조정하는 경로가 현재 프론티어입니다. 그리고 어느 경로를 택하든, LeRobotDataset 같은 표준 포맷과 오픈 데이터셋이 진입 비용을 낮추는 기반이라는 것이 저자들의 일관된 메시지입니다.
+처음에는 사람이 즉시 중단할 수 있는 범위에서 부드러운 물체로 시험합니다. 학습 때와 같은 시작 조건을 반복한 뒤, 별도로 정한 미시연 위치에서도 평가합니다. 성공 횟수/전체 시도 수, 사람 개입, 충돌이나 낙하, 시작 위치와 사용한 체크포인트를 함께 적습니다. 같은 조건의 실패가 반복되면 학습 스텝만 늘리기보다 가림·행동 표현·관측 지연·복구 시연 부족을 먼저 점검하는 것이 실용적입니다.
+
+## VLA의 전이 능력과 적용 한계
+
+VLA는 영상과 언어를 해석하는 사전학습 모델에 로봇 행동 생성을 결합합니다. [π₀](https://www.physicalintelligence.company/blog/pi0)는 PaliGemma 기반 VLM과 행동 expert를 결합하며 flow matching으로 연속 행동을 생성합니다. Flow matching은 잡음과 목표 행동 사이의 이동을 나타내는 벡터장을 학습하고, 추론 때 이를 따라 행동 샘플을 생성하는 방법입니다. [SmolVLA](https://huggingface.co/docs/lerobot/en/smolvla)도 VLM과 행동 expert를 사용하며, 공식 모델 `lerobot/smolvla_base`는 자신의 데이터로 미세조정하는 출발점입니다.
+
+이 구조는 언어·시각 사전학습을 로봇 작업에 재사용하지만, 지시문만 바꾸면 모든 팔에서 같은 작업을 수행한다는 뜻은 아닙니다. 관절 수와 순서, 절대 위치와 상대 변위의 구분, 단위, 카메라 키, 정규화 통계가 맞아야 합니다. 물체 위치를 알아보는 능력과 실제 집기의 접촉·힘 조절 능력도 동일하지 않습니다. [튜토리얼의 범용 정책 절](https://arxiv.org/html/2510.12403v1#S5)은 로봇별 데이터의 이질성과 무분별한 혼합에 따른 negative transfer를 경고합니다.
+
+[Open X-Embodiment](https://robotics-transformer-x.github.io/)는 여러 로봇의 데이터를 모아 전이를 연구하고, [DROID](https://droid-dataset.github.io/)는 여러 실제 환경에서 수집한 조작 데이터를 제공합니다. 이런 데이터의 가치는 수집 규모뿐 아니라 어떤 행동 표현과 환경 분포를 포함하는지에 달려 있습니다. 자신의 장치와 다른 데이터라면 형식 변환만으로 곧바로 사용할 수 있다고 가정하면 안 됩니다.
+
+## RL을 실물에 적용할 때 필요한 조건
+
+시연보다 나은 행동을 탐색하거나 성공 기준으로 정책을 개선하려면 RL을 검토할 수 있습니다. 다만 시뮬레이션의 마찰·접촉·센서 조건은 실물과 다르고, 실제 탐색에는 로봇 마모와 물체 재배치 비용이 듭니다. 보상이 잘못 정의되면 원하는 작업 대신 점수를 높이는 행동을 학습할 수도 있습니다. 시뮬레이션 성공만으로 실물 안전성을 판단할 수 없는 이유입니다.
+
+LeRobot의 [HIL-SERL 가이드](https://huggingface.co/docs/lerobot/en/hilserl)는 사전 시연, 영상 기반 성공 판별기, 사람이 개입하는 온라인 actor와 SAC learner를 결합합니다. 사람의 교정 데이터와 실제 상호작용이 학습에 들어가며, 작업 공간 경계·리셋·성공 판별을 별도로 구성합니다. 사람 개입은 RL의 유일한 방법도, 자동 안전 인증도 아닙니다. 감독과 중단 수단을 갖춘 실물 학습 설계의 한 사례입니다.
+
+모방 학습 평가에도 같은 물리적 주의가 필요합니다. 팔을 고정하고 케이블과 작업 공간을 정리하며, 손이나 사람이 집게와 관절 사이에 들어가지 않게 합니다. 제조사·장치가 지원하는 범위에서 속도·행동 변화량·관절 및 말단 경계를 제한하고, 전원을 안전하게 차단하는 방법을 확인합니다. 기록 프로그램의 종료 키는 물리적 비상정지 장치와 같지 않습니다. 이런 운영 권고는 학습 알고리즘과 별도로 적용해야 합니다.
+
+첫 실험의 성패를 가르는 것은 모델 이름보다 관측과 행동의 일관성입니다. 한 작업에서 시연 수집, 데이터 점검, ACT 학습, 반복 평가가 연결돼야 VLA 미세조정이나 온라인 RL을 도입했을 때 무엇이 개선됐는지도 판단할 수 있습니다.
 
 ## 함께 보면 좋을 자료
 
-- [arXiv:2510.12403](https://arxiv.org/abs/2510.12403): Robot Learning: A Tutorial 원논문 (Capuano et al.)
-- [LeRobot 인터랙티브 튜토리얼](https://huggingface.co/spaces/lerobot/robot-learning-tutorial): Hugging Face Space, 챕터별 실행 가능 코드
-- [huggingface/lerobot](https://github.com/huggingface/lerobot): Hugging Face LeRobot 라이브러리 GitHub
-- [Open X-Embodiment](https://robotics-transformer-x.github.io/): 크로스 embodiment 로봇 대규모 공개 데이터셋
+- [ACT와 ALOHA](https://tonyzhaozh.github.io/aloha/): 행동 묶음과 정밀 양팔 조작의 원 연구입니다.
+- [Diffusion Policy](https://diffusion-policy.cs.columbia.edu/): 행동 분포와 receding-horizon 제어를 함께 설명합니다.
+- [Open X-Embodiment](https://robotics-transformer-x.github.io/)와 [DROID](https://droid-dataset.github.io/): 데이터의 로봇·환경 구성을 비교할 자료입니다.
 
 ## 참고 자료
 
-- Francesco Capuano, Caroline Pascal, Adil Zouitine, Thomas Wolf, Michel Aractingi, "Robot Learning: A Tutorial," [arXiv:2510.12403](https://arxiv.org/abs/2510.12403), DOI: [10.48550/arXiv.2510.12403](https://doi.org/10.48550/arXiv.2510.12403)
-- Hugging Face Space: [lerobot/robot-learning-tutorial](https://huggingface.co/spaces/lerobot/robot-learning-tutorial) (인터랙티브 버전)
-- [huggingface/lerobot](https://github.com/huggingface/lerobot): GitHub 저장소
-- [Open X-Embodiment](https://robotics-transformer-x.github.io/): 크로스 embodiment 로봇 데이터셋
+아래 자료는 2026년 10월 16일(KST)에 확인했습니다. 명령의 소스 기준은 LeRobot 커밋 `297774fca4e3ad0aa34e7425fbf937111637e77b`입니다.
+
+- Capuano, Pascal, Zouitine, Wolf, Aractingi, [Robot Learning: A Tutorial, arXiv:2510.12403v1](https://arxiv.org/abs/2510.12403v1), 2025년 10월 14일 제출.
+- Hugging Face, [설치](https://huggingface.co/docs/lerobot/en/installation), [SO-101 설정·보정](https://huggingface.co/docs/lerobot/en/so101), [카메라](https://huggingface.co/docs/lerobot/en/cameras), [실물 모방 학습](https://huggingface.co/docs/lerobot/en/il_robots).
+- Hugging Face, [LeRobotDataset v3](https://huggingface.co/docs/lerobot/en/lerobot-dataset-v3), [ACT](https://huggingface.co/docs/lerobot/en/act), [SmolVLA](https://huggingface.co/docs/lerobot/en/smolvla), [RTC](https://huggingface.co/docs/lerobot/en/rtc), [HIL-SERL](https://huggingface.co/docs/lerobot/en/hilserl).
+- Hugging Face, [확인한 LeRobot 소스](https://github.com/huggingface/lerobot/tree/297774fca4e3ad0aa34e7425fbf937111637e77b).
+- Physical Intelligence, [π₀ 소개](https://www.physicalintelligence.company/blog/pi0).

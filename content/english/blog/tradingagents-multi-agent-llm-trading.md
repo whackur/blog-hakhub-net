@@ -1,10 +1,10 @@
 ---
 title: "TradingAgents: Reading the Paper and Code Behind an LLM Trading Desk"
 meta_title: ""
-description: "A look at TradingAgents, a multi-agent trading framework that splits work across analysts, a bull/bear debate, a trader, and a risk team. We read the paper against the code and ask how far the backtest numbers can be trusted."
+description: "Who makes the final call in TradingAgents, what its reports actually mean, and how data availability, evaluation design, and costs limit the paper’s backtest claims."
 date: 2026-07-03T14:30:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
-image: "/images/posts/tradingagents-multi-agent-llm-trading/agent-decision-flow.png"
+lastmod: 2026-10-16T00:47:22+09:00
+image: "/images/posts/tradingagents-multi-agent-llm-trading/cover-20261016.webp"
 categories: ["AI"]
 tags: ["multi-agent", "llm-agents", "trading", "langgraph", "fintech", "agent-debate"]
 author: "whackur"
@@ -12,131 +12,112 @@ translationKey: "tradingagents-multi-agent-llm-trading"
 draft: false
 ---
 
-Up front: this is not investment advice, and nothing here recommends buying or selling anything. It is a read of how you organize LLM agents into a single decision, looked at from the research and the code. Trading is just the domain the design happens to target.
+[TradingAgents](https://github.com/TauricResearch/TradingAgents) is a research framework in which several LLM agents analyze evidence, challenge a proposal, and produce **a judgment about one instrument with supporting reports**. In the current code, the risk team reviews the Trader's proposal and the Portfolio Manager assigns the final rating. The paper's high backtest returns do not establish that these ratings translate into live profits. The current evaluation code explicitly excludes order fills and an account cash ledger. [Final decision](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/agents/managers/portfolio_manager.py), [evaluation scope](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/backtest.py)
 
-[TradingAgents](https://github.com/TauricResearch/TradingAgents) is interesting not because it is a money machine, but because it copies the org chart of an actual trading firm straight into agents. Analysts write reports, a bull and a bear argue, a trader makes the call, and a risk team picks that call apart again. All of it lives in code. The repo sits at roughly 90k GitHub stars and 17.4k forks, which makes it a good text for studying multi-agent design.
+Separating the research idea from the runnable implementation clarifies its purpose. The paper proposes a decision process built from specialist roles and debate, then reports a historical simulation. The public implementation runs that process and preserves intermediate reports and the final judgment. This article uses paper v7 and the latest release, `v0.6.0`, checked on October 16, 2026 (KST); code links are pinned to commit `1394a3f`. The release was published on October 3, 2026 at 21:30 UTC. [Paper](https://arxiv.org/html/2412.20138v7), [release](https://github.com/TauricResearch/TradingAgents/releases/tag/v0.6.0)
 
-## What TradingAgents is
+## The result is a rating and a set of reports
 
-There are two artifacts. One is the paper, [arXiv:2412.20138](https://arxiv.org/abs/2412.20138). The other is the [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) repository.
+A run takes an instrument and an analysis date. `TradingAgentsGraph.propagate()` returns the full state and a final rating. The five ratings are `Buy`, `Overweight`, `Hold`, `Underweight`, and `Sell`. When the model supports structured output, the Portfolio Manager's typed rating is used directly. The text fallback reads an explicit `Rating:` label. An unreadable rating produces `REVIEW`, keeping a failure to decide from being recorded as a `Hold` that nobody chose. [Return contract](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/trading_graph.py), [rating parser](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/agents/rating.py)
 
-The paper is titled "TradingAgents: Multi-Agents LLM Financial Trading Framework." The authors are Yijia Xiao, Edward Sun, Di Luo, and Wei Wang, from UCLA, MIT, and Tauric Research. It first appeared in December 2024 and has been revised through v7, classified under q-fin.TR (quantitative finance, trading). The arXiv comment notes an oral acceptance at the "Multi-Agent AI in the Real World" workshop.
+The Trader's `Buy/Hold/Sell` action is an intermediate proposal. It receives the research plan and, when the market analyst is selected, price information from the technical report. It proposes entry and stop prices and position sizing. Price fields must be absolute prices in the instrument's quote currency; the prompt allows their omission when a number cannot be stated. The proposal still awaits the Portfolio Manager's judgment after the risk debate. [Trader](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/agents/trader/trader.py), [Portfolio Manager](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/agents/managers/portfolio_manager.py)
 
-The repo is Apache-2.0, default branch `main`, created in late December 2024. Its latest release is `v0.3.0` from June 2026. If the paper is the idea and the experiment, the repo is the working code that has kept refining that idea. As we will see, the v0.3.0 repo is much closer to a product than the paper demo was.
+`save_reports()` writes the stage reports, combined Markdown, and `complete_report.html`. Reports also record the analysis date, version, models and providers, selected analysts, debate rounds, and data vendors. This helps a reader revisit the evidence and locate a failed stage. A readable explanation alone does not verify the underlying data or establish profitability. [Report API](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/trading_graph.py), [release](https://github.com/TauricResearch/TradingAgents/releases/tag/v0.6.0)
 
-The paper frames two problems. First, existing financial LLM agents tend to be single-agent, or if multi-agent, they do not really reproduce how a firm divides labor and deliberates. Second, communication built on long natural-language message histories creates what the paper calls a "telephone effect": as messages pass through agents, meaning drifts, information is lost, and state gets corrupted.
+The paper and README describe simulated execution, but the current graph returns state and a rating. In particular, `backtest.py` defines itself as a decision-quality evaluator without quantities, fill prices, or a cash ledger. Running analysis, simulating a portfolio, and placing broker orders are distinct capabilities. [Paper §5](https://arxiv.org/html/2412.20138v7#S5), [current evaluator](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/backtest.py)
 
-## An org chart rebuilt from agents
+## Shared reports feed two debates
 
-The core idea is division of labor. Instead of one giant agent judging everything, function-specific agents each write a report, and those reports move to the next stage. Sharing structured reports as a kind of global state, rather than leaning on a long chat log, is the mechanism that keeps information from leaking away.
+TradingAgents separates evidence gathering from judgment. Four analysts write specialist reports, and bullish and bearish researchers argue over the same material. The Research Manager forms an investment plan, the Trader turns it into a transaction proposal, and three risk perspectives review it again. [Paper §§3-4](https://arxiv.org/html/2412.20138v7#S3), [graph construction](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/setup.py)
 
-The flow runs like this:
+| Stage | Inputs and responsibility | Output passed forward |
+| --- | --- | --- |
+| Analysts | Separate analyses of prices and indicators, social sentiment, news and macro data, and company financials | Specialist reports |
+| Bull / Bear Researcher | Exchange arguments for and against an investment using those reports | Debate history |
+| Research Manager | Weigh the competing arguments | Investment plan |
+| Trader | Read the plan, selected market report, and supplied portfolio context | Transaction proposal |
+| Risk debate | Review the proposal from aggressive, conservative, and neutral perspectives | Risk debate history |
+| Portfolio Manager | Combine the plan, proposal, risk discussion, and lessons from previous decisions | Final rating and rationale |
 
-| Stage | Members | Job |
-|---|---|---|
-| Analyst Team | market, social/sentiment, news, fundamentals analysts | Pull data and each write a specialist report |
-| Researcher Team | Bull Researcher, Bear Researcher, Research Manager | Bull and bear debate, then the manager synthesizes |
-| Trader | Trader | Turn analyst and researcher output into a decision signal |
-| Risk Management Team | Aggressive, Neutral, Conservative, Portfolio Manager | Debate risk from three angles, then decide |
+The current implementation runs selected analysts in parallel. Each analyst subgraph has private messages and tools and returns only its report. The bullish/bearish debate starts after every report and the concurrently running memory step have finished. The subsequent decision stages follow a defined sequence. Multiple agents do not make the entire pipeline concurrent. [Parallel execution and join](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/setup.py)
 
-![TradingAgents decision flow. Reports from market, social, news, and fundamentals analysts pass through the bull and bear debate, Research Manager, and Trader before an aggressive, neutral, and conservative risk debate reaches the Portfolio Manager.](/images/posts/tradingagents-multi-agent-llm-trading/agent-decision-flow.png)
+Reports, investment plans, and debate histories occupy separate state fields. The paper's structured communication does not mean every sentence becomes a number or a strict schema. Agents read the reports they need from shared state, debate in natural language, and save that discussion in the state too. This reduces dependence on one growing conversation. It still permits several roles to repeat the same bad evidence. Role separation alone does not create independent verification. [Paper §4](https://arxiv.org/html/2412.20138v7#S4), [implementation](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/setup.py)
 
-Structured reports, rather than a long chat history, move between stages, and each team's debate becomes input to the next decision-maker.
+Debates stop at configured limits. By default, the bullish and bearish researchers each speak once, and each of the three risk perspectives speaks once. The routers hand control to the managers at `2 × max_debate_rounds` and `3 × max_risk_discuss_rounds`. An analyst reaching the default 20 tool-call rounds is asked to finish a report from the evidence it has. That cap counts rounds, rather than 20 individual tool calls across the run. [Debate limits](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/conditional_logic.py), [tool-loop limit](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/setup.py)
 
-The paper uses ReAct prompting for this flow and treats reports and documents as global state so the system does not depend only on a long message history.
+Model allocation is another experimental condition. Current defaults name `gpt-6-luna` for `quick_think_llm` and `gpt-6-sol` for `deep_think_llm`. Analysts, researchers, the Trader, and risk debaters use the quick model; the two managers use the deep model. Each tier can have its own provider. These are repository defaults, not a reproduction of the GPT-4o-family and o1-preview arrangement discussed in paper §4.3. [Defaults](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/default_config.py), [role allocation](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/setup.py), [paper §4.3](https://arxiv.org/html/2412.20138v7#S4.SS3)
 
-To keep the debates from spinning forever, the code hard-codes stopping conditions. In the repo's `ConditionalLogic`, the bull/bear debate runs for `2 * max_debate_rounds` before handing off to the Research Manager. The risk debate involves three views (aggressive, neutral, conservative), so it runs for `3 * max_risk_discuss_rounds` before the Portfolio Manager takes over. Debate depth is exposed as config, so you decide how many rounds to run.
+## Availability time matters more than the period a datum describes
 
-## How the paper's org chart survives in the code
+Historical analysis needs more than data about a past period. **The information must already have been public when the decision was made.** A fiscal year can end before its financial report is filed. A later restatement can also reveal information unavailable at the original decision. The current implementation handles these timing problems by data type. [Date rules](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/dataflows/date_window.py), [SEC EDGAR implementation](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/dataflows/vendors/sec_edgar.py)
 
-The paper's org chart maps almost one-to-one onto the repo's directories. The gap between "a concept in the paper" and "code that implements it" is small here, which is the project's real strength.
+| Data | Current handling | Remaining condition |
+| --- | --- | --- |
+| SEC EDGAR statements | Select figures filed by the analysis date, using restatements available then | Limited to SEC filers and available filing history |
+| Current Yahoo/Alpha Vantage profiles, statements without filing dates, and insider trades | Withhold them from historical runs | Present-day values cannot fill the gaps |
+| News, Reddit, and StockTwits | Filter publication timestamps to the analysis window; omit undated historical items | A recent feed is not a complete historical archive |
+| FRED macro series | Pin both the observation window and the historical data vintage | Constrain use of later revisions |
+| Polymarket probabilities | Withhold them on historical runs because a historical vintage is unavailable | Current odds cannot stand in for past forecasts |
 
-| Paper concept | Code location |
-|---|---|
-| Analyst team | `tradingagents/agents/analysts/` (factories like `create_market_analyst`) |
-| Bull/bear debate | `tradingagents/agents/researchers/` plus `graph/` conditional logic |
-| Trader | `tradingagents/agents/trader/` |
-| Risk debate and managers | `tradingagents/agents/risk_mgmt/`, `tradingagents/agents/managers/` |
-| Graph assembly | `GraphSetup.setup_graph()` in `tradingagents/graph/setup.py` |
+The table follows the [shared date rules](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/dataflows/date_window.py), [SEC EDGAR](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/dataflows/vendors/sec_edgar.py), [FRED](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/dataflows/vendors/fred.py), and [Polymarket](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/dataflows/vendors/polymarket.py) implementations. The default statement vendor chain is `sec_edgar,yfinance`. The README says machine-readable EDGAR filings begin in 2009, with potentially sparse early coverage. This does not promise equally deep historical statements for every non-US market. [Configuration](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/default_config.py), [coverage](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/README.md)
 
-Orchestration is built on a [LangGraph](https://langchain-ai.github.io/langgraph/) `StateGraph`. Analysts call tools in a set order and tidy up messages before handing off to the Bull Researcher; from there the path goes Research Manager to Trader, through the risk debate, and ends at the Portfolio Manager, all expressed as graph nodes and edges. When a run finishes, `tradingagents/reporting.py` saves the analyst, research, trader, risk, and portfolio-manager output as a markdown tree and a `complete_report.md`. You get an audit trail of what led to each decision.
+An empty news search also has two meanings. A feed that cannot reach the requested period has failed to provide its history; it has not established that no news existed. The shared `coverage_gap()` reports that distinction, and the router tries alternatives within the configured vendor chain. Date filters cannot recover an original archive that a source never supplied. [Coverage gaps](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/dataflows/date_window.py), [vendor routing](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/dataflows/router.py)
 
-Models come in two tiers. The `default_config.py` defaults are `gpt-5.5` for the deep-reasoning `deep_think_llm` and `gpt-5.4-mini` for the fast `quick_think_llm`: a strong model for the heavy judgment, a cheap one for the routine cleanup. Provider support is broad, covering OpenAI, Google Gemini, Anthropic Claude, xAI Grok, DeepSeek, Qwen (DashScope), GLM (Zhipu), MiniMax, OpenRouter, Ollama, Azure OpenAI, and AWS Bedrock. For data vendors, the defaults use `yfinance` for prices, technical indicators, fundamentals, and news, `fred` for macro indicators, and `polymarket` for prediction-market data.
+These guards still have a time-resolution limit. The publication filter admits items before midnight UTC following the analysis date. Reading that bound literally, it includes the entire UTC analysis day, which does not establish what was known before the market opened. An opening-time strategy therefore needs an explicit decision timestamp, exchange timezone, and a rule for fills possible after that timestamp. [Timestamp comparison](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/dataflows/date_window.py)
 
-## Memory and reproducibility
+Tool-date constraints and model knowledge are separate issues. A model trained on historical news and prices could know an event's outcome even when its tools supply no later data. Contamination has not been established for this experiment. Equally, a date filter alone does not demonstrate that model knowledge could not affect the result.
 
-The reflection loop that was interesting in the paper is in the code too. A completed run appends its decision to `~/.tradingagents/memory/trading_memory.md`. On the next run for the same ticker, the system computes the realized return and alpha versus SPY, writes a short reflection, and feeds it into the later Portfolio Manager prompt. It is a lightweight learning loop that conditions future judgments on past outcomes without touching any weights.
+## The paper reports a bounded simulation
 
-Checkpoint resume is opt-in through the `--checkpoint` flag or config, and per-ticker SQLite databases live under `~/.tradingagents/cache/checkpoints/`.
+Paper v7 evaluates January 1 through March 29, 2024. Section 5 describes several large technology stocks and inputs spanning prices, news, social data, financials, and 60 technical indicators per asset. Table 1 reports AAPL, GOOGL, and AMZN. Its baselines are Buy and Hold, MACD, KDJ+RSI, ZMR, and SMA. Those three table entries should not be mistaken for the whole dataset. [Paper §5 and Table 1](https://arxiv.org/html/2412.20138v7#S5)
 
-Here comes a reproducibility warning worth reading twice. The README states plainly that LLM sampling, the behavior of reasoning models, and shifts in live news and social data mean the same ticker and date can produce different runs. So it says backtest results are not guaranteed to match any published figure, and it asks you to treat the framework as a research scaffold for multi-agent analysis, not a fixed-return strategy. The people who built it draw that line themselves, and that is worth remembering.
-
-## What changed by v0.3.0
-
-The changes that turned the repo from a paper demo into a maintained research tool cluster in v0.3.0.
-
-The headline is a verified data-access contract. It covers symbol normalization, an explicit vendor chain, a typed `VendorError`, look-ahead-safe news windows, and rejection of stale OHLCV data. In particular, `interface.py` is designed to use only the specified vendor chain and to never silently fall back to a vendor you did not choose. It is a guard against receiving results without knowing where the data came from.
-
-The rest of the changes:
-
-- Expanded provider registry: NVIDIA, Kimi, Groq, Mistral, Bedrock, and an OpenAI-compatible endpoint.
-- FRED macro indicators and Polymarket event probabilities added as data sources.
-- `TradingAgentsGraph.save_reports()` for saving reports programmatically.
-- Environment-configurable reasoning depth.
-- A CI gate. It runs pytest across a Python 3.10 through 3.13 matrix and requires a clean-install smoke test and a strict `ruff check` to pass.
-
-One release earlier, `v0.2.5` shipped a fix worth calling out. In the older flow, the Sentiment Analyst could fabricate social posts under prompt pressure. The fix has it read real Yahoo News, StockTwits, and Reddit data instead. It is a clean case of stopping an LLM agent from inventing plausible content by grounding it in actual data.
-
-## Why the backtest numbers deserve skepticism
-
-Start with the experiment. The backtest window runs from January 1 to March 29, 2024, against rule-based baselines like Buy and Hold, MACD, KDJ+RSI, ZMR, and SMA. The metrics are cumulative return (CR), annualized return (ARR), Sharpe Ratio (SR), and maximum drawdown (MDD). Table 1 of the paper compares three tickers.
-
-| Ticker | Cumulative return | Annualized return | Sharpe Ratio | Max drawdown |
-|---|---|---|---|---|
+| Ticker | Cumulative return CR | Reported annualized return ARR | Sharpe Ratio | Maximum drawdown MDD |
+| --- | ---: | ---: | ---: | ---: |
 | AAPL | 26.62% | 30.5% | 8.21 | 0.91% |
 | GOOGL | 24.36% | 27.58% | 6.39 | 1.69% |
 | AMZN | 23.21% | 24.90% | 5.60 | 2.11% |
 
-The paper reports that on its sampled stocks TradingAgents reached at least 23.21% cumulative and 24.90% annualized return, beating the best baseline by more than 6.1 percentage points. The numbers look strong. Before taking them at face value, several things need flagging.
+These are **author-reported values** from the TradingAgents row of Table 1. The highest baseline cumulative returns in the same table are 2.05%, 7.78%, and 17.1%, respectively. The reported gaps are large, but that comparison does not isolate the contribution of debate or establish performance in other market periods. [Table 1](https://arxiv.org/html/2412.20138v7#S6.T1)
 
-The Sharpe Ratio is unusually high. An SR above 2 is typically considered very good and above 3 excellent. AAPL's 8.21 is far past that. The telling part is that the authors themselves note the value is higher than they would expect, attributing it to TradingAgents having almost no pullback during the window. Turn that around and it means the figure leans heavily on a favorable three-month stretch of the market.
+The figures also need a consistency check. Appendix S1.2 defines annualized return as `(ending value / starting value)^(1/N) - 1`, with `N` measured in years. Assuming exactly 0.25 years, AAPL's 26.62% cumulative return would give about 157.05%, rather than the table's 30.5%. This is a check on the stated period, formula, and table, not a replacement performance estimate. The discrepancy needs explanation before the ARR column can be read as an expected annual return. [Appendix S1.2](https://arxiv.org/html/2412.20138v7#S8.SS2.SSS2)
 
-The window and the ticker set are narrow. Three months, a handful of large-cap tech names. Why so short? In a footnote the paper explains that each prediction involves "11 LLM calls and 20+ tool calls," so the cost of LLM and tool usage made a longer backtest impractical. Cost constrained the experiment, and that same cost carries over to any real deployment.
+The Sharpe Ratio of 8.21 also belongs beside the short observation window. The authors acknowledge that the highest value exceeds their empirical expectations and attribute it to few pullbacks during that period. The same footnote says 11 LLM calls and more than 20 tool calls per prediction limited the experiment to three months. That is the paper's workload, not a measurement of current-version calls or cost per run. [Paper §6.1.2 footnote](https://arxiv.org/html/2412.20138v7#S6.SS1.SSS2)
 
-The most important warning is contamination risk. The paper claims it used no future data, but an LLM may already have seen the news and price action of Q1 2024 during pretraining. Even if the backtest code fed in no future data, if the outcomes of that period already sit inside the model's weights, it may be replaying memory rather than truly predicting. This is the fundamental weakness of any LLM backtest, and it deserves a critical read alongside the README's reproducibility warning.
+A live-performance claim would require an evaluation that accounts for fees, slippage, fill timing, and latency. The paper's experimental description and metric definitions do not provide enough detail to reproduce those conditions confidently. Its conclusion places live deployment and expanded real-time feeds in future work. The table therefore supports a comparison within a particular experiment, rather than current live-trading capability or net profitability after costs. [Paper §§5, 7](https://arxiv.org/html/2412.20138v7#S7)
 
-A backtest is not live trading. Slippage, transaction costs, live data variance, and regime shifts are all absent. These numbers are better read as the result of a design experiment ("a role-split agent org produced auditable decisions") than as evidence that the approach makes money.
+## Conditions to fix before another evaluation
 
-## Community reaction
+The current `backtest` runs the pipeline over a ticker/date grid and summarizes sample counts, directional hit rates, and mean benchmark-relative returns by rating. The default outcome window is five trading days after the analysis date. `Hold` has no directional hit rate, and `REVIEW` is unscored. Cells are independent: even a supplied portfolio is the same standing book for every cell, with no balance carried forward from earlier trades. This is not a reproduction engine for the paper's portfolio returns. [Evaluator](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/backtest.py), [default window](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/default_config.py)
 
-A Reddit post in r/AI_Agents framed TradingAgents as closer to a hedge fund made of agents than a simple trading wrapper. The visible discussion is small, though, and reads more like a project introduction than an independent review, so the more concrete signals still come from GitHub issues.
+Memory changes the next decision's inputs as well. Alongside the analysts, the memory step settles decisions whose holding periods have elapsed, computes the instrument return and alpha against its regional benchmark, and generates a short reflection. The Portfolio Manager reads recent decisions for the same ticker and lessons from other tickers. Historical runs receive only entries whose outcomes were known by their analysis date. This updates prompt context; it neither trains model weights nor demonstrates that the reflections improve generalization. [Memory step](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/trading_graph.py), [historical context filter](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/memory/log.py), [outcome calculation](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/memory/settlement.py)
 
-The GitHub issues show where people actually get stuck. The signals below come from public issues.
+This example selects only the market and news analysts and reads the final rating and rationale. Running it calls LLM and data APIs and writes local records; `save_reports()` saves the reports. [Official usage](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/README.md)
 
-Extension draws a lot of interest. [#82](https://github.com/TauricResearch/TradingAgents/issues/82) asks about extending to crypto trading. Cutting the per-run cost is an active theme too. [#750](https://github.com/TauricResearch/TradingAgents/issues/750) reports that the prompt construction leaves the LLM API's prompt cache hit rate at essentially zero, and [#1032](https://github.com/TauricResearch/TradingAgents/issues/1032) is a PR that uses a local LLM response cache to reduce API cost. Given that a single prediction fans out to more than ten LLM calls, cost is a core community concern.
+```python
+from tradingagents.default_config import DEFAULT_CONFIG
+from tradingagents.graph.trading_graph import TradingAgentsGraph
 
-Configuration and provider wiring trip people up as well. [#227](https://github.com/TauricResearch/TradingAgents/issues/227) reports an OpenAI SDK error when using an OpenRouter key, [#148](https://github.com/TauricResearch/TradingAgents/issues/148) covers a Gemini usage problem, and [#174](https://github.com/TauricResearch/TradingAgents/issues/174) and [#158](https://github.com/TauricResearch/TradingAgents/issues/158) are questions about model selection and custom config.
+config = DEFAULT_CONFIG.copy()
+config["max_debate_rounds"] = 1
+ta = TradingAgentsGraph(selected_analysts=["market", "news"], config=config)
+state, rating = ta.propagate("AAPL", "2026-09-01")
+print(rating)
+print(state["final_trade_decision"])
+ta.save_reports(state, "AAPL")
+```
 
-The sharpest criticism is about data quality. [#214](https://github.com/TauricResearch/TradingAgents/issues/214) raises a strong complaint that the default data (PE, PB, and so on) is wrong, [#130](https://github.com/TauricResearch/TradingAgents/issues/130) reports incorrect China A-share prices, and [#162](https://github.com/TauricResearch/TradingAgents/issues/162) covers wrong data more broadly. The verified data-access contract in v0.3.0 reads as a direct response to exactly these signals. There are design-level proposals too. [#542](https://github.com/TauricResearch/TradingAgents/issues/542) suggests separating indicator calculation from LLM analysis, [#717](https://github.com/TauricResearch/TradingAgents/issues/717) proposes weighting the reflection loop by a surprise ratio so it does not overlearn from lucky wins, and [#1105](https://github.com/TauricResearch/TradingAgents/issues/1105) is a PR adding an evidence ledger, citations, and guardrails.
+Choosing the same date does not fix the experiment. A useful comparison should preserve the code SHA, exact model IDs and providers, reasoning and sampling settings, selected analysts, debate and tool limits, original data and publication times, and initial memory state. The report's `run_settings` captures some of these conditions, but it does not archive every source feed. The evaluator also states that it uses one model sample per cell. Repeated-run variation and missing or failed cells belong alongside any reported average. [Recorded settings](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/trading_graph.py), [evaluation limitations](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/backtest.py)
 
-Two axes run through the community's attention: how to cut the cost, and how to make the data trustworthy. Both point at the gap between making a plausible decision and making a reliable one.
+Costs depend on models, tool loops, debate length, retries, and reflections on previous decisions. Parallel analysts can reduce elapsed time while every call still incurs its own cost. The paper's call count cannot be converted into a current dollar bill without measuring a run using the selected models. Productive research questions are whether the system improves on a single agent given the same evidence and budget, and which objections actually change its final judgment. Answering them requires controlled evaluation as well as readable reports.
 
 ## Further reading
 
-- [TradingAgents documentation](https://tauricresearch.github.io/TradingAgents/): the GitHub Pages docs that ship with the repo
-- [Mixture of Agents (MoA)](/english/blog/mixture-of-agents-moa/): another multi-agent design that stacks several LLMs into layers
-- [LangGraph docs](https://langchain-ai.github.io/langgraph/): the graph runtime TradingAgents uses for orchestration
-- [arXiv q-fin.TR](https://arxiv.org/list/q-fin.TR/recent): recent papers in quantitative finance and trading
-
-## Conclusion
-
-TradingAgents is not a money machine. It is a clean research scaffold that implements a role-split agent structure, from analysts through debate, a trader, a risk debate, and a manager, in the financial domain. The paper's org chart survives almost intact in the code, which makes it good material for studying multi-agent design, and by v0.3.0 the data validation, CI, and provider wiring have hardened it into something well beyond a demo.
-
-The backtest numbers, though, have to be read together with the short window, the narrow ticker set, the unusually high Sharpe Ratio, the heavy LLM and tool cost, and the contamination risk. Even the authors wrote that the results are not guaranteed to match any published figure. The real value of this project is not the returns. It is the agent design itself: debate, reflection, and structured communication producing decisions you can actually audit.
+- [Full paper v7](https://arxiv.org/html/2412.20138v7): role specialization, experimental methods, tables, and metric definitions together.
+- [Current evaluator source](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/backtest.py): the explicit boundary between decision scoring and portfolio simulation.
+- [Shared date rules](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/dataflows/date_window.py): analysis dates, publication timestamps, and coverage gaps in code.
 
 ## References
 
-- [arXiv:2412.20138: TradingAgents: Multi-Agents LLM Financial Trading Framework](https://arxiv.org/abs/2412.20138): Yijia Xiao, Edward Sun, Di Luo, Wei Wang, accessed 2026-07-03
-- [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents): GitHub, Apache-2.0, accessed 2026-07-03
-- [TradingAgents documentation](https://tauricresearch.github.io/TradingAgents/): Tauric Research, accessed 2026-07-03
-- [TradingAgents v0.3.0 release](https://github.com/TauricResearch/TradingAgents/releases): GitHub Releases, accessed 2026-07-03
+- [TradingAgents: Multi-Agents LLM Financial Trading Framework v7](https://arxiv.org/abs/2412.20138v7): Yijia Xiao et al., revised June 3, 2025; accessed October 16, 2026 KST.
+- [Pinned TauricResearch/TradingAgents source](https://github.com/TauricResearch/TradingAgents/tree/1394a3f72aa4393e1a98f51b382434c4b4c2d972): Apache-2.0, commit `1394a3f72aa4393e1a98f51b382434c4b4c2d972`; accessed October 16, 2026 KST.
+- [TradingAgents v0.6.0](https://github.com/TauricResearch/TradingAgents/releases/tag/v0.6.0): official release, published October 3, 2026 UTC; accessed October 16, 2026 KST.

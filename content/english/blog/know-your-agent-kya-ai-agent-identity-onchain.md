@@ -1,10 +1,10 @@
 ---
 title: "Know Your Agent (KYA): AI Agent Identity, the Standards Race, and What Is Actually On-Chain"
 meta_title: ""
-description: "KYA applies the KYC due-diligence frame to AI agents. This post covers the concept, the standards race between ERC-8004, Visa TAP, Trulioo and Sumsub, regulatory signals from NIST, the EU and Singapore, and on-chain reality including vouch spam in the reputation registry."
+description: "Separate agent identity, authentication, authorization and reputation, then examine ERC-8004's standards status and mainnet activity alongside the scope and limits of Visa TAP, Trulioo and Sumsub."
 date: 2026-08-27T10:00:00+09:00
-lastmod: 2026-08-27T10:00:00+09:00
-image: "/images/posts/know-your-agent-kya-ai-agent-identity-onchain/kya-four-approaches-1200.png"
+lastmod: 2026-10-15T15:36:42Z
+image: "/images/posts/know-your-agent-kya-ai-agent-identity-onchain/kya-identity-editorial-20261016.webp"
 categories: ["Blockchain"]
 tags: ["ai-agent", "kya", "identity", "erc-8004", "reputation", "compliance"]
 author: "whackur"
@@ -12,133 +12,113 @@ translationKey: "know-your-agent-kya-ai-agent-identity-onchain"
 draft: false
 ---
 
-When you open a bank account you show an ID. When you sign up for an exchange you take a selfie. That procedure is KYC (Know Your Customer), and since the FATF was founded in 1989 it has been the standard way to keep illicit money out at the entry point of the financial system. Now the entity signing contracts, sending payments and swapping tokens on a DEX is increasingly not a person but an AI agent, and the same question comes back in a new form. The agent that just sent a payment request to my API: who is it, who built it, and what was it actually authorized to do? The trust layer that answers that question is being called KYA (Know Your Agent).
+An identity credential or an on-chain registration number is insufficient grounds to let an AI agent spend money or access data. **Identifying the agent, authenticating the requester, checking its authority for this action, and deciding how much to trust past feedback** are separate checks. Know Your Agent (KYA) groups these concerns under one name. ERC-8004 supplies identifiers and public trust signals; Visa TAP and identity-verification vendors offer other ways to check requests, organizations or people. The service receiving the request still decides whether to grant access. The [ERC-8004 specification](https://eips.ethereum.org/EIPS/eip-8004) and [Trulioo's product description](https://www.trulioo.com/products/kya-verification) both limit what registration or verification establishes.
 
-This blog has already covered the [ERC-8004, 8126 and 8196 trust stack](/en/blog/ai-agent-wallet-trust-stack-erc-8004-8126-8196/) and the [practical side of querying the ERC-8004 reputation registry](/en/blog/erc8004-agent-reputation-registry-lookup/). This post does not re-explain those specs. It starts from the KYC/AML due-diligence frame, places on-chain registries as one implementation of that due diligence, and pulls together the standards race, the regulatory signals, and what the on-chain data actually shows.
+*Standards status and product descriptions checked on October 16, 2026 KST. Historical measurements carry their own observation periods.*
 
-## What KYA is
+## Identity, authentication, authorization and reputation
 
-KYA is KYC for AI agents: a trust layer that verifies "who this agent is" before the agent autonomously executes a contract, a payment or a trade. The term started getting attention in 2025. The [Agentica wiki](https://agentica.wiki/articles/know-your-agent) (updated 2026-03-18) breaks it into six dimensions.
+Consider a shopping agent that moves from searching for products to calling a purchase API. Looking up its registration number and approving the purchase are different operations.
 
-| Dimension | What it checks |
-|-----------|----------------|
-| Identity | Is this agent uniquely identifiable |
-| Ownership binding | Which person or organization is accountable for it |
-| Authorization scope | What was it delegated to do |
-| Provenance | What model and code produced it, and has it been tampered with |
-| Runtime compliance | Does it stay within policy while running |
-| Auditability | Can its actions be traced and attributed afterwards |
+| Check | What it establishes | Evidence needed for a purchase request |
+| --- | --- | --- |
+| Identity | Which agent is being referenced | Registry address and agent ID, operating organization information |
+| Authentication | Whether the requester controls the key or credential associated with that identity | Signature verification, a connection to a trusted issuer or key, request validity period |
+| Authorization | Whether this principal may perform this action | The user's permitted merchant, products, amount and duration, plus conditions on further delegation |
+| Reputation | How useful past assessments are for this decision | Reviewer, task being assessed, units, supporting evidence and revocation status |
 
-Put next to KYC, the difference shows. KYC checks attributes that rarely change (an ID document, an address) once. Three of the six KYA dimensions (authorization scope, runtime compliance, auditability) are things you have to keep checking during execution, not at registration. An agent's behavior can change with a single model update, so a check it passed once tells you little about next week. Most of the criticism later in this post grows from that root.
+Suppose a user permits purchases at one merchant for 30 minutes with a total limit of KRW 100,000. A valid agent signature does not authorize a KRW 120,000 order. These amounts and the duration are illustrative policy choices. Search permission and purchase permission should be separate, and the purchase API or wallet must enforce the conditions immediately before execution. A favorable reputation does not override the budget.
 
-KYA is not needed everywhere. [Tiger Research's 2026 report](https://reports.tiger-research.com/p/2026-know-your-agent-eng) argues that inside centralized platforms (Google, OpenAI, Coinbase) the KYC already attached to the platform account is enough. KYA matters outside the platform: when an independently deployed autonomous agent touches a DEX, an agent-to-agent (A2A) payment, or a commerce site, the counterparty has no platform vouching for it. The same report predicts that, much as KYC became a precondition for entering financial markets, having KYA infrastructure will decide who gets into the next round. That is a forecast. As the regulation section below shows, no jurisdiction requires it yet.
+Checking the operator is another task. Knowing which address controls a key does not identify the person or company behind it. Recording the model and code's provenance also differs from authenticating a request. [NIST warns that sharing user credentials with agents or leaving broad permissions in place](https://www.nist.gov/blogs/cybersecurity-insights/back-future-why-agentic-ai-needs-strong-identity-foundation) weakens accountability and access control. These distinctions matter inside centralized platforms too.
 
-## The standards race
+## The information ERC-8004 connects
 
-The name is one, but "where trust is anchored" differs by camp. Four approaches stand out.
+[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) defines Identity, Reputation and Validation registries. Identity identifies an agent through an ERC-721 token. Reputation records feedback. Validation connects requests for verification with a validator's responses. Payments themselves are outside the specification's scope.
 
-![Comparison of four KYA approaches, ERC-8004 on-chain registries, Visa TAP signed HTTP requests, Trulioo certificate-authority model and Sumsub verified-human binding, showing trust anchor, status and key numbers](/images/posts/know-your-agent-kya-ai-agent-identity-onchain/kya-four-approaches.svg)
+An identity lookup requires more than an `agentId`. The same number can exist on different chains and registries, so the identifier combines `agentRegistry`, which identifies the chain and registry, with `agentId`. The registration file referenced by the token's `agentURI` contains its name, description, service addresses such as an Agent2Agent (A2A) AgentCard or Model Context Protocol (MCP) endpoint, and supported trust mechanisms. These declarations help a counterparty find an agent. They do not establish that its advertised capabilities work or are safe.
 
-*Where each approach anchors trust: on-chain registries, signed HTTP requests, a certificate authority, or a verified human. Numbers are from the sources cited in the text.*
+The connection between the registration file and a service address also needs checking. The specification includes optional domain verification: publish `/.well-known/agent-registration.json` on the service domain and match its registration information. Listing an arbitrary domain differs from proving control of it. An owner or approved operator can also change `agentURI`, so consequential transactions should retain the file and ownership information used at the time of the decision.
 
-### On-chain registries: ERC-8004 and the layers above it
+The `agentWallet` is a **payment-receiving address**. Registration initially sets it to the owner's address. Changing it requires proof of control of the new wallet through an EIP-712 signature or ERC-1271 validation for a smart contract wallet. Transferring the token clears the binding. This procedure binds a receiving address; it does not grant permission to spend a user's assets or establish the operator's legal identity. The [reference implementation](https://github.com/erc-8004/erc-8004-contracts) describes the same initialization, update and transfer rules.
 
-[ERC-8004 "Trustless Agents"](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8004.md) registers agent identity as an ERC-721 token and accumulates reputation signals and independent validation results in two further registries. The registration file (the JSON that `agentURI` points to) carries service endpoints such as A2A, MCP, ENS and DID, plus `x402Support` and `supportedTrust` fields. The `agentWallet` (the wallet address the agent actually moves assets with) can only be bound through an EIP-712 or ERC-1271 signature and is automatically unbound when the NFT is transferred. Trust models are pluggable: reputation, crypto-economic re-execution with staking, zkML, or TEE attestation (an integrity proof issued by a trusted execution environment).
+Validation provides an interface for committing a request hash associated with evidence such as task inputs and outputs, then receiving a response from the designated validator. It can connect to re-execution, zero-knowledge machine learning (zkML) proofs or trusted execution environment (TEE) verification. The registry does not automatically perform all those checks. A counterparty still needs to establish what was verified and which validator it trusts.
 
-The precise status is this. ERC-8004 is at Draft stage in the standards process, but it has been live on Ethereum mainnet since 2026-01-29, is deployed as a singleton on more than 30 chains, and held roughly 90,000 registrations as of June 2026. "The spec can still change" and "the deployment is live and used" are separate facts, and both are true.
+## Standards status and mainnet activity are different evidence
 
-Mapped onto the six KYA dimensions, ERC-8004 covers identity and, partially, ownership binding. Above it, [ERC-8126 "AI Agent Verification"](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8126.md) (Final, created 2026-01-15) handles provenance with five verification types and a 0 to 100 risk score, and [ERC-8196 "AI Agent Authenticated Wallet"](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8196.md) (Final, created 2026-03-14) fills runtime compliance and auditability with policy-bound execution and an immutable audit trail. The interfaces and verification types are written up in the [earlier post](/en/blog/ai-agent-wallet-trust-stack-erc-8004-8126-8196/).
+The official documents' process status and the implementation repository's deployment information answer different questions.
 
-One thing worth pointing out: this stack has no human identity binding. There is an NFT owner address, but the spec does not ask who is behind it. [Concordium](https://www.concordium.com/article/erc-8004-explained-what-it-solves-and-the-gap-it-leaves) calls this the accountability gap and proposes CIS-8004 as a counterpart standard to fill it. The agent communication protocols A2A and MCP are not KYA themselves; they complement ERC-8004. Communication goes over A2A/MCP, discovery and trust go through ERC-8004.
+| Document | Official process status | Scope | What status alone cannot establish |
+| --- | --- | --- | --- |
+| [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) | Draft | Agent identity, reputation and validation registries | Whether a deployed version matches, usage or service quality |
+| [ERC-8126](https://eips.ethereum.org/EIPS/eip-8126) | Final | AI Agent Verification | A verification provider's deployment or assessment quality |
+| [ERC-8196](https://eips.ethereum.org/EIPS/eip-8196) | Final | Wallet execution and delegation with proof of policy compliance | Implementation, operation or adoption of a particular wallet |
 
-### Payment networks: Visa TAP and Mastercard Agent Pay
+Contracts can be deployed and used while a proposal is Draft. Final is a [document status in the EIP process](https://eips.ethereum.org/EIPS/eip-1), rather than network activation or a security certification. These documents also do not establish a mandatory single stack that every KYA service must implement together.
 
-[Visa Trusted Agent Protocol (TAP)](https://developer.visa.com/use-cases/trusted-agent-protocol) was [announced](https://investor.visa.com/news/news-details/2025/Visa-Introduces-Trusted-Agent-Protocol-An-Ecosystem-Led-Framework-for-AI-Commerce/default.aspx) by Visa and Cloudflare on 2025-10-14. It uses no blockchain at all. Agent identity is signed into request headers using HTTP message signatures based on Web Bot Auth, and the merchant side verifies them. There are three signatures: the agent's own legitimacy, the delegator (the person who set the agent to work), and the payment method. Twelve launch partners were named, including Adyen, Ant International and Checkout.com. The backdrop is a 4,700% surge in AI traffic to US retail sites. Merchants can neither block all bots nor accept all of them, so they need a signature that separates the good ones.
+The ERC-8004 [reference implementation repository](https://github.com/erc-8004/erc-8004-contracts) publishes Identity and Reputation addresses for Ethereum and Base mainnet. At Ethereum's Identity address, `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`, a **successful registration transaction in block 26,198,758 at 15:17:23 UTC on October 15, 2026** emitted `Registered` with `agentId = 54155`. [That transaction](https://eth.blockscout.com/tx/0x97c640ad052770b66f9744c1318555ccd894e2e0cea215c41dbd86754aa34308) is concrete evidence of an actual registration call beyond a specification document. The [Reputation address's logs](https://eth.blockscout.com/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63?tab=logs) also contain `NewFeedback` events.
 
-Mastercard announced Agent Pay in April 2025. It expresses verifiable intent using SD-JWT, with three layers and eight constraint types, and expanded into Agent Suite in January 2026. Deployments have been reported at Santander (EU) and DBS/UOB (Singapore).
+These events cannot establish the number of paying customers or autonomously working agents. An ID is an identifier, and registration differs from service execution. The reference repository also warns that the Validation Registry portion remains under active update and discussion with the TEE community. A deployment list for Identity and Reputation does not establish equal operational maturity for all three registries.
 
-Both payment-network approaches lay KYA's ownership binding and authorization scope on top of the merchant and issuer relationships the card networks already have. The root of trust is the network operator, not a chain.
+An empirical study illustrates the difference between registration and service availability. Xiong and colleagues' [ERC-8004 study, version 2](https://arxiv.org/html/2606.26028v2), observes Ethereum, BNB Smart Chain (BSC) and Base from deployment through **May 13, 2026**. Under the study's operational classification of a retrievable registration file with the required `type` value and at least one declared service, the shares of registrations were approximately **3%, 4% and 15%**, respectively. These results apply to that period and classification. A service declaration does not establish task performance, and those percentages are not October uptime measurements.
 
-### Identity vendors: Trulioo's certificate-authority model and Sumsub
+## Read the reviewer and units behind a reputation score
 
-Trulioo borrowed the SSL certificate authority (CA) model outright. A DPA (Digital Personhood Authority) issues a DAP (Digital Agent Passport), and the counterparty checks that passport the way a browser checks a TLS certificate. In a survey Trulioo ran with PYMNTS Intelligence across 350 risk and compliance leaders, about 90% of firms named bot management a top challenge, and the estimated annual loss from outdated identity controls came to roughly $100B. Read that with the usual caution for vendor co-sponsored research.
+The [Reputation specification's](https://eips.ethereum.org/EIPS/eip-8004#reputation-registry) `value` and `valueDecimals` encode a general-purpose number. For example, `9977` with `2` represents `99.77`, but tags and evidence are needed to establish whether that means uptime or a rating. Averaging response times, star ratings and cumulative revenues as though they were one score produces a meaningless result.
 
-Sumsub launched AI Agent Verification in January 2026. Its approach is the closest to KYC as practiced: bind the agent to a verified human identity and require a liveness check (confirming a real person is present right now) on that human. It fits any setting where someone must be able to name, immediately, the person legally accountable for an agent's actions. Prove has also shipped a Verified Agent product built on a shared trust registry.
+Agent owners and approved operators cannot submit feedback on their own agent. That restriction does not prevent one actor from creating multiple addresses. The specification explicitly recognizes Sybil attacks, and `getSummary` requires a nonempty `clientAddresses` list. The party aggregating feedback must choose which reviewers it trusts.
 
-### Metadata standards and indexers
+Evidence files need equally careful interpretation. Both `feedbackURI` and `feedbackHash` are optional. In particular, **`feedbackHash = 0` does not by itself establish an absence of evidence.** A content-addressed URI such as IPFS can omit the separate hash. Conversely, a hash does not make an assessment true. It provides a way to check file integrity.
 
-[AgentFacts](https://agentfacts.org/kya/) (Jared Grogan, [arXiv 2506.13794](https://arxiv.org/abs/2506.13794)) is a ten-category metadata standard tied to no chain or vendor. Under four pillars (Identity, Capability, Compliance, Provenance) it includes DID, EU AI Act classification and NIST AI RMF alignment fields, aiming to be the common description layer that can sit on top of whichever camp wins.
+A practical decision process selects trusted reviewers, checks tags, units and revocation status, then retrieves supporting files when necessary to compare their integrity and task content. Payment evidence establishes something different from result quality. The specification's optional `proofOfPayment` is not a quality guarantee either.
 
-[knowyouragent.network](https://knowyouragent.network/) works from the other direction, reading what is already on-chain. It indexes more than 150,000 agents across 12 chains and combines wallet tenure (how long an address has been active), ownership history and ERC-8004 fraud detection into an RNWY score. If a registry is a bulletin board, indexers like this are where the actual due diligence happens.
+## What Visa, Trulioo and Sumsub verify
 
-## On-chain reality
+These approaches are not complete substitutes competing over identical functions. An agent can have an on-chain registration, sign its HTTP requests and obtain separate organization verification.
 
-Set aside the spec documents and vendor announcements and look at what has actually accumulated in the registries, and KYA's current position comes into focus. [Blokz's on-chain audit](https://www.blokz.dev/articles/erc-8004-agent-registries-onchain) (as of 2026-06-12) is a good starting point.
+| Approach | Mechanism and trusted party | Conditions that remain |
+| --- | --- | --- |
+| ERC-8004 | On-chain ownership and public feedback or validation records | Request authentication, operator due diligence, reviewer selection and execution authority are separate |
+| Visa Trusted Agent Protocol (TAP) | Public keys and HTTP message signatures verify agent requests and their action context | Key trust, request validity and the merchant's policy decision |
+| Trulioo KYA | Developer organization checks and agent information connected in a signed DAP | Alpha product availability, credential status and access policy |
+| Sumsub AI Agent Verification | Automation detection, risk assessment and binding to a verified human | Additional checks according to risk and human confirmation when needed |
 
-Registration volume is about 55,210 on Base and about 34,437 on Ethereum mainnet, roughly 89,600 combined, 19 weeks after the mainnet launch. Holders number 16,652 on Base and 8,573 on Ethereum, so each holder owns 3.3 to 4 agents on average. That is not individuals registering one agent each; it is platforms mass-minting. Cost is no barrier. Registering on Base through an ERC-4337 bundle costs 273,820 gas, a total fee of 0.0000017 ETH, about $0.0028 at ETH $1,667. As a concrete example, agentId 55,210 "Bob — Crypto Trading Agent" (0xWork platform) lists a $9 USDC service price in its registration-v1 file.
+[Visa's official repository](https://github.com/visa/trusted-agent-protocol) provides examples of RFC 9421 HTTP message signatures, a key registry and merchant verification. A merchant reconstructs the signature base from the request and verifies it with the public key. Time and session information, domain and action context also need checking. The mechanism verifies requests without requiring an ERC-8004 registration. The public sample implementation does not establish deployment across the entire merchant network.
 
-The problem is the reputation registry. Blokz caught a single agent (id 25,975) receiving 10 feedback events in 48 seconds, all with value=1, tagged miner-vouch/botcoin, and all with `feedbackHash` set to 0x0. A zero feedbackHash means no evidence backing the feedback was committed anywhere. Individual "client" addresses were also found leaving vouches (endorsement feedback) thousands of times. This vouch spam is possible because the spec delegates Sybil resistance (defense against one actor creating many identities to inflate a signal) to off-chain aggregation rather than enforcing it on-chain. The contract records anyone's feedback.
+[Trulioo's current product page](https://www.trulioo.com/products/kya-verification) calls its DAP a **Digital Agent Profile**. It combines developer organization know-your-business (KYB), anti-money-laundering (AML) and domain-control checks with agent information such as purpose and authority, and describes signed, time-bound credentials with a defined scope and status checks. The page labels KYA Alpha and says registration is available to organizations whose domains have been enabled. Trulioo explicitly states that a credential does not guarantee future safe behavior and that the relying organization makes access decisions.
 
-Blokz's conclusion is to consume the reputation registry like an event bus. Keep an allowlist of client addresses you trust, take only feedback with a non-zero feedbackHash, check the evidence at feedbackURI, and only then aggregate. In the audit's own words, having the word reputation in the contract name does not mean the trust problem is solved. How to turn that prescription into actual query code is covered in the [reputation registry post](/en/blog/erc8004-agent-reputation-registry-lookup/).
+[Sumsub's January 29, 2026 announcement](https://sumsub.com/newsroom/sumsubs-ai-agent-verification-introduces-agent-to-human-binding-to-establish-human-accountability-in-ai/) describes binding agent activity to a verified human. It first detects automation and assesses risk, then can require additional checks such as targeted liveness verification to confirm that a real person is present in higher-risk situations. This should not be generalized into a face check for every action. Binding to a person supplies information useful for accountability; the binding alone does not determine legal liability for a particular act.
 
-Academia is looking at the same data. [arXiv 2606.26028](https://arxiv.org/abs/2606.26028) is an empirical study that crawled Identity and Reputation events, off-chain registration files and x402 payments across Ethereum, BNB/BSC and Base up to 2026-05-13. Being able to argue about on-chain KYA from measurement data rather than vendor whitepapers is this year's change.
+## Controls that remain at execution time
 
-## Regulatory and policy signals
+A useful starting point for KYA is to define permitted actions before choosing a registration mechanism. Searching public documents, reading personal data and making a payment have different consequences when something goes wrong. In the purchase example, the API or wallet should enforce these conditions:
 
-No jurisdiction requires KYA by law. Three signals point at the direction, though.
+1. Check registration or organization credentials and the request signature. Reject expired or revoked keys or credentials.
+2. Compare the delegating user, permitted merchant, total amount and validity period with the purchase request. Further delegation must not expand the original authority.
+3. Handle duplicate requests and budget consumption at execution time. Reputation or an earlier approval must not make an already-spent budget available again.
+4. Record the policy, credentials and task version used for the decision, plus the execution result. When the model, prompt or tools change, reassess what the earlier verification actually covers.
 
-NIST NCCoE in the US published the concept paper ["Accelerating the Adoption of Software and AI Agent Identity and Authorization"](https://csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd) (Initial Public Draft) on 2026-02-05, with comments open until 2026-04-02. It is part of the AI Agent Standards Initiative, whose preceding RFI drew more than 930 submissions. The paper explicitly addresses agent identity, delegation-chain authorization (the chain of a person delegating to an agent and that agent delegating to another), and audit requirements. Those topics overlap heavily with KYA's six dimensions.
+This sequence is an example of separating identity checks from action authorization, rather than a mandatory procedure in one standard. [NIST's current project hub](https://pages.nist.gov/nccoe-ai-identity/) likewise describes practical guidance for applying existing identity and authorization standards to agents, with an SP 1800 series practice guide as an intended outcome. It should not be read as a legally mandated KYA certification scheme. NIST also [warns](https://www.nist.gov/blogs/cybersecurity-insights/back-future-why-agentic-ai-needs-strong-identity-foundation) that excessive human approval requests can weaken controls through consent fatigue.
 
-The EU AI Act requires operator identity to be recorded in the activity logs of high-risk AI systems. It does not call this agent identity verification, but to put the operator in the log you need something that binds the agent to the operator. Singapore has published the first national-level agentic AI governance framework.
+Publishing legal names or detailed task records in a public registry also requires care. Information that connects identifiers and public addresses can make long-term tracking easier. A suitable design separates necessary proof from public disclosure and restricts access to sensitive material.
 
-According to [Agentica](https://agentica.wiki/articles/know-your-agent), as of March 2026 no jurisdiction explicitly requires KYA, and organizations are adopting it ahead of regulation. Reading the vendor activity above as regulatory response overstates it. Right now what pulls KYA forward is bot traffic on commerce sites and fraud cost on payment networks, not regulators.
-
-## Criticisms and open problems
-
-Most criticism of KYA comes down to asking where the KYC analogy breaks.
-
-**Sybil resistance.** The biggest weakness of the on-chain camp. With registration at about $0.003 and reputation feedback open to anyone, the vouch spam above is not a bug; it is the natural result of the design. The spec leaves filtering to the application, and who does that filtering by what criteria becomes an off-chain trust problem again. Visa TAP and Sumsub do not have this problem, but in exchange the network operator or vendor becomes the single gatekeeper.
-
-**Privacy.** The stronger the ownership binding, the more every transaction an agent makes traces back to a specific person. Sumsub's approach accepts that head-on. ERC-8126 compromises with PDV (Private Data Verification), hiding verification details behind a ZKP and letting only the agent wallet holder read results. Neither has cleanly found the point where accountability is possible but everyday transactions are not tracked.
-
-**Fragmentation.** Four camps use four different trust anchors, and so far there is no sign of convergence on one. An agent paying by card may need a TAP signature, an agent using a DEX may need an ERC-8004 registration, and an agent touching regulated finance may need Sumsub-style human binding. Metadata layers like AgentFacts offer to be the glue, but adoption is a separate question.
-
-**Dynamic agent behavior.** KYC rests on the assumption that a person is the same person tomorrow. Agents change behavior through model swaps, prompt edits and added tools. Verification at registration says nothing about safety at execution, which is why a separate runtime policy layer like ERC-8196 became necessary.
-
-**No mandate.** With no jurisdiction requiring KYA, adoption is voluntary and therefore uneven. If only careful operators register and malicious ones do not, the registry becomes a list of good agents rather than a filter against bad ones. KYC worked not because it was voluntary but because it was required.
-
-## Community reaction
-
-I could not find an active community debate about KYA as such. On Hacker News, Esther Dyson's Substack piece ["Know Your .agent?"](https://estherdyson.substack.com/p/know-your-agent) was posted on 2026-05-06 and drew zero comments. An x402 API Show HN on 2026-02-23 shows a server registered on Base as ERC-8004 Agent #18763, which is a signal that someone is actually using it, not a KYA debate. That is why this post uses the Blokz audit and the arXiv empirical study, rather than community reviews, as the basis for its criticism.
+On-chain records let different organizations consult the same identifiers and history. Selecting trustworthy reviewers, authenticating the current request and enforcing the delegated scope remain responsibilities of the service operator.
 
 ## Further reading
 
-- [AI Agent Trust Stack: ERC-8004, ERC-8126, ERC-8196](/en/blog/ai-agent-wallet-trust-stack-erc-8004-8126-8196/): the interfaces and verification types this post deliberately did not re-explain (this blog)
-- [ERC-8004 Agent Reputation: On-Chain Registration and Lookup](/en/blog/erc8004-agent-reputation-registry-lookup/): filtering the reputation registry with allowlists and evidence checks in practice (this blog)
-- [Tiger Research: 2026 Know Your Agent](https://reports.tiger-research.com/p/2026-know-your-agent-eng): a market forecast that reads KYA against the history of KYC
-- [AgentFacts KYA page](https://agentfacts.org/kya/): chain- and vendor-neutral metadata standard
-- [NIST NCCoE concept paper](https://csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd): the US standards body's draft on agent identity, delegation and audit
-
-## Summary
-
-KYA is not a new technology. It is an attempt to move an old regulatory practice onto a new kind of actor, and in the process the KYC analogy holds only halfway. Identity and ownership binding transfer over. Authorization scope, runtime compliance and auditability are continuous-check problems that a single registration does not settle.
-
-The on-chain camp leads on deployment speed. ERC-8004 gathered roughly 90,000 registrations across more than 30 chains. But a large share of that number is platform mass-minting, and the reputation registry is filling with evidence-free vouches, so "it is in the registry" and "it can be trusted" are still different statements. Payment networks and identity vendors route around the Sybil problem by anchoring on relationships they already hold (merchants, KYC'd customers), at the price of depending on a single gatekeeper.
-
-My own read: if you run agents or receive agent traffic today, the job is not to pick a camp. It is to treat any registry as an event bus and filter it by your own criteria, and to start keeping records that bind each agent to an accountable party now. If regulation arrives, you will need those records. If it does not, you will need them the day something goes wrong.
+- [ERC-8004 reference implementation](https://github.com/erc-8004/erc-8004-contracts): Deployment addresses, registration and reputation queries, and the Validation update warning.
+- [Visa TAP sample implementation](https://github.com/visa/trusted-agent-protocol): Components for request signatures and merchant verification.
+- [NIST agent identity and authorization resource hub](https://pages.nist.gov/nccoe-ai-identity/): Enterprise identity, delegation and access-control work.
 
 ## References
 
-- [ERC-8004: Trustless Agents](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8004.md): ethereum/ERCs, Draft (standards process), mainnet live 2026-01-29, accessed 2026-08-27
-- [ERC-8126: AI Agent Verification](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8126.md): ethereum/ERCs, Final, accessed 2026-08-27
-- [ERC-8196: AI Agent Authenticated Wallet](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8196.md): ethereum/ERCs, Final, accessed 2026-08-27
-- [2026 Know Your Agent](https://reports.tiger-research.com/p/2026-know-your-agent-eng): Tiger Research, accessed 2026-08-27
-- [ERC-8004 Agent Registries On-chain](https://www.blokz.dev/articles/erc-8004-agent-registries-onchain): Blokz, audit as of 2026-06-12, accessed 2026-08-27
-- [Know Your Agent](https://agentica.wiki/articles/know-your-agent): Agentica wiki, updated 2026-03-18, accessed 2026-08-27
-- [AgentFacts KYA](https://agentfacts.org/kya/) and [arXiv 2506.13794](https://arxiv.org/abs/2506.13794): Jared Grogan, accessed 2026-08-27
-- [Visa Trusted Agent Protocol](https://developer.visa.com/use-cases/trusted-agent-protocol) and [press release](https://investor.visa.com/news/news-details/2025/Visa-Introduces-Trusted-Agent-Protocol-An-Ecosystem-Led-Framework-for-AI-Commerce/default.aspx): Visa, 2025-10-14, accessed 2026-08-27
-- [Accelerating the Adoption of Software and AI Agent Identity and Authorization](https://csrc.nist.gov/pubs/other/2026/02/05/accelerating-the-adoption-of-software-and-ai-agent/ipd): NIST NCCoE, Initial Public Draft 2026-02-05, accessed 2026-08-27
-- [knowyouragent.network](https://knowyouragent.network/): RNWY score indexer, accessed 2026-08-27
-- [ERC-8004 Explained: What It Solves and the Gap It Leaves](https://www.concordium.com/article/erc-8004-explained-what-it-solves-and-the-gap-it-leaves): Concordium (CIS-8004), accessed 2026-08-27
-- [arXiv 2606.26028](https://arxiv.org/abs/2606.26028): three-chain empirical study of ERC-8004, accessed 2026-08-27
-- [Know Your .agent?](https://estherdyson.substack.com/p/know-your-agent): Esther Dyson, 2026-05-06, accessed 2026-08-27
+The following sources were checked on October 16, 2026 KST.
+
+- [ERC-8004: Trustless Agents](https://eips.ethereum.org/EIPS/eip-8004), [official raw source](https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8004.md): Identity, reputation, validation and security limits.
+- [ERC-8126: AI Agent Verification](https://eips.ethereum.org/EIPS/eip-8126), [ERC-8196: AI Agent Authenticated Wallet](https://eips.ethereum.org/EIPS/eip-8196), [EIP-1](https://eips.ethereum.org/EIPS/eip-1): Interfaces and standards-process status.
+- [ERC-8004 contracts](https://github.com/erc-8004/erc-8004-contracts): Deployment list and reference implementation.
+- [Ethereum registration transaction](https://eth.blockscout.com/tx/0x97c640ad052770b66f9744c1318555ccd894e2e0cea215c41dbd86754aa34308), [Reputation logs](https://eth.blockscout.com/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63?tab=logs): Examples of actual registry activity.
+- [Can Trustless Agents Be Trusted? v2](https://arxiv.org/html/2606.26028v2): Xiong et al., revised July 8, 2026. Three-chain observations through May 13, especially registration-file classification and study limitations.
+- [Visa Trusted Agent Protocol](https://github.com/visa/trusted-agent-protocol): Official description and sample implementation.
+- [Trulioo KYA](https://www.trulioo.com/products/kya-verification): Digital Agent Profile, Alpha availability and verification scope.
+- [Sumsub AI Agent Verification](https://sumsub.com/newsroom/sumsubs-ai-agent-verification-introduces-agent-to-human-binding-to-establish-human-accountability-in-ai/): Risk-based human checks and agent binding.
+- [NIST project hub](https://pages.nist.gov/nccoe-ai-identity/), [Back to the Future: Why Agentic AI Needs a Strong Identity Foundation](https://www.nist.gov/blogs/cybersecurity-insights/back-future-why-agentic-ai-needs-strong-identity-foundation): Project goals and identity/access-management failure patterns.
