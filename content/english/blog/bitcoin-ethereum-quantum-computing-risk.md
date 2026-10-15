@@ -1,10 +1,10 @@
 ---
 title: "Bitcoin, Ethereum, and the Quantum Computing Question"
 meta_title: ""
-description: "A March 2026 paper from Google, the Ethereum Foundation, and Stanford cut the qubit budget for attacking secp256k1 dramatically. Here is what changed, what did not, and what developers should do now."
+description: "Quantum risk depends on signatures, public-key exposure, and runtime. A source-grounded look at 2026 resource estimates and Bitcoin and Ethereum migration plans."
 date: 2026-07-05T23:37:01+09:00
-lastmod: 2026-08-31T18:00:00+09:00
-image: "/images/posts/bitcoin-ethereum-quantum-computing-risk/public-key-exposure-attack-window.png"
+lastmod: 2026-10-16T01:03:28+09:00
+image: "/images/posts/bitcoin-ethereum-quantum-computing-risk/quantum-ledgers-cover-20261016.webp"
 categories: ["Blockchain"]
 tags: ["bitcoin", "ethereum", "quantum-computing", "post-quantum-cryptography", "cryptography"]
 author: "whackur"
@@ -12,207 +12,137 @@ translationKey: "bitcoin-ethereum-quantum-computing-risk"
 draft: false
 ---
 
-On March 30, 2026, a joint paper from Google Quantum AI, the Ethereum Foundation, and Stanford shook up the crypto community. It estimated that the physical qubit count needed to recover a private key on secp256k1 (the elliptic curve behind Bitcoin and Ethereum signatures) had dropped nearly 20x from the previous best estimate. A threat that used to sound like "millions of qubits, decades away" now reads as "under 500,000, maybe within this decade."
+Quantum computers are a **long-term threat to the signatures** that protect Bitcoin and Ethereum. The public research checked on October 16, 2026 (KST), however, estimates resources for future error-corrected machines; it does not demonstrate recovery of a real secp256k1 private key on quantum hardware. Risk depends on how long a public key is exposed, how long an attack takes, and whether authentication and authority can migrate first. Bitcoin’s defenses remain proposals, while Ethereum is working on a transition across accounts, consensus, and data. [Resource-estimation paper](https://arxiv.org/html/2609.05625v1), [BIP-360](https://github.com/bitcoin/bips/blob/master/bip-0360.mediawiki), [Ethereum Foundation transition plan](https://blog.ethereum.org/2026/09/07/protocol-priorities)
 
-That does not mean wallets get drained tomorrow. As of June 2026, the strongest quantum hardware sits around 2,500 physical qubits, still hundreds of times short of what an attack would require. But algorithmic progress has been closing that gap faster than hardware has, and millions of coins already sit with their public keys exposed on-chain. Both facts are reasons for blockchain developers to start paying attention now. This post works through the research and proposals from the past few months to separate the real risk from the hype.
+## Forging signatures and attacking hashes are different jobs
 
-## Key findings
+A digital signature does not encrypt coins. It proves authority to approve a transaction. Write an elliptic-curve public key as `Q = d·G`: `d` is the private scalar and `G` a fixed base point. Computing `Q` from `d` is easy; recovering `d` from `Q` is the elliptic curve discrete logarithm problem, which is hard for classical computers. A sufficiently capable error-corrected quantum computer can solve it in polynomial time with Shor’s algorithm. An attacker who recovers the key can sign new transactions as its owner. [Schrottenloher’s circuit research](https://arxiv.org/html/2606.02235v1)
 
-- **No collapse today.** Breaking secp256k1 needs under 500,000 physical qubits (1,200 to 1,450 logical qubits), while the best current hardware sits around 2,500. The gap is still hundreds of times wide. That requirement, however, has fallen sharply from 2017-era estimates through algorithmic improvements alone.
-- **Timeline estimates have compressed fast, but the range stays wide.** Expert estimates run from Adam Back's 20 to 40 years, to Justin Drake's "at least 10% probability of recovering a secp256k1 private key from an exposed public key by 2032," to Vitalik Buterin's "20% probability before 2030." Governments and industry are treating 2029 to 2035 as the migration deadline.
-- **The near-term risk that matters is public keys already exposed.** About 6.9 million BTC (34.6% of total supply) sit in addresses with public keys visible on-chain, per the March 2026 ARK Invest and Unchained joint whitepaper. Of that, roughly 1.7 million BTC (8.6%) sit in unmovable Satoshi-era P2PK addresses. What developers can do now: stop reusing public keys, build crypto-agility, and track BIP-360 and Ethereum's account-abstraction roadmap.
+| Primitive | Role in Bitcoin or Ethereum | Quantum attack distinction |
+| --- | --- | --- |
+| secp256k1 ECDSA | Bitcoin’s existing signatures; Ethereum externally owned account (EOA) authentication | Recovering the private key with Shor enables forgery |
+| secp256k1 Schnorr | Bitcoin Taproot signatures | Different signature format, same curve’s discrete-log assumption |
+| BLS | Ethereum validator signatures and aggregation | Quantum-vulnerable too, but uses a different curve and parameters |
+| Hashes such as SHA-256 and Keccak | Mining and commitments to addresses or data | Generic preimage search receives Grover’s quadratic speedup |
 
-## The quantum attack on ECDSA signatures
+[BIP-340](https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki) specifies secp256k1 for Schnorr. [Ethereum’s cryptography roadmap](https://ethereum.org/roadmap/security/quantum-resistance/) treats ECDSA, BLS, and KZG commitments as distinct targets. A figure such as “1,450 logical qubits to attack secp256k1” therefore cannot be reused as a BLS attack estimate.
 
-ECDSA, the signature scheme behind Bitcoin and Ethereum, depends on the elliptic curve discrete logarithm problem (ECDLP). The public key is computed as `Q = d·G`, where `G` is a fixed base point on the curve and `d` is the private scalar. Given `Q` and `G`, recovering `d` is effectively impossible for a classical computer. Unlike division, the inverse of multiplication, this is a problem of retracing how many times a point addition was repeated on the curve.
+Grover reduces an unstructured search over `N` candidates to roughly `√N` queries. Idealized generic preimage search therefore takes about `2^128` quantum queries for a 256-bit hash and `2^80` for a 160-bit hash. These are not runtimes: every query needs a circuit and error correction. HASH160 is `RIPEMD160(SHA256(public_key))`; its ability to conceal a public key depends on hash security. [NIST’s Grover definition](https://xlinux.nist.gov/dads/HTML/groversAlgo.html), [BIP-141’s public-key hash rules](https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki)
 
-Shor's algorithm attacks this structure directly. Using a quantum Fourier transform to find the period of a specific function, it solves ECDLP in polynomial time. Once the discrete log problem falls, the private key follows directly from the public key. This affects ECDSA on secp256k1 and Schnorr signatures (Bitcoin Taproot) equally, since both rely on the same discrete-log assumption on the same curve. Whether the scheme is ECDSA or Schnorr does not matter; as long as the curve is secp256k1, both stand in the same position against Shor's algorithm.
+Mining is different again from finding a preimage of one particular 256-bit digest. It races to find any hash below a difficulty target, so gate speed, parallelism, and costs against ASICs matter. The `2^128` figure alone says nothing about mining dominance, and difficulty adjustment does not itself cap an attacker’s share of block production. Section III.4 of the 2026 [Google, Ethereum Foundation, Stanford, and collaborators’ paper](https://arxiv.org/html/2603.28846v2#S3.SS4) argues that signatures are a much more plausible attack target than mining under its hardware assumptions.
 
-Bitcoin mining, which relies on the SHA-256 hash function, is a different story entirely. Hash functions do not rest on an algebraic structure like a discrete logarithm; they are closer to an unstructured search problem, which puts them in Grover's algorithm's territory instead of Shor's. And Grover's algorithm has a fundamental ceiling: it only offers a quadratic speedup.
+## Public-key exposure determines the attack window
 
-## Grover's algorithm and the safety margin on hash functions
+A Bitcoin address is not necessarily a public key. An unspent transaction output (UTXO) locks coins under spending conditions. Some outputs contain a key directly; others contain a hash of a key or script. The [SegWit rules](https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki) and [Taproot rules](https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki) produce these differences:
 
-Grover's algorithm gives a quadratic speedup over an unstructured search space. SHA-256's preimage resistance drops in theory from 2^256 to 2^128. That is still an astronomically large number and not a practical threat. Bitcoin's address hash, HASH160 (SHA-256 layered on RIPEMD-160), has the thinnest margin, dropping from 160 bits to 80 bits, but that margin only matters in the specific case where address reuse exposes additional hash preimages.
+| Target | When the attacker obtains a public key | Consequence for remaining funds |
+| --- | --- | --- |
+| P2PK or bare multisig | When the output is created | The exposed key allows a long computation |
+| P2PKH or P2WPKH | Normally submitted when spending | Other UTXOs or later deposits using the same key remain exposed |
+| P2SH or P2WSH | Revealing the spending script can disclose its keys | Depends on script contents and key reuse |
+| P2TR (Taproot) | The output directly contains a 32-byte output public key | The key used for key-path validation is exposed even if the owner intends a script-path spend |
+| Ethereum EOA | Recoverable from the signature of an outgoing transaction | Remaining funds, later deposits, and the account’s authority remain targets |
 
-The real picture is worse than this simple calculation suggests. A fault-tolerant SHA-256 preimage attack has been estimated to require roughly 2^166 logical-qubit-cycles, up to 275 billion times more expensive than a naive query-count analysis implies. Error-correction overhead eats up most of Grover's theoretical gain.
+Taproot’s key path permits spending with a signature for the output public key. Even if a hidden script contains other safeguards, an attacker who computes that output key’s private scalar can use the key path. [BIP-341](https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki)
 
-That is also why there is effectively no quantum threat to proof-of-work mining, for two reasons. First, Grover's quadratic gain is mostly consumed by quantum error-correction overhead. Second, Grover parallelizes poorly, while Bitcoin mining is built for massive parallelization and dedicated hardware (ASIC) acceleration. On top of that, the difficulty retarget every 2,016 blocks would quickly absorb any speed advantage a quantum miner might briefly hold. The idea that "quantum computers will take over mining" is closer to a misconception; some estimates put the physical qubits needed for a SHA-256 attack at around 10^23, a resource scale approaching the energy output of a star.
+Compare two cases. If coins remain in a P2PK output, the attacker need not finish before the next block. A machine that takes days can matter. A fresh P2WPKH output whose key has not been disclosed elsewhere reveals it when its first spending transaction enters the mempool. The attacker must recover the key and get a conflicting spend included before the original confirms. Bitcoin’s average ten-minute block interval is not a guaranteed defense window. Propagation, fees, and the arrival of the next block also affect the outcome. [Joint paper, section III.2](https://arxiv.org/html/2603.28846v2#S3.SS2)
 
-That narrows the real threat down to one thing: the ECDLP problem shared by ECDSA and Schnorr signatures.
+Offchain disclosure can remove the protection offered by a hashed address. Recipients of a wallet’s extended public key (xpub) or descriptor belong in the threat model. An already-spent output cannot be stolen again, but other outputs protected by the same key are a separate matter. [BIP-360’s exposure conditions](https://github.com/bitcoin/bips/blob/master/bip-0360.mediawiki)
 
-## Logical qubits, physical qubits, and the error-correction wall
+Ethereum users commonly keep using the same account. Once its key is recoverable from a signature, a short block interval cannot prevent a long-exposure attack. An administrator account with little ETH may still control a bridge or upgrade. This is forgery of new authorized actions after key recovery, rather than decryption of old transactions. [Ethereum accounts](https://ethereum.org/developers/docs/accounts/), [Post-Quantum team FAQ](https://pq.ethereum.org/)
 
-The qubits in today's quantum hardware are noisy and error-prone. Practical computation requires bundling many physical qubits together into a single error-suppressed logical qubit. The surface code is the leading method for this: it arranges physical qubits in a lattice and repeatedly detects and corrects errors, suppressing the logical error rate exponentially.
+## Read qubit counts alongside runtime
 
-There is one condition that has to hold: the physical error rate must sit below a certain threshold. Below that threshold, bundling more qubits together reduces the logical error rate. Above it, adding more qubits does not help at all.
+Physical qubits are device components. Logical qubits are computational units protected by physical qubits and error-detection and correction procedures. There is no fixed conversion ratio. Error rates, connectivity, code choice, computation length, and acceptable failure probability determine the required hardware. Willow’s [below-threshold error-correction study](https://www.nature.com/articles/s41586-024-08449-y) demonstrated quantum memories whose logical errors declined as the code grew. It did not execute a complete, long cryptanalytic circuit.
 
-Breaking secp256k1 needs about 1,200 to 1,450 logical qubits, but once the surface code's overhead is factored in, the physical qubit requirement jumps to under 500,000. That gap, the number of physical qubits needed to build one logical qubit, is the "error-correction overhead." The Google, Ethereum Foundation, and Stanford paper assumed a physical error rate of 10^-3, degree-4 planar connectivity (each qubit connected only to its four neighbors), a 1-microsecond cycle time, and a 10-microsecond control response time for this calculation.
+A Toffoli gate reversibly flips a target bit conditional on two control bits; its count is a major circuit-cost measure. Runtime also depends on parallelism and measurement and control delays. Before comparing 2026 estimates, distinguish a complete key-recovery circuit from optimization of one internal operation.
 
-More aggressive assumptions exist too. Using degree-7 qLDPC (quantum low-density parity-check) codes, which rely on non-local connectivity beyond the plane, could push the physical qubit requirement below 100,000. But that level of qubit-to-qubit connectivity has not been demonstrated in real hardware yet. That is why the paper adopted the validated planar degree-4 connectivity and the 500,000-qubit estimate as "the better-understood, more achievable engineering path."
+| Research | Logical circuit resources | Meaning of physical footprint and time |
+| --- | --- | --- |
+| [Babbush et al., published in March](https://arxiv.org/html/2603.28846v2) | At most 1,200 logical qubits and 90 million Toffolis, or 1,450 and 70 million | Under 500,000 physical qubits estimated for superconducting hardware, planar degree-four connectivity, and `10^-3` physical errors |
+| [Schrottenloher, June](https://arxiv.org/html/2606.02235v1) | Complete circuit: about 1,208 and `2^26.11` Toffolis, or 1,462 and `2^25.78` | Disclosed logical designs, not measured hardware or runtime |
+| [Trapped-ion study, September](https://arxiv.org/html/2609.05625v1) | Main-text count: 1,457 logical qubits and about 39 million Toffolis | 19,397 physical qubits and about 25.7 days per attempt, for a specific error-corrected architecture |
 
-## The fast decline in resource estimates
+The March paper assumes a 10μs control reaction time and 50% extra cost per gate to estimate 18 to 23 minutes. Precomputing the public-key-independent first half and waiting in that state cuts the time after learning a key to roughly 9 to 12 minutes. It assumes 1μs error-correction rounds. These are single-key resource estimates, not device measurements. Circuit details were withheld, with a zero-knowledge proof supporting resource and test results. [Sections II.1 to II.2 and appendix](https://arxiv.org/html/2603.28846v2)
 
-Assume the same hardware, and better algorithms alone shrink the resource requirement. Tracking this timeline shows how fast the compression has been.
+The September trapped-ion design trades a smaller footprint for a long runtime. Assumptions include physical noise of `10^-4`, a 200μs physical operation cycle, and approximately 0.02950 seconds per logical measurement layer. Its low memory logical-error rates are extrapolated from simulations at higher noise. End-to-end success is not certain: the paper distinguishes an estimate of about 40.7%, starting from a rigorous algorithmic lower bound, from about 63.3%, starting from a heuristic. **It did not demonstrate an attack on an existing 19,397-qubit device.** Its relevance is to keys exposed for days or longer, rather than an ordinary mempool race. [Section II.3, Part V, and appendix E](https://arxiv.org/html/2609.05625v1)
 
-- **2017 (Microsoft Research, Roetteler et al.)**: proposed a formula requiring `9n + 2⌈log₂n⌉ + 10` logical qubits and `448n³log₂n + 4090n³` Toffoli gates for an n-bit prime field curve. Applied to a P-256-class curve, that works out to about 2,330 logical qubits and about 126 billion Toffoli gates. It also reconfirmed a 2003 result from Proos and Zalka: elliptic curve cryptography is an easier quantum target than RSA at an equivalent classical security level.
-- **2023 (Litinski)**: assuming a photonic architecture, about 9 million physical qubits and about 200 million Toffoli gates for a single instance.
-- **March 2026 (Google, Ethereum Foundation, Stanford, arXiv:2603.28846)**: presented two circuit variants. The low-qubit variant uses up to 1,200 logical qubits and up to 90 million Toffoli gates; the low-gate variant uses up to 1,450 logical qubits and up to 70 million Toffoli gates. Under the surface-code conditions described above (10^-3 physical error rate, degree-4 connectivity, 1-microsecond cycle), both variants converge to under 500,000 physical qubits. Compared with Litinski's 2023 estimate, that is roughly a 20x drop in physical qubits and a 10x drop in total computation (spacetime volume).
+A separate September paper, [ECDSA.Fail](https://arxiv.org/html/2609.09582v2), reports a point-addition circuit with 1,151 logical qubits and an average 1,299,453 executed Toffolis at its July 26 data cutoff. This benchmarks an internal Shor operation. The authors identify full-algorithm integration and validation as remaining work, and caution that different interfaces and accounting conventions prevent a simple claim of superiority over complete circuits. It does not mean that “1,151 qubits broke Bitcoin.”
 
-The number that drew the most attention from this paper is an average of 9 minutes to recover a private key after a public key is exposed. That comes with a caveat. The raw circuit, run without priming, processes 70 to 90 million Toffoli gates and takes 18 to 23 minutes. Priming, precomputing the first half of the algorithm ahead of time, cuts the post-exposure time roughly in half, down to about 9 minutes (sometimes 12). The paper frames this as "a first-generation fast-clock CRQC could solve secp256k1 ECDLP in about 9 minutes on average," a number that matters because it sits close to Bitcoin's average block time of 10 minutes.
+## Choosing a standard signature does not complete migration
 
-One more condition worth noting: this figure is a single-instance estimate. It assumes a machine dedicated entirely to attacking one key at a time, and deliberately excludes batch optimization. Attacking multiple keys at once would require multiple primed machines; running 11 of them in parallel, for instance, could give roughly a 6.5x speedup.
+Among the standards NIST finalized in August 2024, [ML-KEM (FIPS 203)](https://csrc.nist.gov/pubs/fips/203/final) establishes shared secrets for communications. It does not replace a coin-spending signature. The signature standards are lattice-based [ML-DSA (FIPS 204)](https://csrc.nist.gov/pubs/fips/204/final) and stateless hash-based [SLH-DSA (FIPS 205)](https://csrc.nist.gov/pubs/fips/205/final).
 
-Craig Gidney, from the same research circle, lowered the qubit budget for factoring RSA-2048 to under 1 million in May 2025 (arXiv:2505.15917), a 20x reduction from his own 2019 estimate of 20 million qubits. He combined three innovations, approximate residue arithmetic, the yoked surface code, and magic state cultivation, to cut the Toffoli gate count by more than 100x compared with prior work. Both papers point to the same pattern: attacks always get better. RSA-2048's physical qubit estimate has dropped roughly 20x with each new paper.
+The size difference is substantial. A BIP-340 Schnorr signature is 64 bytes. ML-DSA-44 uses a 1,312-byte public key and 2,420-byte signature; SLH-DSA-SHA2-128s uses a 32-byte public key and 7,856-byte signature. These are examples of specific parameter sets, not a comparison at identical security levels. [BIP-340](https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki), [FIPS 204 table 2](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf), [FIPS 205 table 2](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.205.pdf)
 
-## How far hardware and roadmaps have come
+Deployment must fit public-key and signature sizes and verification costs into block space, gas budgets, and node bandwidth. That motivates Ethereum’s research into verification precompiles and proof-based signature aggregation. Adopting a candidate primitive is different from migrating every account, administrative key, and consensus rule. [Ethereum post-quantum research](https://pq.ethereum.org/)
 
-The pace at which resource estimates are shrinking is one thing; actual hardware catching up is another.
+Stateful hash signatures need another distinction. XMSS combines many one-time signature keys in a tree under one top-level key, allowing multiple messages. The danger is reusing a one-time leaf index, perhaps through backup restoration or concurrent signing devices, rather than simply using the top-level key twice. Wallets must validate index management and recovery procedures too. [NIST SP 800-208](https://csrc.nist.gov/pubs/sp/800/208/final)
 
-**Google's Willow chip (December 2024)** demonstrated below-threshold error correction for the first time, using 105 qubits. The logical error rate halved each time the lattice scaled up, from 3x3 to 5x5 to 7x7, with an error-suppression factor of Λ=2.14±0.02. On a distance-7 code, the per-cycle logical error rate dropped to 0.143%±0.003%. Real-time decoding and "beyond break-even" performance, where a logical qubit's lifetime reached 2.4x that of its individual physical qubits, were both demonstrated for the first time here as well.
+## Bitcoin separates output design from treatment of existing coins
 
-**IBM**, separately from Willow, published in Nature in 2024 that qLDPC-family bivariate bicycle codes could cut physical qubit overhead by about 90%. Its roadmap runs through Loon (2025), Kookaburra (2026), and Cockatoo (2027), reaching Starling in 2029 (200 logical qubits, 100 million gates) and Blue Jay in 2033 (2,000 logical qubits, 1 billion gates). IBM has also set a goal of reaching quantum advantage within 2026.
+Checked on October 16, 2026 (KST), **BIP-360 is a Draft proposal for P2MR (Pay-to-Merkle-Root)**. It keeps a Taproot-like script tree but removes the key-path spend and commits to a Merkle root. Its purpose is to reduce long-exposure attacks by removing a path that publishes a key directly in the output. It does not solve mempool attacks when spending still uses ECDSA or Schnorr and reveals a key. Post-quantum signatures are separate work. A document in the proposal repository is not network activation. [BIP-360](https://github.com/bitcoin/bips/blob/master/bip-0360.mediawiki)
 
-**Quantinuum** is pursuing a trapped-ion approach targeting full fault tolerance around 2030, and demonstrated 12 logical qubits in collaboration with Microsoft in 2024.
+**BIP-361 is also Draft and is an Informational document.** It depends on a post-quantum signature proposal that remains unspecified. The current text proposes Phase A, restricting sends to vulnerable addresses around three years (160,000 blocks) after activation, followed two years later by Phase B, requiring a quantum-safe rescue protocol for legacy ECDSA/Schnorr spends. This is not an adopted schedule. [BIP-361](https://github.com/bitcoin/bips/blob/master/bip-0361.mediawiki)
 
-Separate from these roadmaps, there is already a case of publicly available hardware breaking a discrete-log problem. **On April 24, 2026, Project Eleven** awarded its Q-Day Prize (1 BTC) to independent researcher Giancarlo Lelli, who ran a variant of Shor's algorithm on publicly accessible cloud quantum hardware to break a 15-bit ECC key (a search space of 32,767 possibilities) and derive the private key from the public key. That is a 512x jump from the previous record of 6 bits, set in September 2025.
+Rescue relies on information the authentic holder knows beyond the individual private key a quantum attacker recovers. One example is proving knowledge of a parent secret key behind hardened HD-wallet derivation. The text explicitly leaves open how much legacy supply such protocols could cover. Long inactivity does not prove a key is lost. Leaving unmigrated coins spendable or imposing additional conditions is a consensus decision involving both security and property rights. [BIP-361 rescue discussion](https://github.com/bitcoin/bips/blob/master/bip-0361.mediawiki)
 
-It would be a stretch to compare this demonstration directly against 256-bit secp256k1. Shor circuit size scales roughly with bit count, so a massive hardware gap remains between 15 bits and 256 bits. Still, it is worth noting that this result came from commercial cloud infrastructure rather than a national lab or dedicated equipment. Project Eleven CEO Alex Pruden put it plainly: "This wasn't a national lab. It wasn't a custom chip." That reads as a signal that progress is shifting from a physics problem toward an engineering one.
+## Ethereum must migrate accounts, consensus, and data
 
-## The real near-term risk is public keys already exposed
+On September 7, 2026, the Ethereum Foundation’s Protocol cluster announced a **target of quantum resistance across execution, consensus, and data by December 2029**. It uses a possible 2030 attack as an aggressive planning assumption, not a Q-day forecast. The team’s readiness target is distinct from agreement on upgrades and their deployment. Its FAQ says full execution-layer user migration may take additional years. [Research team FAQ](https://pq.ethereum.org/) [EF Protocol announcement](https://blog.ethereum.org/2026/09/07/protocol-priorities)
 
-There is a risk that predates the existence of a working quantum computer. The classic harvest-now-decrypt-later (HNDL) attack collects encrypted data now to decrypt it later. On a blockchain, the risk goes one step further: the public key itself is already permanently recorded on the ledger. Addresses with exposed public keys have effectively already been harvested; an attacker only needs to wait for Q-Day. A Federal Reserve working paper treats Bitcoin as an HNDL case study and points out that even after a switch to post-quantum signatures, the data privacy of past transactions already on the ledger remains vulnerable.
+| Layer | What must change | Approach under development |
+| --- | --- | --- |
+| Execution | Authentication for EOAs, smart accounts, and applications | Account abstraction, PQ signature verification, retirement of legacy key authority |
+| Consensus | Validator BLS signatures | Hash signatures such as leanXMSS and proof aggregation using leanVM |
+| Data | Blob KZG commitments and related mechanisms | Quantum-safe commitments and verification structures |
 
-Bitcoin address types differ in whether they expose a public key at all.
+This is the multilayer transition described by the [official research hub](https://pq.ethereum.org/). Replacing compact aggregated BLS signatures with larger hash signatures also requires keeping propagation and verification costs manageable. Elliptic-curve setup parameters in KZG and some pairing-based proof systems need attention as well. Replacing ordinary account signatures does not automatically finish that work. [Ethereum cryptography roadmap](https://ethereum.org/roadmap/security/quantum-resistance/)
 
-| Address type | What gets recorded on-chain | Public key always exposed |
-|---|---|---|
-| P2PK, P2MS | The public key itself | Yes, always |
-| P2PKH / P2WPKH | Hash of the public key (HASH160) | No, until first spend; permanently after reuse |
-| P2SH / P2WSH | Hash of a script | Only when the script reveals a key |
-| P2TR (Taproot) | Tweaked 32-byte public key | Yes, for key-path spends |
+KZG commitments represent blob data as a polynomial, using a compact commitment and proof to check that a value at a particular point matches the committed data. This is the verification structure in [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844). The joint paper’s on-setup attack recovers a setup secret by solving a discrete logarithm in the public parameters; subsequent false proofs can then be produced classically. Honest erasure of ceremony secrets does not make the public parameters’ discrete-log problem quantum-safe. [Sections IV and V.5](https://arxiv.org/html/2603.28846v2#S5.SS5)
 
-Taproot is the newest address format, but because it stores the tweaked public key directly in the script without a hash layer, it is actually a step backward from a quantum-security standpoint. The Google paper explicitly calls this a "security regression" back to P2PK-level exposure.
+In particular, **EIP-7702 delegation does not retire the original ECDSA key**. That key can change delegation. Even if delegated code checks a post-quantum signature, an attacker who recovers the original key retains a way around it. [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702)
 
-The **March 2026 joint whitepaper from ARK Invest and Unchained, "Bitcoin and Quantum Computing,"** puts the total exposed supply at about 34.6%, roughly 6.9 million BTC. That breaks down as follows:
+The September EF plan includes EIP-8141 Frame Transactions and proposals to turn accounts into full contract accounts. Separately, Draft [EIP-8151](https://eips.ethereum.org/EIPS/eip-8151) proposes returning zero from `ecRecover` for accounts whose code is neither empty nor exactly an EIP-7702 delegation indicator. It addresses legacy keys still authorizing contract actions, such as token `permit`, after migration. It does not cover every contract’s custom ECDSA implementation. [EF account-transition discussion](https://blog.ethereum.org/2026/09/07/protocol-priorities)
 
-- About 1.7 million BTC (8.6%): Satoshi-era P2PK addresses, including early miners and Satoshi's own estimated holdings (about 1.1 million BTC). Presumed to have no surviving private key holder and so effectively unmovable.
-- About 5 million BTC (25%): reused addresses that could still be moved today if their holders act.
-- About 200,000 BTC (1%): P2TR (Taproot) addresses.
-- The remaining roughly 65% sits in address types that have not yet exposed a public key.
+## Readiness includes retiring authority
 
-Estimates vary by source. A 2025 Chaincode Labs study put reused-key exposure as high as 6.26 million BTC, while Ledger Donjon estimated about 25% by value. The methodologies differ, but the Google paper and Project Eleven both converge on a figure near 6.9 million BTC.
+Engineering checks can be more concrete than predicting a quantum computer’s release year:
 
-Attack timing splits into two categories. Public keys that stay exposed permanently, P2PK, reused addresses, and Taproot, are "at-rest" targets, where an attacker faces no time pressure at all. Hash-type addresses only expose their public key briefly, inside the signature broadcast to the mempool at spend time, an "on-spend" attack that requires recovering the private key and redirecting funds before the next block confirms (about 10 minutes on average). Block mining is a Poisson process with a mean and standard deviation both around 10 minutes, so the Google paper modeled a roughly 41% success probability under ideal conditions (a single-signature P2WPKH spend, 9-minute key recovery, instant public-key propagation, no mempool congestion). Faster chains cut that probability sharply: under 3% for Litecoin (2.5-minute blocks), under 1 in 1,300 for Zcash (75 seconds), under 1 in 8,000 for Dogecoin (1 minute). This does not favor defenders unconditionally, though. The paper notes that with a high enough fee, or during a period of low congestion, any transaction looks practically safe if an attacker cannot break it within 30 minutes to an hour, but it also points out that an attacker could flood the mempool with high-fee transactions to buy more time.
+- **Map keys to authority.** Include administrators, recovery agents, bridges, and upgrade keys alongside user balances. Identify onchain and offchain public-key disclosures.
+- **Reduce key reuse and record exposure.** A fresh hashed Bitcoin output still reveals its key when first spent; it is not permanent post-quantum protection.
+- **Test the new signature and old bypasses together.** Exercise PQ verification, recovery, backups, rotation, and retirement of legacy ECDSA authority in one scenario. Multisig alone does not give quantum resistance when every key relies on the same vulnerable mathematics.
+- **Track estimates, demonstrations, and activation separately.** An estimate needs errors, connectivity, runtime, and failure probability. An upgrade needs client implementation, testing, activation, and actual user migration.
 
-![At-rest and on-spend attack paths based on when a Bitcoin address exposes its public key](/images/posts/bitcoin-ethereum-quantum-computing-risk/public-key-exposure-attack-window.png)
+These checks apply [BIP-360’s exposure analysis](https://github.com/bitcoin/bips/blob/master/bip-0360.mediawiki), [EIP-8151’s authority problem](https://eips.ethereum.org/EIPS/eip-8151), and [EF’s migration plan](https://blog.ethereum.org/2026/09/07/protocol-priorities) to a working system. Progress in error correction or circuit optimization does not establish a year when all coins become vulnerable. Declaring migration complete likewise requires examining remaining keys and authority paths, rather than the name of a new algorithm.
 
-*This diagram reconstructs the address exposure paths in this section and the Google paper's model of 9-minute key recovery with roughly 41% success.*
+## Further reading
 
-## The post-quantum crypto standards already exist
-
-The cryptography side of this problem is largely solved. NIST finalized its post-quantum cryptography (PQC) standards on August 13, 2024, closing out an eight-year standardization process.
-
-| Standard | Algorithm | Basis | Signature/key size | Notes |
-|---|---|---|---|---|
-| FIPS 203 | ML-KEM (formerly Kyber) | Lattice (MLWE) | Key encapsulation, not a signature | For key exchange |
-| FIPS 204 | ML-DSA (formerly Dilithium) | Lattice (MLWE/MSIS) | ML-DSA-44 about 2,420 bytes | General purpose, stateless, signs in about 0.65ms |
-| FIPS 205 | SLH-DSA (formerly SPHINCS+) | Hash-based | Up to about 49 KB | Conservative fallback in case lattice schemes break |
-| FIPS 206 (draft, expected 2027) | FN-DSA (formerly Falcon) | NTRU lattice | FN-DSA-512 about 666 bytes | Smallest signatures, but floating-point implementation is difficult and carries side-channel risk |
-
-Bolting these onto a blockchain involves real tradeoffs. ECDSA signatures run 64 to 72 bytes; ML-DSA-44 is 40 to 50 times larger, and SLH-DSA can run hundreds of times larger. Both have a direct impact on block space and gas costs.
-
-State management is another obstacle. Stateful hash-based signatures like XMSS leak the private key if the same key signs twice, which conflicts badly with the UTXO model, address reuse, and wallet backup restoration. XMSS's underlying component, WOTS (Winternitz One-Time Signature), is safe for exactly one signature per key by design, which makes it a poor fit for wallets, where controlling exactly when and how often a key signs is hard. That is why stateless ML-DSA is the leading candidate for wallets, while XMSS-family schemes remain a viable option for consensus-layer contexts like validator keys, where state can be tightly managed.
-
-Research is also underway to ease the signature-size problem: STARK-based signature aggregation, which compresses multiple signatures into a single proof, and precompiles for vector arithmetic operations that lower the verification cost itself.
-
-## Bitcoin's migration path
-
-**BIP-360** was proposed by Hunter Beast in June 2024. Its initial form, P2QRH, tried to introduce PQC signatures directly, but that piece was split off into a separate future BIP to keep the debates independent. Its current form is P2MR (Pay-to-Merkle-Root), renamed from P2TSH on February 10, 2026, which removes Taproot's quantum-vulnerable key-path spend. It uses a SegWit v2 structure with a bc1z prefix (Bech32m) and commits to a 32-byte script-tree merkle root, giving it the same 128-bit collision resistance and 256-bit preimage resistance as P2WSH. It merged into the official Bitcoin repository on February 11, 2026, and was assigned a BIP number, but no activation timeline has been set; it remains in draft form. The PQ signature piece is managed separately, as a plan to redefine OP_SUCCESSx into opcodes like OP_CHECKMLSIG to add ML-DSA and SLH-DSA to tapscript. It is included only as an informational plan and could activate independently. One point of contention: hash-based signatures (WOTS/Lamport) are one-time-use, which risks signing twice with the same key during common practices like RBF (fee replacement) or CPFP (child-pays-for-parent). That is part of why stateless schemes are preferred.
-
-The more contentious proposal is **BIP-361 (Post Quantum Migration and Legacy Signature Sunset)**, submitted on April 14, 2026 by Jameson Lopp (Casa co-founder and CSO) and five co-authors to the official Bitcoin proposal repository. It defines three phases:
-
-- **Phase A** (about 3 years after activation): bans new transfers into legacy addresses.
-- **Phase B** (about 5 years): fully invalidates legacy ECDSA and Schnorr signatures, permanently freezing coins that were not migrated in time.
-- **Phase C**: opens a zero-knowledge-proof remedy mechanism for holders who can present their seed phrase.
-
-The BIP-361 document itself states that, as of March 1, 2026, more than 34% of all Bitcoin has its public key exposed on-chain. The community has split three ways: freeze at the protocol level (the BIP-361 position), accept the quantum theft risk and do nothing ("code is law"), or route around the problem with a legal trust model (an approach proposed by investor Nic Carter). Lopp argues he would rather freeze more than 5.5 million dormant BTC than let hackers steal it. Binance founder CZ proposed on a June 18, 2026 podcast freezing Satoshi's roughly 1.1 million BTC after a 6-to-12-month migration window. On the other side, Bitcoin Magazine editor Brian Trollz, TFTC founder Marty Bent, Metaplanet's Phil Geiger, and investor Michael Terpin, among others, object strongly, calling it a violation of permissionless-system principles. Bitwise CIO Matt Hougan backs Nic Carter's legal-trust proposal instead. This is, at bottom, a head-on collision between absolute property rights ("your keys, your coins") and network security (the trust collapse that could follow if 6.9 million BTC worth of theft hit the market), and as of July 2026 there is neither consensus nor an activation timeline. Grayscale's head of research described this as "a social problem more than a technical one."
-
-Past protocol upgrades offer some guidance on timing. SegWit took from 2015 to 2017, and Taproot took years to activate despite broad conceptual support. Based on that history, a full post-quantum transition is generally estimated to take five to seven years, and even an emergency response to a sudden quantum breakthrough would likely need around two years. Bitcoin's emergent consensus structure, which has no formal voting procedure or central leadership, is the fundamental constraint on that timeline.
-
-## Ethereum's post-quantum roadmap
-
-Ethereum already has a flexible way to swap signature schemes, thanks to account abstraction (ERC-4337, EIP-7702), which gives it a much clearer migration path than Bitcoin.
-
-In January 2026, the Ethereum Foundation designated post-quantum cryptography a "top strategic priority" and put up a $2 million research prize for practical migration solutions. On March 24-25, 2026, the **pq.ethereum.org** hub launched, and more than ten client teams now run weekly post-quantum interoperability devnets. What started as STARK-based signature-aggregation research back in 2018 has grown into a multi-team open-source project. In February 2026, Vitalik Buterin identified four vulnerable areas in the roadmap.
-
-On the **consensus layer**, work is underway to replace validators' BLS signatures (which depend on elliptic-curve pairing) with hash-based **leanXMSS**. That effort consists of leanSig (a Rust implementation), leanMultisig (a minimal zkVM for signature aggregation), and leanSpec (a Python specification referenced by about ten client teams). leanSig is based on XMSS and Winternitz (WOTS+), optimized for SNARK verification, and designed for an 8-year key lifetime. WOTS+, using the w=16 parameter, signs a single message using 64 hash chains plus 3 checksum chains, 67 chains in total.
-
-On the **execution layer**, account abstraction (ERC-4337, EIP-7702) is the core strategy, aiming to support gradual opt-in migration without a separate "flag day," using a vector-arithmetic precompile for PQ signature verification. EIP-8141 (a Hegotá candidate proposal) moves toward allowing arbitrary signature schemes, while EIP-7851 permanently disables an account's legacy ECDSA private key once it has migrated via EIP-7702, with the precompile adding a marker byte and a 7-day cancellation window. Candidate schemes under evaluation include Falcon, Dilithium, and SPHINCS+.
-
-The priority order is clear: (1) user accounts (EOAs), which hold the largest pool of value and expose their public key after the first transaction; (2) exchange, bridge, and custody hot wallets; (3) governance and upgrade keys (admin multisigs); (4) validator keys. **Lean Ethereum** is aiming to move away from every node re-executing every transaction, toward recursive STARK verification instead. STARKs depend only on hash functions, which makes them quantum-resistant by design. Quantum-safe blob design has already been in progress for months, as part of the broader "The Splurge" roadmap that also covers consensus redesign (1-to-2-round finality), multidimensional gas pricing, and a new state architecture. Justin Drake has cited 2030 as a target date for Ethereum to reach post-quantum security.
-
-## How other chains are responding
-
-- **QRL (Quantum Resistant Ledger)** has been the first purpose-built post-quantum chain since 2018, using only hash-based XMSS (a NIST-approved scheme) as its signature method. QRL 2.0 is preparing EVM compatibility alongside a stateless SPHINCS+ testnet, and it is frequently cited as proof that "the engineering is already solved; adoption is the remaining problem."
-- **Algorand** has protected part of its infrastructure with Falcon-based State Proofs (signing its history every 256 blocks) since September 2022. Account signatures still run on classical Ed25519, though, so this protection covers the infrastructure layer, not user funds directly. Its 2026 roadmap includes native Falcon verification and hard-fork-free on-chain voting.
-- **Ripple/XRP** targets full quantum resistance by 2028 through a four-phase plan. It is running ML-DSA signatures on AlphaNet test instances and collaborating with Project Eleven on validator testing.
-- **Solana** is evaluating Winternitz Vault, a WOTS-based optional primitive (a SIMD proposal). Each vault transaction generates a one-time Winternitz keypair and derives a PDA (Program-Derived Address) from a Keccak-256 hash truncated to 224 bits. The protocol layer itself still runs on Ed25519 and is not quantum-safe. A Dilithium testnet ran in December 2025, and the Anza and Firedancer teams are researching a Falcon migration.
-- **Zcash** is inherently quantum-resistant because its STARK-based structure depends only on hash functions, and its Tachyon upgrade strengthens that direction further.
-
-## Rushing the transition may be riskier than waiting
-
-Dan Boneh, a Stanford cryptographer and co-author of the Google paper, delivered a counterintuitive message in a May 25, 2026 interview with Isabel Foxen Duke: a rushed post-quantum transition is more likely to introduce a critical bug than a quantum computer is to break the underlying cryptography. His reasoning starts from the fact that encryption and signatures carry different risk profiles. Encryption needs to migrate now, because of HNDL risk: data collected today can be decrypted later once a quantum computer exists. Signatures do not face that same time pressure; a signature made today is not threatened by a future quantum computer the way encrypted data is, so caution wins out over haste.
-
-Boneh advocates **hybrid signatures**, combining existing ECC with PQC, as a way to transition gradually. He rated the odds of a CRQC (a cryptographically relevant quantum computer, one powerful enough to matter) appearing before 2035 as "possible but improbable given current funding levels," and called an appearance within this decade "very aggressive." His summary: "Don't panic, but don't ignore it either." As for claims that Bitcoin will not survive this transition, he called that "nonsense."
-
-a16z crypto makes a similar case. PQC encryption should deploy immediately because of HNDL risk, but PQ signatures call for a careful, non-immediate migration, given open questions around size, performance, and implementation maturity. Research into aggregatable signatures and post-quantum SNARKs still needs several more years to mature, and moving too fast risks locking into a suboptimal scheme, or needing a second migration later after an implementation bug surfaces.
-
-## Q-Day scenarios and the signals worth watching
-
-Experts generally split Q-Day, the moment a CRQC actually appears, into two scenarios.
-
-In the **gradual scenario**, hardware develops on roughly its current roadmap, migration keeps pace ahead of it, and the transition gets absorbed without major disruption. Chains with a clear path, like Ethereum's account abstraction, are well positioned for this outcome.
-
-In the **abrupt scenario**, an earlier-than-expected quantum breakthrough collides with an incomplete migration. In that case, market panic is likely to arrive before any actual theft of funds. Lopp warns that even just credible evidence that someone can recover coins with a quantum computer would trigger an immediate market-wide panic. The Google paper offers a concrete example of the stakes: a fast-clock CRQC could break Ethereum's top 1,000 highest-value accounts, holding roughly 20.5 million ETH between them, within 9 days.
-
-There are three concrete signals that would mean it is time to shift from preparation to execution: public quantum hardware demonstrating a break of an ECC key between 100 and 256 bits (the current record is 15 bits); real hardware approaching 1,000 logical qubits; or IBM's Starling (targeted for 2029) or a competitor reaching 200 or more logical qubits on schedule. If any one of these becomes reality, migration needs to move from "preparing" to "executing."
-
-## What developers should do now
-
-There is no imminent threat, but preparing now makes the eventual transition much smoother.
-
-1. **Minimize public key exposure.** Enforce address-reuse prevention in code and UX, and avoid exposing HD wallet xpubs. For Bitcoin, design around P2WPKH (bc1q) and be cautious about Taproot's (bc1p) key-path exposure. This lines up with the user-facing recommendations in the Google paper itself.
-2. **Build crypto-agility.** Abstract your signature verification logic so the underlying algorithm can be swapped later without a rewrite. On Ethereum, account abstraction via ERC-4337/EIP-7702 gives you a head start on a signature-scheme migration path.
-3. **Track the signals that matter.** Watch the BIP-360/BIP-361 governance debate, progress on pq.ethereum.org devnets, NIST finalizing FIPS 206 (Falcon, expected 2027), IBM's Starling (targeted 2029) and Quantinuum's (targeted 2030) hardware milestones, and any follow-up challenges to the Project Eleven Q-Day Prize (which could plausibly expand toward combining AI with quantum cryptanalysis).
-4. **Consider hybrid signatures for the medium term.** Combining existing ECC with PQC reduces both single-scheme lock-in and implementation-bug risk. Stateless ML-DSA (FIPS 204) is a reasonable default for wallets; FN-DSA (Falcon) is worth evaluating where signature size is tightly constrained, provided you use a well-vetted library; XMSS and leanXMSS remain sensible where state can be tightly managed, such as consensus-layer validator keys.
-5. **Plan for mempool-window attacks.** If your design exposes a public key briefly at spend time, look into private mempools or commit-reveal schemes, which the Google paper also recommends.
-6. **Watch STARK-based aggregation for the signature-size problem.** Techniques that bundle multiple signatures into one, along with vector-arithmetic precompiles, are a practical way to ease the pressure on block space and gas costs.
-
-## Separating hype from substance
-
-A few premises are easy to lose when this topic gets covered in the press.
-
-**A CRQC does not exist yet.** The paper's "9 minutes, under 500,000 qubits" is a resource estimate for scaling up an already-demonstrated platform, not a demonstrated capability in itself. The circuit itself was not disclosed, for responsible-disclosure reasons, and its resource cost has only been verified through zero-knowledge proofs. Headlines claiming "Bitcoin collapses in 9 minutes" dress up an estimate for a machine that does not exist as established fact. The actual raw circuit, run without priming, takes 18 to 23 minutes; the 9-minute figure is an adoption assumption that presumes a primed, single, dedicated machine.
-
-**It is also a single-instance estimate.** The paper's core numbers (1,200 to 1,450 logical qubits, 9 minutes) assume attacking one key at a time on a machine dedicated entirely to that task, and deliberately exclude batch optimization. Attacking multiple keys simultaneously would require additional primed machines.
-
-**Timeline estimates span a wide range.** Adam Back puts it at 20 to 40 years, with a median in the mid-to-late 2030s, while Justin Drake estimates at least a 10% probability of recovering a secp256k1 private key from an exposed public key by 2032, and Vitalik Buterin puts the probability before 2030 at 20%. An independent June 2026 study, "Quantum Horizon" (Gershteyn and Alber), ran a Monte Carlo forecast and produced a bimodal distribution: about a 1-in-6 chance of CRQC arrival by 2035, roughly 30% by 2040, and about 60% by 2050. ARK Invest classified quantum computing as "Stage 0" (no commercially meaningful capability yet) as of March 2026. Claims that pin down a specific year are, more often than not, overstated.
-
-**Market prices and technical reality should be kept separate.** Recent crypto price swings have been driven mostly by macroeconomic factors, not the quantum threat (as of July 5, 2026, ETH traded around $1,771, with the market Fear and Greed Index at 27, "Fear"). That said, quantum risk is gradually being priced in as a kind of risk premium, and if credible attack evidence emerges, market panic could well arrive before any actual technical collapse. Polymarket's odds on "will Satoshi move BTC in 2026" rose from 4.5% at the start of the year to about 9.3%, but the market's reaction to the BIP-361 announcement itself was muted, still treated as a governance-level discussion rather than an imminent risk.
-
-**Governance is the real bottleneck.** Most of the cryptography and engineering work is already done, as QRL and Algorand demonstrate in production. The genuinely hard problem left is deployment and governance, particularly how to handle immovable legacy supply (Satoshi-era coins, for instance) in a system like Bitcoin's, which has no formal voting mechanism or emergency-response procedure to coordinate a large-scale migration.
-
-**The mining threat is a common misconception.** The idea that "quantum computers will overwhelm Bitcoin mining" does not hold up. Grover's quadratic gain gets offset by error-correction overhead, parallelization limits, and difficulty retargeting, none of which add up to a practical threat.
-
-## Wrapping up
-
-As of July 2026, a quantum-driven collapse of Bitcoin or Ethereum is not a viable near-term threat. The gap between available hardware and what an attack would require is still hundreds of times wide. But algorithmic progress has closed that gap faster than hardware has advanced, and nearly 6.9 million BTC still sit with exposed public keys today. NIST's standards exist, and Ethereum has a clear migration path through account abstraction, but Bitcoin's governance debate shows that reaching social consensus can be harder than solving the technical problem itself. The most practical thing developers can do right now is avoid public key reuse, build in the flexibility to swap signature schemes later, and keep watching the standards and governance discussions rather than rushing to act.
+- [BIP-341](https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki): output keys and the two spending paths.
+- [NIST SP 800-208](https://csrc.nist.gov/pubs/sp/800/208/final): key-management constraints for stateful hash signatures.
+- [Post-Quantum Ethereum](https://pq.ethereum.org/): official entry point to research and open implementations by layer.
 
 ## References
 
-- [Securing Elliptic Curve Cryptocurrencies against Quantum Vulnerabilities](https://arxiv.org/abs/2603.28846), Babbush, Zalcman, Gidney, et al., arXiv:2603.28846, accessed 2026-07-05
-- [How to factor 2048 bit RSA integers with fewer than one million noisy qubits](https://arxiv.org/abs/2505.15917), Craig Gidney, arXiv:2505.15917, accessed 2026-07-05
-- [FIPS 203, 204, 205](https://csrc.nist.gov/pubs/fips/203/final), NIST, finalized August 13, 2024
-- [BIP-360](https://github.com/bitcoin/bips/blob/master/bip-0360.mediawiki), Hunter Beast, Ethan Heilman, Isabel Foxen Duke, official Bitcoin BIPs repository
-- [pq.ethereum.org](https://pq.ethereum.org/), Ethereum Foundation post-quantum roadmap hub
-- [Project Eleven Q-Day Prize](https://www.prnewswire.com/news-releases/project-eleven-awards-1-btc-q-day-prize-for-largest-quantum-attack-on-elliptic-curve-cryptography-to-date-302752439.html), announcement of the 15-bit ECC key demonstration on public quantum hardware
+- [Securing Elliptic Curve Cryptocurrencies against Quantum Vulnerabilities](https://arxiv.org/html/2603.28846v2): Babbush et al., sections II to III and appendix, accessed October 16, 2026 (KST).
+- [Optimized Point Addition Circuits for Elliptic Curve Discrete Logarithms](https://arxiv.org/html/2606.02235v1): André Schrottenloher, tables 1 to 2, accessed October 16, 2026 (KST).
+- [Computing 256-bit elliptic curve discrete logarithms in 26 days](https://arxiv.org/html/2609.05625v1): section II.3, Part V, appendix E, accessed October 16, 2026 (KST).
+- [ECDSA.Fail](https://arxiv.org/html/2609.09582v2): results and limitations, accessed October 16, 2026 (KST).
+- [BIP-141](https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki): SegWit rules, accessed October 16, 2026 (KST).
+- [BIP-340](https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki): secp256k1 Schnorr, accessed October 16, 2026 (KST).
+- [BIP-341](https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki): Taproot rules, accessed October 16, 2026 (KST).
+- [BIP-360](https://github.com/bitcoin/bips/blob/master/bip-0360.mediawiki): P2MR proposal, accessed October 16, 2026 (KST).
+- [BIP-361](https://github.com/bitcoin/bips/blob/master/bip-0361.mediawiki): migration and rescue proposal, accessed October 16, 2026 (KST).
+- [Grover’s algorithm](https://xlinux.nist.gov/dads/HTML/groversAlgo.html): NIST, accessed October 16, 2026 (KST).
+- [Quantum error correction below the surface code threshold](https://www.nature.com/articles/s41586-024-08449-y): Google Quantum AI and Collaborators, Nature, accessed October 16, 2026 (KST).
+- [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final): NIST, ML-KEM, accessed October 16, 2026 (KST).
+- [FIPS 204](https://csrc.nist.gov/pubs/fips/204/final): NIST, ML-DSA, accessed October 16, 2026 (KST).
+- [FIPS 205](https://csrc.nist.gov/pubs/fips/205/final): NIST, SLH-DSA, accessed October 16, 2026 (KST).
+- [SP 800-208](https://csrc.nist.gov/pubs/sp/800/208/final): NIST, stateful hash signatures, accessed October 16, 2026 (KST).
+- [Post-Quantum Ethereum](https://pq.ethereum.org/): Ethereum Foundation research team, accessed October 16, 2026 (KST).
+- [EF Protocol: Current and Emerging Priorities](https://blog.ethereum.org/2026/09/07/protocol-priorities): EF Protocol cluster, September 7, 2026, accessed October 16, 2026 (KST).
+- [Post-quantum cryptography on Ethereum](https://ethereum.org/roadmap/security/quantum-resistance/): ethereum.org, accessed October 16, 2026 (KST).
+- [Ethereum accounts](https://ethereum.org/developers/docs/accounts/): ethereum.org, accessed October 16, 2026 (KST).
+- [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844): blob and KZG verification rules, accessed October 16, 2026 (KST).
+- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702): code delegation rules, accessed October 16, 2026 (KST).
+- [EIP-8151](https://eips.ethereum.org/EIPS/eip-8151): proposal to restrict legacy-key contract authorization, accessed October 16, 2026 (KST).
