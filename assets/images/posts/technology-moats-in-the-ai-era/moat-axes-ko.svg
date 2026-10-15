@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="940" viewBox="0 0 780 940" role="img" aria-labelledby="title desc" lang="ko">
+<title id="title">경쟁사가 재현해야 할 두 가지</title><desc id="desc">가로축은 기술 재현 난이도, 세로축은 사업 기반 확보 난이도입니다. 왼쪽 아래는 쉽게 복제하는 단일 기능, 왼쪽 위는 네트워크·데이터·권한·업무 결합, 오른쪽 아래는 고효율 소프트웨어 기술, 오른쪽 위는 기술과 기반이 결합된 로봇·인프라의 개념적 예시입니다. 수치나 업종 순위가 아닙니다.</desc>
+<style>
+:root{--bg:#faf9f5;--text:#172e3b;--muted:#415d6c;--line:#69818b;--teal:#e0efeb;--blue:#e1eaf2;--neutral:#efeee8;--purple:#eae5f1}
+@media(prefers-color-scheme:dark){:root{--bg:#15242d;--text:#f0f5f6;--muted:#c3d3dc;--line:#9ab1bb;--teal:#25483f;--blue:#263f55;--neutral:#343c3c;--purple:#3c354d}}
+text{font-family:"Noto Sans CJK KR","Noto Sans",Arial,sans-serif;fill:var(--text)}.small{font-size:27px;fill:var(--muted)}.head{font-size:31px;font-weight:700}.axis{font-size:32px;font-weight:700}
+</style>
+<rect width="780" height="940" rx="24" fill="var(--bg)"/>
+<text x="40" y="64" font-size="36" font-weight="700">경쟁사가 재현해야 할 두 가지</text>
+<text x="100" y="126" class="axis">Y · 사업 기반 확보 난이도</text>
+<path d="M100 770 V196 M100 770 H738" fill="none" stroke="var(--line)" stroke-width="3"/>
+<path d="M93 207 L100 194 L107 207 M726 763 L740 770 L726 777" fill="none" stroke="var(--line)" stroke-width="3"/>
+<path d="M416 216 V748 M120 480 H716" fill="none" stroke="var(--line)" stroke-opacity=".5" stroke-width="2" stroke-dasharray="7 9"/>
+<text x="80" y="218" text-anchor="end" font-size="24" fill="var(--muted)">높음</text>
+<text x="80" y="758" text-anchor="end" class="small">낮음</text>
+<text x="120" y="815" class="small">낮음</text>
+<text x="720" y="815" text-anchor="end" class="small">높음</text>
+<rect x="120" y="242" width="282" height="200" rx="18" fill="var(--teal)"/>
+<text x="137" y="289" class="head">네트워크·데이터</text>
+<text x="137" y="331" class="head">권한·업무 결합</text>
+<text x="137" y="374" class="small">고객 관계와 정보,</text>
+<text x="137" y="410" class="small">업무에 결합된 기반</text>
+<rect x="434" y="242" width="282" height="200" rx="18" fill="var(--blue)"/>
+<text x="451" y="289" class="head">로봇·인프라</text>
+<text x="451" y="331" class="head">기술과 기반의 결합</text>
+<text x="451" y="374" class="small">설계·제어 기술과</text>
+<text x="451" y="410" class="small">생산·공급·운영 기반</text>
+<rect x="120" y="518" width="282" height="200" rx="18" fill="var(--neutral)"/>
+<text x="137" y="565" class="head">쉽게 복제하는</text>
+<text x="137" y="607" class="head">단일 기능</text>
+<text x="137" y="650" class="small">기능도 사업 기반도</text>
+<text x="137" y="686" class="small">쉽게 갖추는 경우</text>
+<rect x="434" y="518" width="282" height="200" rx="18" fill="var(--purple)"/>
+<text x="451" y="565" class="head">고효율</text>
+<text x="451" y="607" class="head">소프트웨어 기술</text>
+<text x="451" y="650" class="small">같은 자원으로 얻는</text>
+<text x="451" y="686" class="small">더 높은 성능</text>
+<text x="100" y="874" class="axis">X · 기술 재현 난이도</text>
+</svg>

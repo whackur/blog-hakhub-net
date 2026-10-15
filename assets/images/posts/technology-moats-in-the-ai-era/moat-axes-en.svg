@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="940" viewBox="0 0 780 940" role="img" aria-labelledby="title desc" lang="en">
+<title id="title">Two dimensions of a moat</title><desc id="desc">The horizontal axis is technology replication difficulty; the vertical axis is business foundation difficulty. Illustrative regions show standalone features at lower left, networks, data, rights and workflows at upper left, efficient software at lower right, and integrated robotics and infrastructure at upper right. These are conceptual examples, not measured scores or industry rankings.</desc>
+<style>
+:root{--bg:#faf9f5;--text:#172e3b;--muted:#415d6c;--line:#69818b;--teal:#e0efeb;--blue:#e1eaf2;--neutral:#efeee8;--purple:#eae5f1}
+@media(prefers-color-scheme:dark){:root{--bg:#15242d;--text:#f0f5f6;--muted:#c3d3dc;--line:#9ab1bb;--teal:#25483f;--blue:#263f55;--neutral:#343c3c;--purple:#3c354d}}
+text{font-family:"Noto Sans CJK KR","Noto Sans",Arial,sans-serif;fill:var(--text)}.small{font-size:27px;fill:var(--muted)}.head{font-size:31px;font-weight:700}.axis{font-size:32px;font-weight:700}
+</style>
+<rect width="780" height="940" rx="24" fill="var(--bg)"/>
+<text x="40" y="64" font-size="36" font-weight="700">Two dimensions of a moat</text>
+<text x="100" y="126" class="axis">Y · Business foundation</text>
+<text x="100" y="164" class="axis">difficulty</text>
+<path d="M100 770 V196 M100 770 H738" fill="none" stroke="var(--line)" stroke-width="3"/>
+<path d="M93 207 L100 194 L107 207 M726 763 L740 770 L726 777" fill="none" stroke="var(--line)" stroke-width="3"/>
+<path d="M416 216 V748 M120 480 H716" fill="none" stroke="var(--line)" stroke-opacity=".5" stroke-width="2" stroke-dasharray="7 9"/>
+<text x="80" y="218" text-anchor="end" font-size="24" fill="var(--muted)">Higher</text>
+<text x="80" y="758" text-anchor="end" class="small">Lower</text>
+<text x="120" y="815" class="small">Lower</text>
+<text x="720" y="815" text-anchor="end" class="small">Higher</text>
+<rect x="120" y="242" width="282" height="200" rx="18" fill="var(--teal)"/>
+<text x="137" y="289" class="head">Networks, data,</text>
+<text x="137" y="331" class="head">rights, workflows</text>
+<text x="137" y="374" class="small">Customer ties, data</text>
+<text x="137" y="410" class="small">and integration</text>
+<rect x="434" y="242" width="282" height="200" rx="18" fill="var(--blue)"/>
+<text x="451" y="289" class="head">Robotics and</text>
+<text x="451" y="331" class="head">infrastructure</text>
+<text x="451" y="374" class="small">Design, control,</text>
+<text x="451" y="410" class="small">supply, operations</text>
+<rect x="120" y="518" width="282" height="200" rx="18" fill="var(--neutral)"/>
+<text x="137" y="565" class="head">Easily copied</text>
+<text x="137" y="607" class="head">features</text>
+<text x="137" y="650" class="small">Standalone features</text>
+<text x="137" y="686" class="small">with low barriers</text>
+<rect x="434" y="518" width="282" height="200" rx="18" fill="var(--purple)"/>
+<text x="451" y="565" class="head">Efficient</text>
+<text x="451" y="607" class="head">software</text>
+<text x="451" y="650" class="small">More performance,</text>
+<text x="451" y="686" class="small">same resources</text>
+<text x="100" y="874" class="axis">X · Technology replication</text>
+<text x="100" y="914" class="axis">difficulty</text>
+</svg>
