@@ -1,10 +1,10 @@
 ---
 title: "Why did Anthropic publish its report on alleged Kimi-to-Claude routing?"
 meta_title: ""
-description: "Anthropic's September 2026 report alleges that Moonshot routed some Kimi requests to Claude and replayed thinking signatures to extract reasoning traces. A closer look at the claims, the API mechanics, and the possible effects of disclosure."
+description: "Why disclosing alleged Kimi-to-Claude routing can serve Anthropic despite incoming sensitive data, and how reasoning replay and privacy scrutiny change the tradeoff."
 date: 2026-09-15T13:30:00+09:00
-lastmod: 2026-10-15T08:25:58+00:00
-image: "/images/posts/anthropic-moonshot-disclosure-strategy/cover.png"
+lastmod: 2026-10-15T11:40:30+00:00
+image: "/images/posts/anthropic-moonshot-disclosure-strategy/disclosure-cover-20261015.webp"
 categories: ["AI"]
 tags: ["llm", "distillation", "ai-security", "anthropic", "kimi"]
 author: "whackur"
@@ -12,169 +12,74 @@ translationKey: "anthropic-moonshot-disclosure-strategy"
 draft: false
 ---
 
-Footage collected from hundreds of CCTV cameras in Chengdu followed one person. According to Anthropic's September 2026 report, the user believed they were using Moonshot's Kimi and asked whether the person was behaving unusually. Anthropic says the request went to Claude.
+If sensitive information was reaching Claude, why would Anthropic reveal the route? **A model provider may gain more from limiting unauthorized use and alerting customers to a data-handling problem than from continuing to observe the inputs.** Answering a competitor’s users consumes compute and may produce training material for that competitor. Publication also reaches users and enterprise buyers whom account bans alone cannot inform. These incentives explain why disclosure can make sense; they do not establish how Anthropic made its internal decision.
 
-In [Detecting and countering misuse of AI: September 2026](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf), Anthropic alleges that Moonshot AI forwarded some customer requests to Claude instead of processing them with Kimi, then showed Claude's responses as Kimi's. Anthropic published the report on September 10, 2026. It also describes internal code and credentials that were live at the time of observation, submitted by an engineer at a major Chinese state-owned enterprise.
+In its [September 2026 report](https://www.anthropic.com/threat-intelligence-report-september-2026), Anthropic gives a stated reason: responsibility to disclose malicious misuse of its services. It also says the findings should help other developers detect abuse and help society respond. The allegation that Moonshot sent Kimi requests to Claude is one case in that report. Treating the arrival of sensitive inputs as an intelligence success overlooks both the provider’s interest in protecting its service and the rights of the people whose data arrived.
 
-Anthropic says it detected and disrupted several campaigns. The report does not give the exact date when Moonshot's rerouting stopped, or say whether new accounts or routes appeared afterward. Its publication alone does not establish that every route was closed.
+## Serving customer requests while collecting training material
 
-## What the report claims
+The Moonshot case, GTG-16002, connects two alleged activities. Moonshot sent some customer requests to Claude instead of Kimi and returned Claude’s responses to users. It also saved some exchanges and extracted reasoning transcripts for model training. **Routing determines how a live request is served; distillation uses collected outputs to train another model.** Evidence of routing alone would not establish training. Anthropic alleges both here. ([Original PDF, pp. 148-149](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf))
 
-The report covers activity detected and disrupted between December 2025 and August 2026. It groups cases into seven areas: cyber operations, influence operations, surveillance, scams and fraud, biological misuse, conventional weapons, and illicit distillation. The Moonshot case appears in the final category. These details come from Anthropic's investigation; the report does not include an independent investigation of its claims.
+The reported flow takes a user request through Moonshot and a network of proxy accounts to Claude, then returns Claude’s answer to the user. Anthropic says one instance involved almost 300,000 requests over ten days, mostly to Opus. It describes 5,380 fraudulent accounts, most apparently located in Singapore and Japan. The exact routing implementation and account-level operating records are not public.
 
-The central allegation in the Moonshot case (GTG-16002) is that Moonshot sent customer requests to Claude instead of Kimi and returned Claude's responses to users. In one instance, Anthropic says Moonshot relayed nearly 300,000 customer requests over ten days, most of them to Claude Opus. It says the relay used a proxy network with 5,380 fraudulent accounts, most of which appeared to be in Singapore and Japan.
+This differs from sending a large, prepared set of questions to a model and collecting its answers. Real users supply the tasks, and a response becomes both the service’s answer and potential training material. In Anthropic’s account, corporate documents or code accompanying a request travel with it. The report does not establish that all Kimi requests were forwarded or that Kimi’s overall performance came from Claude.
 
-| Organization | Scale reported by Anthropic |
-|------|------|
-| Moonshot (Kimi) | More than 23 million exchanges. Nearly 300,000 requests relayed in ten days through 5,380 fraudulent accounts |
-| Alibaba (Qwen/Tongyi Lab) | More than 151 million exchanges, Anthropic's largest measured distillation campaign |
-| Xiaomi (MiMo) | More than 400,000 requests across more than 1,500 accounts |
-| DeepSeek | Similar rerouting and cross-session replay tactics, according to the report |
+The sensitive-data examples make the stakes concrete. Anthropic describes a user submitting an archive from hundreds of CCTV cameras in Chengdu to assess whether a particular person was behaving abnormally. Its assessment that the user was likely affiliated with the People’s Liberation Army (PLA) is Anthropic’s attribution. Another example concerns an engineer at a major Chinese state-owned enterprise whose requests allegedly included internal code and live credentials from several companies. “Live” describes their status during the investigation, not their validity today. ([PDF, p. 149](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf))
 
-The Moonshot and Alibaba exchange counts cover May through July 2026. Xiaomi's figure of more than 400,000 covers 20 days in March and April. The report does not give exact dates for Moonshot's ten-day relay example.
+The report explicitly says Anthropic does not know whether Moonshot notified customers about the routing. That prevents a blanket claim that every customer was unaware. The alleged mismatch between the service a customer selected and the company receiving its input still warrants examining data-processing commitments. Attribution and case details come from Anthropic’s own investigation; the cited material contains no independent audit of them.
 
-In the DeepSeek case (GTG-16001), Anthropic says the company selected requests from users running coding tools such as Claude Code, the Agent SDK, and OpenCode, then routed them to Claude Opus. Xiaomi replayed conversations from MiMo users through OpenClaw and OpenCode, the report says. It also says activity increased as the free MiMo-V2-Pro trial period ended. The report describes targeted collections of particular kinds of work and conversation, not a claim that every request was forwarded.
+## An API that can reuse encrypted reasoning
 
-## How the requests were routed
+Training material can include intermediate reasoning, or chain of thought (CoT), as well as final answers. Anthropic alleges that Moonshot exploited Claude’s thinking functionality to obtain those transcripts. Understanding the claim requires separating visible reasoning from the data returned to the API on a later call.
 
-In an ordinary setup, a user sends a request to the Kimi app or API, Moonshot processes it with a Kimi model, and the service returns the result. Anthropic's account adds a relay step that calls the Claude API. The exact routing implementation is not disclosed.
+The [current Claude API documentation](https://platform.claude.com/docs/en/build-with-claude/thinking#thinking-encryption) distinguishes these fields:
 
-![Editorial illustration of a hand placing an envelope in a blue collection box while a robot arm behind a curtain passes an envelope to another machine, representing request routing.](/images/posts/anthropic-moonshot-disclosure-strategy/routing-illustration.webp)
+| API element | Documented role |
+| --- | --- |
+| `thinking` inside a `thinking` block | Readable reasoning or a summary, depending on model and settings; it may also be empty. |
+| `signature` in the same block | Contains encrypted full reasoning. The API uses it for verification; callers return it unchanged rather than interpreting or parsing it. |
+| `data` inside a `redacted_thinking` block | Encrypted reasoning withheld for safety. This is a separate block type. |
 
-A proxy is a server that forwards a request on someone else's behalf. Residential proxies use IP addresses from ordinary home internet connections. Anthropic does not say whether Moonshot's account network used residential proxies. Its description of residential proxies, disposable email addresses, and virtual-card payments concerns Alibaba's accounts. Anthropic says the first Alibaba pool had nearly 5,000 accounts and shifted traffic to a second pool after the first was banned. Anthropic says some of those accounts were also funneling requests for DeepSeek and Xiaomi. There is no basis in the report for assuming Moonshot used the same setup.
+Calling the signature readable reasoning would be wrong. Describing it solely as a verification tag unrelated to reasoning data would also be inaccurate. Despite the field’s name, current documentation explicitly says it contains encrypted full thinking.
 
-The report names China, Russia, and Iran as examples of unsupported countries and says signals of abuse, including accounts operating from such countries, can trigger identity checks. That makes the distinction between an apparent proxy location and the requester's actual location relevant. This general account does not establish where Moonshot's accounts were operated.
+Sending earlier thinking back to the API is normal functionality. When Claude calls a tool and waits for its result, the caller returns the previous thinking blocks unchanged so Claude can continue the same response. ([Preserving thinking blocks during tool use](https://platform.claude.com/docs/en/build-with-claude/thinking#preserving-thinking-blocks))
 
-Anthropic says the requests did not arrive through one Moonshot account. They came through accounts that appeared unrelated. The report gives the Moonshot account count and apparent locations, but that does not establish where each request actually began or exactly how the accounts were divided.
+What the report calls cross-session replay allegedly involved saving a signature, reusing it in a new session, and eliciting the associated reasoning transcript from Claude. This is different from independently decrypting ciphertext. The security problem concerns both the model’s ability to reuse encrypted reasoning and the controls that prevent it from exposing that reasoning. Anthropic does not publish Moonshot’s full requests or reproduction code, so the precise conditions for success cannot be verified from the report. ([PDF, pp. 148-149](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf))
 
-Nearly 300,000 requests over ten days averages 30,000 a day. Divided evenly across 5,380 accounts, that would be around five or six requests per account per day. This is only arithmetic to help convey scale, not a measured distribution. Account creation, payment, and proxy operations suggest substantial coordination, but the report does not describe Moonshot's precise operating process.
+Anthropic describes reasoning summaries and preserved thinking as defenses. Current documentation says preserved thinking, starting with Fable 5.1, checks whether the preceding system prompt, tools, or messages have changed. This prefix check applies by default to accounts created on or after August 31, 2026, at 00:00 UTC. For older accounts it applies to requests that send the specified setting. Those conditional protections are not a guarantee that every form of replay is impossible on every account. ([Current API enforcement conditions](https://platform.claude.com/docs/en/build-with-claude/thinking#preserved-thinking))
 
-The report describes other organizations too. MiniMax allegedly created a separate company to run a proxy service that offered Anthropic and OpenAI models, but no Chinese models. SenseTime's distillation pipeline allegedly included conversation records purchased from third-party data vendors. Those cases support Anthropic's point that account bans alone do not describe every route through which exchanges can circulate.
+## The value of observation versus protecting the service
 
-The report's account is consistent with some users receiving Claude-quality responses through Kimi. It does not claim that this rerouting produced Kimi's benchmark scores. That connection appeared as speculation in Hacker News discussions, not as a finding in the report.
+Sensitive requests may have investigative value. But while those requests continue, Claude must generate responses that may help train a competitor. Anthropic’s interests include compute costs, access restrictions, and limiting unauthorized collection of model capabilities, alongside observing incoming traffic. Receiving sensitive material also creates decisions about access to records, retention, and evidence needed for incident response. Sensitivity alone does not establish that continuing to receive it is the more valuable option.
 
-## Thinking blocks and cross-session replay
+Anthropic also makes a safety argument. It says distillation can improve general reasoning and thereby improve biological or cyber capabilities even when those were not the tasks targeted during collection, while Claude’s safeguards do not transfer with the capabilities. This is the provider’s risk argument, not an independent measurement of that outcome in a particular Moonshot model. ([PDF, p. 146](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf))
 
-A key technical allegation is that the collection included reasoning traces, not only final answers. Distillation uses a stronger model's outputs as training material for another model. Anthropic's report focuses on how the material was collected and whether users knew their conversations were being routed.
+Blocking and publishing have overlapping purposes but different effects. An account ban stops that account’s access. Disclosure prompts customers and other providers to ask about data flows and offers clues for recognizing similar activity. Anthropic reports detecting and disrupting campaigns, but does not establish that every Moonshot access route was closed before publication. The explanation that it published only after observation had become impossible is therefore unverified too.
 
-Claude API responses can include thinking blocks and a signature field. The thinking text may be summarized or omitted, and the signature itself is not readable reasoning text. Anthropic's report describes the signature as a reference the API uses on later calls to look up the associated raw thinking. The current API documentation describes the field as carrying encrypted full thinking and tells callers not to interpret or parse it. The alleged extraction involves prompting Claude to reproduce a trace, rather than directly decrypting the value. The API documentation says to return prior blocks unchanged in tool-using conversations. That ordinary continuation is different from the report's allegation about reusing a saved signature in a new session.
+## Disclosure exposes Anthropic to scrutiny as well
 
-Anthropic alleges that Moonshot saved a signature from stored exchanges, reused it in a new session, and prompted Claude to reproduce the associated reasoning trace. The report calls this cross-session replay. It also says Moonshot extracted reasoning transcripts collected through other means. This differs from ordinary API continuation, which returns the prior block unchanged in the same conversation. The report does not publish the original requests, prompts, code, or exact sequence of steps. The disclosed details are also insufficient to reproduce the conditions under which signature reuse was possible.
+For customers, the immediate issue is which company processed an input, beyond which model answered it best. An enterprise buyer learning about rerouting can check the actual processors and retention conditions against contractual commitments. More such questions would create an explanation and response burden for Moonshot. Publication also showcases Anthropic’s detection work and its case for protecting model capabilities. That may help it in customer and policy discussions, but neither actual revenue effects nor the relative weight of these motives in the publication decision is established.
 
-![Editorial illustration of a robot arm moving a sheet with an intact wax seal between two open notebooks, representing reasoning-trace reuse.](/images/posts/anthropic-moonshot-disclosure-strategy/reasoning-reuse-illustration.webp)
+Those effects do not all favor Anthropic. Detailed case studies also invite questions about how much request content it retains and who can read it. In the [Hacker News Moonshot discussion](https://news.ycombinator.com/item?id=49656698), wongarsu distinguished a service that discloses possible routing to another model from one that offers Kimi while forwarding to Claude. In the same discussion, AlanYx worried that retention for abuse investigations could be broader than customers expect. One concern is routing transparency; the other is the investigator’s authority to process data. Neither comment independently verifies the incident.
 
-A final answer alone does not show which approaches the model tried or revised. Reasoning traces can include those intermediate steps, giving a collector a different kind of training material. Anthropic says summarizing reasoning makes the transcripts less useful for training another model. That does not establish that a summary always removes every failed approach, or that possessing a trace is enough to reproduce the original model's capabilities.
+The [author of a Reddit discussion](https://www.reddit.com/r/ClaudeAI/comments/1wdz975/anthropics_new_report_has_no_winners_and_the_part/) similarly questioned users’ limited visibility into which provider ultimately receives a prompt. That concern can be examined without extending it into a claim that Anthropic conducts unlimited surveillance of all users.
 
-Anthropic describes several layers of mitigation. Claude now summarizes its reasoning before responding. The company says Fable 5.1's preserved thinking prevents new API accounts from changing the system prompt, tool definitions, or messages that precede a reasoning block. That is intended to distinguish an unchanged continuation from a replay with altered prior context. Anthropic also mentions stronger classifiers, blocking suspicious requests and accounts, and identity checks for accounts operating from unsupported countries.
+Anthropic’s [current commercial-product retention guidance](https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data) says API inputs and outputs are generally deleted within 30 days, with exceptions including contracts, policy enforcement, and law. For chats flagged by automated systems as policy violations, it describes retaining inputs and outputs for up to two years and classification scores for up to seven. This does not identify the contracts or actual retention periods applied to the proxy accounts in this case. It does explain why abuse detection and privacy warrant examination together.
 
-## Sensitive data in the report
+The legality of cross-border processing also depends on the particular circumstances. The report’s privacy allegations alone do not establish a specific legal violation or penalty. Customer notification, blocking access, limited intelligence sharing, and public reporting are separate actions; the cited material does not show that publication was the only lawful response. The report’s introductory statement about sharing intelligence with authorities where appropriate likewise does not prove that a particular government acquired Moonshot customers’ material.
 
-Anthropic says a user it assessed as likely affiliated with the People's Liberation Army (PLA) uploaded CCTV archive data about one person while believing they were using Kimi. The report says the archive included footage from hundreds of cameras in Chengdu, including cameras outside PLA facilities, institutes affiliated with China Electronics Technology Group Corporation (CETC), and state-owned enterprises. The user asked whether the person being tracked was behaving abnormally. The PLA link is Anthropic's assessment, described as likely, not an independently verified attribution.
-
-In another case, a developer at a major Chinese state-owned enterprise allegedly submitted internal code and live credentials belonging to several Chinese companies while building an internal system with Kimi. The report described those credentials as live at the time of its investigation. It does not establish that they remain valid today.
-
-The DeepSeek cases included specifications, organizational structure, and strategic objectives for a major Chinese technology company's AI program. The report also mentions live credentials for a Russian government database used by a Russian defense agency. In the Xiaomi case, Anthropic says data included names, contact information, and company records belonging to hundreds of users, in at least a dozen languages.
-
-Anthropic says it does not know whether Moonshot told its customers that requests were being rerouted. The report does not establish that every Moonshot customer was unaware. It separately assesses that DeepSeek customers were likely not informed about the rerouting.
-
-## What disclosure may accomplish
-
-### Disruption and publication were separate actions
-
-Anthropic says it had been detecting and disrupting unauthorized distillation campaigns since February 2026. The Moonshot exchange count covers activity observed from May through July. The report appeared on September 10, but that date does not show when Moonshot's route ended. Nor does the report say whether new accounts or alternative routes appeared. We cannot treat publication as proof that all rerouting stopped.
-
-Anthropic reports taking enforcement action before publishing its account of the investigation. Publication may make similar operations harder, but the report does not measure that effect.
-
-### Customer questions about data handling
-
-If a request entered through Kimi and went to Claude, users and enterprise customers have reason to ask which services processed their data. Anthropic says it does not know whether Moonshot notified customers, leaving customers to seek an explanation from the service they used. Public disclosure may pressure Moonshot to explain its data flows and notification practices. That is a possible consequence, not a motive Anthropic confirms.
-
-For enterprise buyers, response quality and data-processing commitments are separate concerns. A customer who chose a domestic service to keep processing within the country would need to check whether a foreign provider received the input. Coding-tool requests may include repository structure, code fragments, and configuration rather than an isolated question. Checking the affected requests and subprocessors could delay procurement or renewal, though the report does not measure customer departures or lost revenue.
-
-### Service protection and commercial interests
-
-Anthropic says it blocks requests and accounts when it identifies unauthorized use. Preventing its responses from being used to train another model is part of protecting its service. The allegation that Moonshot also sent customer prompts to Claude adds questions about data handling and the provider's commitments to its users.
-
-Publication also makes Anthropic's detection methods and cases visible. It can support the company's argument that frontier-model safeguards and controls against unauthorized distillation matter. That may serve Anthropic's commercial interests as well. The report does not say how much these possible effects influenced the decision to publish.
-
-Allowing a detected relay to continue would mean continuing to answer a competitor's users with Claude while accepting the possibility that the responses would become training data. The 23 million observed exchanges cannot all be counted as distinct training examples, but the reported scale makes service protection a practical concern as well as a stated principle. Additional investigative information would have to be weighed against serving costs and the usefulness of the material to competing models. A state agency evaluating intelligence and a model provider operating its own service have different interests. The report does not say whether Anthropic weighed those options.
-
-Receiving sensitive material also creates operational decisions about who can read credential-bearing logs, when to delete them, and what to preserve for incident response. Neither automatic deletion nor indefinite retention resolves those decisions by itself. The report's introduction says Anthropic shared information with authorities and industry partners where appropriate. That does not establish a particular government relationship or the transfer of any specific material. Blocking, notification, limited information sharing, and a public report are separate actions. The document does not show that publication was the only legally available response.
-
-### Privacy and regulatory questions
-
-Anthropic says the labs' use of user conversations was likely inconsistent with privacy laws and their own terms of service. This is the company's legal assessment. The report does not include findings about individual consent, contract terms, which laws apply to each request, or a court's conclusion.
-
-The public report could give regulators in the labs' home country a lead for examining the activity. China's Personal Information Protection Law sets requirements for providing personal information abroad, including notice and separate consent, while the Data Security Law separately regulates transfers of important data ([PIPL](https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm), [Data Security Law](https://www.cac.gov.cn/2021-06/11/c_1624994566919140.htm)). The report alone is not enough to conclude that a specific provision was violated. A possible investigation by China's Cyberspace Administration or cancellation of a service license, mentioned by [AI Times](https://www.aitimes.com/news/articleView.html?idxno=215229), remains speculation. The sources cited here do not establish that such an investigation began.
-
-### Detection and safeguards
-
-Anthropic says it combines metadata with irregular-activity signals to associate proxy accounts with an organization. It says this lets it act against an organization rather than ban accounts one by one. Publishing that approach may warn other operators that distributed accounts do not guarantee anonymity. Outside observers do not have enough evidence to assess the accuracy of Anthropic's attribution.
-
-Repeated enforcement may require operators to replace accounts and payment methods and adjust request distribution. Anthropic must also analyze new evasions and update detection, so the public evidence does not let us compare how quickly each side's costs grow. Publicly associating activity with a named lab can add customer-trust and regulatory costs beyond an account ban. It also increases the consequences of a mistaken attribution, which makes the limited evidence available for external scrutiny consequential.
-
-The Zhipu case also appears in the report as an example of safeguards affecting an operation. Anthropic says Zhipu used Claude to improve post-training pipelines, evaluate outputs, and organize reasoning transcripts. As Zhipu prepared GLM 5.3, the report says, it began testing the cyber capabilities of US frontier models through CTF challenges, starting with Fable, which Anthropic described as a widely available model with stronger cyber safeguards. Anthropic claims Fable's safeguards interfered with those attempts, after which Zhipu moved to Opus 4.6 and another lab's model because it assessed their safeguards as weaker. This account comes from Anthropic's investigation, not an independent test.
-
-The case can support Anthropic's argument to enterprise customers that safeguards affected an operator's choices. It does not mean the attempts ended. In the report's account, Zhipu selected other models. Making an attempt harder on one model and reducing misuse across the industry are different outcomes; the report does not provide a full account of the subsequent activity.
-
-### Evidence for a policy debate
-
-Before Anthropic's report appeared, [CNBC reported on September 3](https://www.cnbc.com/2026/09/03/anthropic-distillation-battle-turns-to-dark-web-china-concerns-swell.html) on the distillation dispute, account trading, and concerns about Chinese models. Anthropic's September 10 report adds examples and numbers that can enter US policy discussions about protecting frontier models.
-
-Some Hacker News commenters read the report as lobbying for regulation that would benefit Anthropic. The report may be useful in policy discussions, and Anthropic has commercial interests in those discussions. The public document does not establish that lobbying was the company's reason for publishing.
-
-## Anthropic's stated reason and what readers can infer
-
-Anthropic says it believes it has a responsibility to disclose malicious misuse of its services. That is the reason the company gives. The report also publicizes its detection and enforcement work and argues that unauthorized distillation can carry risks beyond the target tasks. Disclosure may align with Anthropic's business interests, but the report does not tell readers which consideration mattered most.
-
-Organizations choosing model services should check which subprocessors receive prompts, how cross-border transfers are handled, how long logs are kept, how model routing works, and when customers are notified. Those questions apply whenever one service routes a prompt to another model provider.
-
-## Community reaction
-
-The [main Hacker News thread about the report](https://news.ycombinator.com/item?id=49647300) and a [separate thread about Moonshot's rerouting](https://news.ycombinator.com/item?id=49656698) raised questions about privacy, distillation, technical plausibility, and Anthropic's incentives. The comments reflect users' views; they are not independent verification of the report.
-
-Concerns about Anthropic's data practices were prominent. CrzyLngPwd summarized the report as a way to “tell us you are spying on your customers without saying you are spying on your customers.” qlte found the case studies unsettling because they were so specific and some of the people sounded more like researchers doing routine work than terrorists. One commenter compared it with Google being able to read email, while not publishing detailed accounts of a flagged person's inbox every month.
-
-AlanYx asked how customers could trust that Anthropic was not retaining a whole class of flagged accounts without notice, given that reconstructing these sessions required retaining exchanges. Shank pointed to the training-use language in consumer terms. wongarsu replied that commercial terms and zero data retention agreements are stricter, and guessed that thousands of accounts routed through a proxy service were likely consumer accounts under weaker terms. In another comment, wongarsu drew a line between a disclosed tier where the provider can choose the model and selling Kimi while routing requests to Claude without notice. The report's description of detection also raised questions about Anthropic's own data retention and use.
-
-The ethics debate concerned whether distillation should be treated differently from other model training. nacs argued that US labs had scraped books and websites without permission and now objected when others distilled their models. esafak said the same transformative-use argument used to defend US labs should apply to Chinese labs too. jchw argued that paid tokens are not copyrighted, training on them does not create a derivative work, and there was no authentication bypass or model leak, so at worst the conduct was a terms-of-use violation.
-
-Others focused on how the data was collected. nojito and villish cited the report's allegations about false identities, stolen cards, and stolen API keys, arguing that the method was the problem. villish also argued that European labs could not legally use those methods and were disadvantaged as a result. qgin said silently routing a user's request through another model added deception that was different from reading publicly available material. pwinnski asked whether users who paid Kimi prices and received Claude had actually lost anything. DonsDiscountGas said this was the first case they had seen of a provider substituting another company's model without notice.
-
-Some commenters questioned whether the relay was technically plausible. realusername and wren6991 argued that differences in how Kimi and Claude expose reasoning would make a Claude relay noticeable. zahlman said model writing styles differ enough to make long-term concealment difficult. KronisLV offered a counterexample, saying Kimi's thinking output had referred to Anthropic guidelines. xscott noted similar cross-contamination in local models from Meta and Poolside, which made that observation suggestive rather than proof.
-
-Economics also came up. throwa356262 saw little reason for DeepSeek to send requests to a more expensive model. alex_duf replied that resale markets for accounts and tokens could change the unit cost. gjm11 read Anthropic's claim as an effort to obtain real user conversations for training rather than to save money. echelon added that synchronous routing could reveal how users respond to an answer, which may be useful for training.
-
-Other commenters questioned attribution and motive. punk_ihaq noted that a device connecting from Yemen, Russia, or China could be a relay node for someone elsewhere, making attribution difficult. echelon read the report as a message to the government about bad actors Anthropic had stopped. Terretta argued that the real audience was Washington and that several labs publishing similar reports around the same time resembled regulatory-capture lobbying. enraged_camel and nsoonhui wondered whether distillation explained Chinese models' high benchmark scores. vopi pushed back, saying the full report calls distillation a legitimate training method and gives a fairer account than excerpts suggested.
-
-The widest disagreement concerned how much weight to give the rerouting itself. woctordho wrote that Chinese users may already expect their activity to be monitored, so Anthropic seeing it might not concern them, and that account bans can be bypassed. bbor argued that the thread was underreacting to shared proxy infrastructure capable of carrying Chinese users' requests to a US company. [TechCrunch's coverage](https://techcrunch.com/2026/09/10/anthropic-details-distillation-campaigns-from-alibaba-moonshot-ai-and-deepseek/) gives a concise overview of the case.
+Public disclosure creates benefits different from continued private observation. It turns alleged unauthorized collection into a data-processing issue that customers can investigate and brings Anthropic’s service-protection argument to an outside audience. Supporting that argument also requires Anthropic to explain its evidence and retention practices. The report’s persuasiveness depends on how well both companies’ data handling can be examined, beyond how forcefully it names a competitor.
 
 ## Further reading
 
-- [Detecting and countering misuse of AI: September 2026 (PDF)](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf): Anthropic's original report
-- [Claude API thinking documentation](https://platform.claude.com/docs/en/about-claude/models/extended-thinking-models): thinking blocks and signatures
-- [HN: Detecting and countering misuse of AI](https://news.ycombinator.com/item?id=49647300): discussion of the report
-- [HN: Moonshot serves Claude instead of Kimi](https://news.ycombinator.com/item?id=49656698): discussion of the rerouting allegation
-- [TechCrunch: Anthropic details distillation campaigns](https://techcrunch.com/2026/09/10/anthropic-details-distillation-campaigns-from-alibaba-moonshot-ai-and-deepseek/): coverage of the cases
-- [CNBC: Anthropic's distillation battle turns to the dark web](https://www.cnbc.com/2026/09/03/anthropic-distillation-battle-turns-to-dark-web-china-concerns-swell.html): background on the dispute
-- [China's Personal Information Protection Law](https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm): Cyberspace Administration of China, cross-border personal information rules
-- [China's Data Security Law](https://www.cac.gov.cn/2021-06/11/c_1624994566919140.htm): Cyberspace Administration of China, important-data rules
-- [AI Times: Kimi's unauthorized Claude rerouting controversy](https://www.aitimes.com/news/articleView.html?idxno=215229): Korean coverage, including speculation about CAC action
-
-## Takeaways
-
-Anthropic alleges that Moonshot and DeepSeek collected Claude responses and reasoning traces, and says it disrupted campaigns to protect its service. The report does not say exactly when Moonshot's rerouting stopped or whether replacement accounts or routes remained. Publication made Anthropic's investigation and interpretation public. It may affect customer scrutiny, service protection, and policy debates, but the document does not reveal which effect the company intended most.
-
-The PLA link is Anthropic's assessment, not a confirmed attribution. A request reaching Anthropic's servers is not the same claim as the US government receiving state secrets. Anthropic says it does not know whether Moonshot notified customers. The report presents important allegations, but readers should keep its disclosed evidence separate from what remains unverified.
+- [Claude API Thinking](https://platform.claude.com/docs/en/build-with-claude/thinking): reasoning display, encryption, normal reuse, and current enforcement conditions.
+- [Commercial-product retention guidance](https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data): abuse investigations and retention exceptions.
 
 ## References
 
-1. [Detecting and countering misuse of AI: September 2026](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf): Anthropic, accessed 2026-10-15
-2. [Claude API thinking documentation](https://platform.claude.com/docs/en/about-claude/models/extended-thinking-models): Anthropic, accessed 2026-10-15
-3. [HN thread: Detecting and countering misuse of AI](https://news.ycombinator.com/item?id=49647300): Hacker News, accessed 2026-10-15
-4. [HN thread: Moonshot serves Claude instead of Kimi](https://news.ycombinator.com/item?id=49656698): Hacker News, accessed 2026-10-15
-5. [Anthropic details distillation campaigns from Alibaba, Moonshot AI, and DeepSeek](https://techcrunch.com/2026/09/10/anthropic-details-distillation-campaigns-from-alibaba-moonshot-ai-and-deepseek/): TechCrunch, accessed 2026-10-15
-6. [Anthropic's distillation battle turns to the dark web as China concerns swell](https://www.cnbc.com/2026/09/03/anthropic-distillation-battle-turns-to-dark-web-china-concerns-swell.html): CNBC, accessed 2026-10-15
-7. [China's Personal Information Protection Law](https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm): Cyberspace Administration of China, accessed 2026-10-15
-8. [China's Data Security Law](https://www.cac.gov.cn/2021-06/11/c_1624994566919140.htm): Cyberspace Administration of China, accessed 2026-10-15
-9. [중국 '키미', 클로드 무단 우회 연결 파문…안보·기업 기밀 유출 논란](https://www.aitimes.com/news/articleView.html?idxno=215229): AI Times, accessed 2026-10-15
+- [Detecting and countering misuse of AI: September 2026, PDF](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf): Anthropic, especially pp. 146, 148-149, and 153. Accessed October 15, 2026.
+- [Report web edition](https://www.anthropic.com/threat-intelligence-report-september-2026): Anthropic’s stated publication rationale and case descriptions. Accessed October 15, 2026.
+- [Thinking](https://platform.claude.com/docs/en/build-with-claude/thinking): Claude Platform Docs. Accessed October 15, 2026.
+- [How long do you store my organization’s data?](https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data): Anthropic Privacy Center. Accessed October 15, 2026.
+- [Moonshot serves Claude instead of Kimi and collects exchanges for model training](https://news.ycombinator.com/item?id=49656698): Hacker News discussion. Accessed October 15, 2026.
+- [Anthropic’s new report has no winners](https://www.reddit.com/r/ClaudeAI/comments/1wdz975/anthropics_new_report_has_no_winners_and_the_part/): privacy commentary on Reddit’s r/ClaudeAI. Accessed October 15, 2026.
