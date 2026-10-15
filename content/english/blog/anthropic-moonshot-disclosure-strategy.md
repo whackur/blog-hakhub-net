@@ -3,7 +3,7 @@ title: "Why did Anthropic publish its report on alleged Kimi-to-Claude routing?"
 meta_title: ""
 description: "Anthropic's September 2026 report alleges that Moonshot routed some Kimi requests to Claude and replayed thinking signatures to extract reasoning traces. A closer look at the claims, the API mechanics, and the possible effects of disclosure."
 date: 2026-09-15T13:30:00+09:00
-lastmod: 2026-10-15T06:53:32+00:00
+lastmod: 2026-10-15T07:36:42+00:00
 image: "/images/posts/anthropic-moonshot-disclosure-strategy/cover.png"
 categories: ["AI"]
 tags: ["llm", "distillation", "ai-security", "anthropic", "kimi"]
@@ -37,11 +37,11 @@ In the DeepSeek case (GTG-16001), Anthropic says the company selected requests f
 
 ## How the requests were routed
 
-In an ordinary setup, a user sends a request to the Kimi app or API, Moonshot processes it with a Kimi model, and the service returns the result. Anthropic's account adds a relay step that calls the Claude API.
+In an ordinary setup, a user sends a request to the Kimi app or API, Moonshot processes it with a Kimi model, and the service returns the result. Anthropic's account adds a relay step that calls the Claude API. The exact routing implementation is not disclosed.
 
-![Conceptual diagram of Anthropic's alleged request route. A user's request goes from the Kimi service through a proxy account pool to Claude, and the response returns through Kimi to the user.](/images/posts/anthropic-moonshot-disclosure-strategy/request-routing.svg)
+![Editorial illustration of a hand placing an envelope in a blue collection box while a robot arm behind a curtain passes an envelope to another machine, representing request routing.](/images/posts/anthropic-moonshot-disclosure-strategy/routing-illustration.webp)
 
-*This diagram reconstructs Anthropic's allegation at a conceptual level. The report mentions 5,380 accounts and nearly 300,000 requests relayed over ten days, but does not disclose the exact routing implementation. [Source: Anthropic's report](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf).*
+*An illustration of request routing, not a reconstruction of the internal system. [Related account: Anthropic’s report](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf).*
 
 A proxy is a server that forwards a request on someone else's behalf. Residential proxies use IP addresses from ordinary home internet connections. Anthropic does not say whether Moonshot's account network used residential proxies. Its description of residential proxies, disposable email addresses, and virtual-card payments concerns Alibaba's accounts. Anthropic says the first Alibaba pool had nearly 5,000 accounts and shifted traffic to a second pool after the first was banned. Anthropic says some of those accounts were also funneling requests for DeepSeek and Xiaomi. There is no basis in the report for assuming Moonshot used the same setup.
 
@@ -61,11 +61,11 @@ A key technical allegation is that the collection included reasoning traces, not
 
 Claude API responses can include thinking blocks and a signature field. The thinking text may be summarized or omitted, and the signature itself is not readable reasoning text. Anthropic's report describes the signature as a reference the API uses on later calls to look up the associated raw thinking. The current API documentation describes the field as carrying encrypted full thinking and tells callers not to interpret or parse it. The alleged extraction involves prompting Claude to reproduce a trace, rather than directly decrypting the value. The API documentation says to return prior blocks unchanged in tool-using conversations. That ordinary continuation is different from the report's allegation about reusing a saved signature in a new session.
 
-Anthropic alleges that Moonshot saved a signature from stored exchanges, reused it in a new session, and prompted Claude to reproduce the associated reasoning trace. The report calls this cross-session replay. It also says Moonshot extracted reasoning transcripts collected through other means. This differs from ordinary API continuation, which returns the prior block unchanged in the same conversation. The report does not publish the original requests, prompts, code, or exact sequence of steps. The diagram below is a conceptual reconstruction, not a reproducible exploit recipe.
+Anthropic alleges that Moonshot saved a signature from stored exchanges, reused it in a new session, and prompted Claude to reproduce the associated reasoning trace. The report calls this cross-session replay. It also says Moonshot extracted reasoning transcripts collected through other means. This differs from ordinary API continuation, which returns the prior block unchanged in the same conversation. The report does not publish the original requests, prompts, code, or exact sequence of steps. The disclosed details are also insufficient to reproduce the conditions under which signature reuse was possible.
 
-![Conceptual diagram separating an original thinking block and opaque signature, normal continuation, Anthropic's alleged replay in a new session, a reconstructed changed context, and the reported mitigations. The exact requests and context changes are not disclosed.](/images/posts/anthropic-moonshot-disclosure-strategy/reasoning-replay.svg)
+![Editorial illustration of a robot arm moving a sheet with an intact wax seal between two open notebooks, representing reasoning-trace reuse.](/images/posts/anthropic-moonshot-disclosure-strategy/reasoning-reuse-illustration.webp)
 
-*For normal continuation, the caller passes the prior thinking block back unchanged in the same conversation. Anthropic alleges that Moonshot saved the signature, replayed it in a new session, and prompted Claude to produce the reasoning trace. The changed context in the diagram is a conceptual reconstruction because the report does not publish the exact requests or context changes. [Sources: Anthropic's report](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf) and [Claude API thinking documentation](https://platform.claude.com/docs/en/about-claude/models/extended-thinking-models).*
+*An illustration of reasoning-trace reuse. The wax seal is a visual metaphor. [Related account: Anthropic’s report](https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf) and [Claude API thinking documentation](https://platform.claude.com/docs/en/about-claude/models/extended-thinking-models).*
 
 A final answer alone does not show which approaches the model tried or revised. Reasoning traces can include those intermediate steps, giving a collector a different kind of training material. Anthropic says summarizing reasoning makes the transcripts less useful for training another model. That does not establish that a summary always removes every failed approach, or that possessing a trace is enough to reproduce the original model's capabilities.
 
@@ -83,13 +83,11 @@ Anthropic says it does not know whether Moonshot told its customers that request
 
 ## What disclosure may accomplish
 
-The analysis below is mine. Anthropic's report does not reveal the company's internal decision process, so its stated rationale and the possible effects of publication need to be kept separate.
-
 ### Disruption and publication were separate actions
 
 Anthropic says it had been detecting and disrupting unauthorized distillation campaigns since February 2026. The Moonshot exchange count covers activity observed from May through July. The report appeared on September 10, but that date does not show when Moonshot's route ended. Nor does the report say whether new accounts or alternative routes appeared. We cannot treat publication as proof that all rerouting stopped.
 
-A careful reading is that Anthropic reports taking enforcement action and later published its account of the investigation. Publication may make similar operations harder, but the report does not measure that effect.
+Anthropic reports taking enforcement action before publishing its account of the investigation. Publication may make similar operations harder, but the report does not measure that effect.
 
 ### Customer questions about data handling
 
@@ -101,9 +99,9 @@ For enterprise buyers, response quality and data-processing commitments are sepa
 
 Anthropic says it blocks requests and accounts when it identifies unauthorized use. Preventing its responses from being used to train another model is part of protecting its service. The allegation that Moonshot also sent customer prompts to Claude adds questions about data handling and the provider's commitments to its users.
 
-Publication also makes Anthropic's detection methods and cases visible. It can support the company's argument that frontier-model safeguards and controls against unauthorized distillation matter. That may serve Anthropic's commercial interests as well. Both are possible effects; the report does not tell us how company leaders weighed them.
+Publication also makes Anthropic's detection methods and cases visible. It can support the company's argument that frontier-model safeguards and controls against unauthorized distillation matter. That may serve Anthropic's commercial interests as well. The report does not say how much these possible effects influenced the decision to publish.
 
-Allowing a detected relay to continue would mean continuing to answer a competitor's users with Claude while accepting the possibility that the responses would become training data. The 23 million observed exchanges cannot all be counted as distinct training examples, but the reported scale makes service protection a practical concern as well as a stated principle. Additional investigative information would have to be weighed against serving costs and the usefulness of the material to competing models. A state agency evaluating intelligence and a model provider operating its own service have different interests. This comparison can help explain a company's incentives; it is not evidence that Anthropic considered those precise options.
+Allowing a detected relay to continue would mean continuing to answer a competitor's users with Claude while accepting the possibility that the responses would become training data. The 23 million observed exchanges cannot all be counted as distinct training examples, but the reported scale makes service protection a practical concern as well as a stated principle. Additional investigative information would have to be weighed against serving costs and the usefulness of the material to competing models. A state agency evaluating intelligence and a model provider operating its own service have different interests. The report does not say whether Anthropic weighed those options.
 
 Receiving sensitive material also creates operational decisions about who can read credential-bearing logs, when to delete them, and what to preserve for incident response. Neither automatic deletion nor indefinite retention resolves those decisions by itself. The report's introduction says Anthropic shared information with authorities and industry partners where appropriate. That does not establish a particular government relationship or the transfer of any specific material. Blocking, notification, limited information sharing, and a public report are separate actions. The document does not show that publication was the only legally available response.
 
@@ -171,7 +169,7 @@ The widest disagreement concerned how much weight to give the rerouting itself. 
 
 Anthropic alleges that Moonshot and DeepSeek collected Claude responses and reasoning traces, and says it disrupted campaigns to protect its service. The report does not say exactly when Moonshot's rerouting stopped or whether replacement accounts or routes remained. Publication made Anthropic's investigation and interpretation public. It may affect customer scrutiny, service protection, and policy debates, but the document does not reveal which effect the company intended most.
 
-The scope of the evidence matters. The PLA link is Anthropic's assessment, not a confirmed attribution. A request reaching Anthropic's servers is not the same claim as the US government receiving state secrets. Anthropic says it does not know whether Moonshot notified customers. The report presents important allegations, but readers should keep its disclosed evidence separate from what remains unverified.
+The PLA link is Anthropic's assessment, not a confirmed attribution. A request reaching Anthropic's servers is not the same claim as the US government receiving state secrets. Anthropic says it does not know whether Moonshot notified customers. The report presents important allegations, but readers should keep its disclosed evidence separate from what remains unverified.
 
 ## References
 
