@@ -1,10 +1,10 @@
 ---
-title: "Transfer 100 Units in Canton Daml: State and Authorization Compared with Solidity"
+title: "Transferring Tokens with Canton Daml: State and Authorization Compared with Solidity"
 meta_title: ""
-description: "Build a tiny whole-holding Daml transfer, compare it with a Solidity balance mapping, and test authorization and failure cases locally."
+description: "Compare a Daml holding-contract transfer with Solidity balance updates, including authorization, visibility and local verification."
 date: 2026-10-15T15:45:00+09:00
-lastmod: 2026-10-15T15:45:00+09:00
-image: "/images/posts/canton-daml-token-transfer-solidity/cover.png"
+lastmod: 2026-10-15T20:49:42+09:00
+image: "/images/posts/canton-daml-token-transfer-solidity/cover-rewrite-20261015.png"
 categories: ["Blockchain"]
 tags: ["canton", "daml", "solidity", "smart-contracts", "tutorial"]
 author: "whackur"
@@ -13,204 +13,175 @@ translationKey: "canton-daml-token-transfer-solidity"
 draft: false
 ---
 
-Alice sends her entire holding of 100 units to Bob. In Solidity, a small implementation updates two balances in the same contract. In Daml, the language used to write Canton smart contracts, the transfer consumes Alice's holding contract and creates a new holding for Bob. The quantities match; the state model and the placement of authorization checks differ.
+When Alice sends all 100 token units to Bob, Bob becomes the person who can spend them next. **The Solidity example updates balances by address; the Daml example for Canton consumes Alice's holding contract and creates Bob's.** They express the same transfer outcome with different units of state and different authorization checks.
 
-This tutorial runs that comparison with three parties: Issuer, Alice and Bob. It leaves out partial transfers, fees and wallet connections. Both examples were written for teaching. The Daml token is neither Canton Coin nor a Canton Token Standard implementation. It is not ERC-20 or an asset deployed on an external network.
+Both are teaching examples. The Daml code implements neither the Canton Token Standard (CIP-0056 or CIP-0112) nor Canton Coin. The Solidity code is not an ERC-20 implementation. Neither example is presented as a deployment on a public network.
 
-## Toolchain and specification baseline
+## One balance versus one holding contract
 
-**Sources were checked on October 15, 2026, KST.** The latest stable bundle in the [official SDK distribution repository](https://github.com/digital-asset/dpm-assembly/releases/tag/3.6.0) is `3.6.0`, published October 8. That is the bundle used here. Its [component manifest](https://github.com/digital-asset/dpm-assembly/blob/3.6.0/latest/open-source/3.6.yaml) pins the Daml compiler and Script to `3.6.2`, Canton to `3.6.1`, and DPM to `1.0.22`. A bundle version does not identify every bundled component's version.
+Start with Alice holding 100 units and Bob holding none. There are no fees or fractional units, and each operation transfers the entire holding. In Daml, `TokenLot` is the template for a holding contract. H1 and H2 below are explanatory names for distinct contract IDs.
 
-The [official compatibility dashboard](https://docs.canton.network/shared/version-compatibility-dashboard), updated October 14, separately lists MainNet with SDK `3.5.12`, Canton `3.5.19` and Splice `0.8.4`. It lists DevNet with SDK `3.6.0`, Canton `3.6.1` and Splice `0.9.1`. These are dashboard observations, not live node measurements performed for this exercise. A new SDK release does not establish that MainNet has adopted it.
-
-Daml is the source language for contracts and their authorization rules. Daml-LF is the intermediate language produced by compilation. The SDK packages development tools. The Canton protocol, Canton runtime software, Splice applications and Token Standard packages have separate roles and version numbers. A DAR packages Daml-LF programs, dependencies and metadata for distribution. The [compiler documentation](https://docs.canton.network/sdks-tools/development-tools/daml-compiler) describes that pipeline.
-
-## Exact state before and after
-
-The units in this exercise have no fractional part. Daml's `Int` is a signed 64-bit integer, so positive quantities range from `1` to `9,223,372,036,854,775,807`. The Solidity example uses `uint64` and caps initial issuance at that same maximum. Both examples reject zero-value transfers and self-transfers. This avoids floating-point conversion or decimal scaling while comparing state transitions. See the [Daml language reference](https://docs.canton.network/appdev/reference/daml-language-reference) and [Solidity integer types](https://github.com/argotorg/solidity/blob/v0.8.37/docs/types/value-types.rst).
-
-| Point in time | Solidity current storage | Daml active holding contracts |
+| State | Solidity `BalanceBook` | Daml `TokenLot` |
 | --- | --- | --- |
-| Before transfer | `balance[Alice] = 100`, `balance[Bob] = 0` | `H1 = Holding(Issuer, Alice, 100)` |
-| After successful transfer | `balance[Alice] = 0`, `balance[Bob] = 100` | `H2 = Holding(Issuer, Bob, 100)` |
-| Treatment of the old state | Update entries in the same mapping | Archive H1; H2 has a new contract ID |
+| Before | Alice balance 100, Bob balance 0 | H1: issued by Issuer, held by Alice, 100 units |
+| After success | Alice balance 0, Bob balance 100 | H1 inactive; H2 created: issued by Issuer, held by Bob, 100 units |
+| Input to the next spend | Bob's balance in the same contract | New contract ID H2 |
 
-![Solidity updates a balance mapping while Daml consumes Alice's H1 and creates Bob's H2](/images/posts/canton-daml-token-transfer-solidity/cover.png)
+The Solidity mapping stores an aggregate for each address. The Daml code stores individual lots. If Bob already had a 40-unit contract, receiving 100 leaves him with two contracts, for 40 and 100 units. They do not automatically merge into a 140-unit contract. To display Bob's balance, an app needs to sum visible active lots whose holder is Bob and whose issuer and template match. This difference follows from the data structures chosen below. See the [Solidity mapping reference](https://github.com/argotorg/solidity/blob/v0.8.37/docs/types/mapping-types.rst) and [Daml contracts and choices](https://docs.canton.network/appdev/modules/m3-choices).
 
-*Original diagram of the two examples. Daml consumption and creation belong to one atomic transaction. H1 and H2 are explanatory labels, not actual contract IDs.*
+## Daml replaces the holding contract
 
-## A small Solidity balance mapping
+Save this as `daml/Lots.daml`. `Party` identifies a party on the ledger. `units` is an integer quantity; `ensure` rejects creation with a value of zero or less.
 
-Save the following as `TinyToken.sol`. The constructor initializes Alice's balance. `transferAll` adds the caller's entire balance to the recipient's balance. There are no ERC-20 events, allowances or `totalSupply` API, so this contract must not be treated as an ERC-20 implementation.
+```haskell
+module Lots where
+
+template TokenLot
+  with
+    issuer : Party
+    holder : Party
+    units : Int
+  where
+    signatory issuer
+    observer holder
+    ensure units > 0
+
+    choice Send : ContractId TokenLot
+      with recipient : Party
+      controller holder
+      do
+        assertMsg "recipient must differ" (recipient /= holder)
+        create TokenLot with issuer; holder = recipient; units
+```
+
+Issuer creates `TokenLot issuer alice 100`, making H1 active. Alice exercises H1's `Send` with Bob as recipient. The default consuming choice archives H1, and its body creates H2. The return value is H2's ID. It does not modify H1's `holder` field in place. The [Daml language reference](https://docs.canton.network/appdev/reference/daml-language-reference) defines contract fields and default choice consumption.
+
+There is no partial transfer. Sending 30 of the 100 units would require consuming the input and creating a 30-unit lot for Bob and a 70-unit remainder for Alice in the same transaction. The code would also need to check conservation between inputs and outputs.
+
+### Creating and transferring require different authority
+
+| Declaration | Role in this code |
+| --- | --- |
+| `signatory issuer` | Creating the contract requires Issuer's authority. |
+| `observer holder` | The holder can see the contract. Observation alone grants no transfer authority. |
+| `controller holder` | The current holder can exercise `Send`. |
+
+Alice can submit `Send` alone while still satisfying the authority needed to create H2. The consequences of an exercise have the authority of its actors and the signatories of the contract being exercised. That delegation is scoped to **the consequences of that exercise**. It does not let Alice issue arbitrary contracts as Issuer in a separate command. Conversely, being H1's signatory does not let Issuer exercise `Send` alone when Alice is its controller. The [official authorization model](https://docs.canton.network/appdev/modules/m3-authorization) explains these rules.
+
+This small model trusts the issuer. Issuer can create additional `TokenLot` contracts and end a holding through the implicit `Archive` choice controlled by the signatories. There is no supply cap or collateral check. The Solidity example below has no issuance path after its constructor, so the two examples do not give the issuer equivalent powers.
+
+Bob's acceptance is also absent. He is not a controller of H1's `Send` or a signatory of H2. On H2, he becomes both an observer and the controller of the next `Send`. Recipient consent or obligations require a proposal-and-acceptance flow, a preauthorization contract, or another explicit design. Declaring an observer does not collect consent. The propose-accept examples in the authorization documentation address this problem.
+
+## Solidity moves the caller's balance
+
+`BalanceBook.sol` assigns 100 units once, to the address supplied to its constructor. `sendAll` has no source-address argument: it reads only the current caller's balance.
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.37;
 
-contract TinyToken {
-    mapping(address => uint64) public balance;
+contract BalanceBook {
+    mapping(address => uint256) public balance;
 
-    constructor(address alice, uint64 quantity) {
-        require(alice != address(0), "zero owner");
-        require(quantity > 0 && quantity <= uint64(type(int64).max), "quantity");
-        balance[alice] = quantity;
+    constructor(address initialHolder) {
+        require(initialHolder != address(0), "zero holder");
+        balance[initialHolder] = 100;
     }
 
-    function transferAll(address to) external {
-        require(to != address(0) && to != msg.sender, "recipient");
-        uint64 quantity = balance[msg.sender];
-        require(quantity > 0, "empty holding");
+    function sendAll(address recipient) external {
+        require(recipient != address(0), "zero recipient");
+        require(recipient != msg.sender, "same recipient");
+        uint256 units = balance[msg.sender];
+        require(units > 0, "no balance");
         balance[msg.sender] = 0;
-        balance[to] += quantity;
+        balance[recipient] += units;
     }
 }
 ```
 
-When Alice calls `transferAll(Bob)`, `msg.sender` is Alice's address. There is no `from` argument that another caller can use to select her balance. A third party with no balance reads its own zero balance and fails the positive-quantity check. In a contract-to-contract call, `msg.sender` is the immediate calling contract; it is not always the original user's wallet address. That is the definition in the [Solidity global variables documentation](https://github.com/argotorg/solidity/blob/v0.8.37/docs/units-and-global-variables.rst).
+When Alice calls directly, `msg.sender` is Alice's address. A third party with no balance reads their own zero balance and fails. In an ordinary external call through another contract, `msg.sender` is the immediately calling contract. It does not automatically preserve the original user's address. This follows the definition in the [Solidity global variables reference](https://github.com/argotorg/solidity/blob/v0.8.37/docs/units-and-global-variables.rst).
 
-A successful call changes two mapping entries at the same deployed contract address. If Bob already has a balance, it is aggregated. Ordinary Solidity 0.8 arithmetic checks for overflow, and this example uses no `unchecked` block. Issuance happens only in the constructor and is capped as described above, so valid transfers cannot push aggregate balances beyond `uint64`. If a `require` or arithmetic check fails, the call's storage changes revert. See [control structures and error handling](https://github.com/argotorg/solidity/blob/v0.8.37/docs/control-structures.rst).
+The `public balance` declaration generates a getter taking an address, and an unset address has a balance of zero. A transfer sets the sender's entry to zero and adds the quantity to the recipient's entry in the same deployed contract. The received units are added to any existing balance. This code does not provide events, allowances or the standard `transfer` interface, so it does not provide ERC-20 wallet compatibility.
 
-## A small Daml holding contract
+Ordinary Solidity 0.8 arithmetic checks overflow; this code contains no `unchecked` block. A failed `require` or arithmetic check reverts the call's state changes. With no function to issue more units, normal transfers preserve the initial total of 100. See the [error handling and arithmetic rules](https://github.com/argotorg/solidity/blob/v0.8.37/docs/control-structures.rst).
 
-Put the following in `daml/Token.daml`. A `template` defines a contract's data and permitted behavior. `create` instantiates an individual contract from it. Many holdings can share the same template, each identified by its own contract ID.
+## Rejected transfers and visible information
 
-```haskell
-module Token where
-
-template Holding
-  with
-    issuer : Party
-    owner : Party
-    quantity : Int
-  where
-    ensure quantity > 0
-    signatory issuer
-    observer owner
-
-    choice Transfer : ContractId Holding
-      with newOwner : Party
-      controller owner
-      do
-        assertMsg "self-transfer is disabled" (newOwner /= owner)
-        create this with owner = newOwner
-```
-
-The fields `issuer`, `owner` and `quantity` are fixed when a contract is created. There is no operation that edits an existing contract's `owner` in place. `create this with owner = newOwner` copies the data, substitutes the owner, and **creates a new contract**. The original contract's payload stays unchanged. The [language reference](https://docs.canton.network/appdev/reference/daml-language-reference) documents templates and choices.
-
-`Transfer` has no `nonconsuming` modifier, so it is a consuming choice by default. When Alice exercises it, H1 is consumed and the choice body creates H2. The returned `ContractId Holding` identifies Bob's new holding. One input becomes one output here, preserving both `issuer` and `quantity`.
-
-If Bob already had a 40-unit holding, this transfer would not automatically merge it into a 140-unit contract. The existing 40-unit contract and the new 100-unit contract would remain separate. A balance view must aggregate active holdings for the same template and issuer, within the querying party's authorized view. This example has no merge operation either.
-
-There is no transfer-amount argument. Alice cannot send only 30 of her 100 units. A partial-transfer implementation would validate the requested quantity and create both Bob's 30-unit holding and Alice's 70-unit change holding in the same transaction. It would also need to enforce conservation across inputs and outputs. Daml does not invent change automatically; that functionality is deliberately omitted from this example.
-
-## Signatories, controllers and delegated authority
-
-A `Party` is a ledger identity used in authorization. Supplying an arbitrary Party value does not give the caller that party's authority. A real integration also needs an authenticated submitter with rights to act for the party and an appropriate party-hosting relationship with a participant. The Script tests below allocate local test parties, so no external account provisioning is needed. See the [authorization deep dive](https://docs.canton.network/appdev/deep-dives/authorization).
-
-| Declaration | Party in this example | Meaning |
+| Attempt | Daml example | Solidity example |
 | --- | --- | --- |
-| `signatory issuer` | Issuer | Authorizes contract creation and delegates its authority to the defined choice consequences |
-| `observer owner` | Alice, then Bob | Can see the corresponding holding contract |
-| `controller owner` | Alice on H1 | Has authority to exercise `Transfer` |
+| Someone else transfers Alice's asset | Even Issuer, who can see H1, is rejected as a non-controller of `Send` | An unfunded caller fails the check on their own balance |
+| Transfer to self | Rejected by the choice's `assertMsg` | Rejected by `require` |
+| Spend the same asset after success | Consumed H1 cannot be exercised again | Alice's balance is zero, so another call fails |
 
-Direct creation of H1 needs Issuer's authority. Alice can see H1 as an observer, but observation itself grants no transfer right. Her transfer authority comes from `controller owner`. Issuer also sees H1, yet cannot exercise Alice's `Transfer` alone. Being a signatory does not make a party the controller of every choice.
+Daml consumption and creation belong to one transaction. A failed choice does not commit a state where only H1 has disappeared. Archiving removes a contract from the active set; it does not erase historical records. The [ledger rules](https://docs.canton.network/overview/reference/ledger-model-detailed) that prevent reuse of a consumed ID differ from a Solidity balance check. A repeated function call here is also distinct from rebroadcasting a signed transaction or checking its nonce.
 
-Creating H2 needs `signatory issuer` again. Alice can nevertheless submit the transfer alone because exercising H1 makes that contract's signatory authority available to the consequences of its choice. Issuer authorized these code-defined consequences when H1 was created. Issuer does not sign a fresh approval for every spend. The delegation is scoped to the exercise: Alice cannot use it to issue arbitrary unrelated holdings in Issuer's name. The [authorization rules](https://docs.canton.network/appdev/modules/m3-authorization) explain this boundary.
+Visibility differs too. On a public EVM, this mapping's balances are not secret. Changing its declaration to `private` would not conceal the underlying blockchain data. The [Solidity visibility documentation](https://github.com/argotorg/solidity/blob/v0.8.37/docs/contracts/visibility-and-getters.rst) distinguishes access control from confidentiality.
 
-The issuer trust is substantial. Issuer can independently create more `Holding` contracts and can terminate holdings using the implicit signatory-controlled `Archive` choice. This model has no total-supply cap or reserve verification. The Solidity contract has no post-constructor issuance path, so the two examples do not have identical issuer powers. They compare transfer-state representation and authorization.
+Canton distributes relevant parts according to parties' roles and the transaction structure. Issuer is a signatory of H1 and H2. Alice is a stakeholder of H1 and an actor of `Send`, so both see the creation of H2 as a consequence of that choice. Bob sees the new holding as H2's observer. This does not hide the outcome from Alice and Issuer while revealing it only to Bob. See the ledger model's [informee and witness rules](https://docs.canton.network/overview/reference/ledger-model-detailed#informee) and the [privacy model](https://docs.canton.network/overview/learn/privacy-model).
 
-Bob's acceptance is absent by design. Bob is an observer of the new contract, not its signatory, so this transfer does not require a separate authorization from him. Preventing unsolicited receipt or binding a recipient to obligations requires an acceptance choice, a proposal-and-acceptance workflow or explicitly modeled preapproval. An observer declaration alone does not represent consent.
+Permission to see a contract differs from permission to act on it. A party's visibility also differs from how its hosting participant handles data. Daml declarations alone cannot protect information subsequently passed to application servers or logs. Real Ledger API access also needs authentication, user rights and party hosting. Allocating parties in a local test does not validate that operational setup. See the [Ledger API authorization documentation](https://docs.canton.network/appdev/deep-dives/authorization).
 
-## Reuse, double spending and failure
+## Local execution and verification scope
 
-Once H1 has been successfully consumed, another transfer using that same ID fails. Two concurrent transfers cannot both consume H1 and produce two successful spends of the same 100 units. Preventing reuse of consumed contracts is part of the [ledger validity rules](https://docs.canton.network/overview/reference/ledger-model-detailed). Applications still need to handle failed submissions and refresh their active-contract state.
-
-Consumption and creation are atomic. A failed self-transfer check or output creation does not commit a state where only H1 has disappeared. The failed transaction has no committed effects, so H1 remains active. Archival also does not mean erasing historical evidence. It removes the contract from the active set; retention, historical queries and pruning are separate operational concerns.
-
-In Solidity, the second spend fails because Alice's balance is now zero. In Daml, it fails because the particular input contract has been consumed. Submitting a second EVM function call is also different from rebroadcasting the same signed transaction. The tests here cover the second function call; they neither implement nor test Ethereum's nonce-based replay protection.
-
-## Who can see the transfer
-
-Treating the Daml ledger as a global balance table readable by everyone leads to incorrect query designs. Canton distributes relevant subtransactions to the parties that need them. A party's view and a participant's stored data are related but distinct concepts. Apply the visibility rules described in the [privacy model](https://docs.canton.network/overview/learn/privacy-model).
-
-Issuer is a signatory of both H1 and H2. Alice is a stakeholder of the original contract and observes the consequences of this default consuming choice. Bob is an observer of H2. It would therefore be wrong to say that only Bob knows the output while the issuer and previous owner are excluded. Visibility depends on the contract and choice definitions. Application servers, hosting participants and logging policies also remain trust considerations. This differs from the public EVM mapping example, but writing Daml does not make every piece of information secret.
-
-## Run the examples locally
-
-Prepare DPM using the [official installation guide](https://docs.canton.network/sdks-tools/cli-tools/dpm) and pin SDK `3.6.0`. The tests here used Java `21.0.12.1`. Create `daml/Token.daml`, `daml/Test.daml` and the following `daml.yaml` in an empty directory.
+Prepare [DPM](https://docs.canton.network/sdks-tools/cli-tools/dpm) and pin SDK `3.6.0`. Save this project-root `daml.yaml`:
 
 ```yaml
 sdk-version: 3.6.0
-name: tiny-transfer
-source: daml
+name: transfer-comparison
 version: 0.1.0
+source: daml
 dependencies:
   - daml-prim
   - daml-stdlib
   - daml-script
 ```
 
-Use this `daml/Test.daml`. The unauthorized-transfer test deliberately submits as Issuer, who can already see the contract. That distinguishes a controller-authorization failure from an attempt that fails merely because the contract is invisible. `submitMustFail` is a test assertion for rejected submissions, not production error-recovery logic.
+The two scripts in `daml/Checks.daml` below check transfer behavior and issuer policy. The authorization test submits as Issuer, who can already see H1, separating a controller failure from mere lack of visibility.
 
 ```haskell
-module Test where
+module Checks where
 
 import Daml.Script
-import Token
+import Lots
 
-setup : Script (Party, Party, Party, ContractId Holding)
-setup = script do
+transferChecks : Script ()
+transferChecks = script do
   issuer <- allocateParty "Issuer"
   alice <- allocateParty "Alice"
   bob <- allocateParty "Bob"
-  cid <- submit issuer do createCmd (Holding issuer alice 100)
-  pure (issuer, alice, bob, cid)
-
-success : Script ()
-success = script do
-  (issuer, alice, bob, cid) <- setup
-  newCid <- submit alice do exerciseCmd cid (Transfer bob)
-  old <- queryContractId issuer cid
-  current <- queryContractId bob newCid
+  original <- submit issuer do
+    createCmd (TokenLot issuer alice 100)
+  submitMustFail issuer do
+    exerciseCmd original (Send bob)
+  submitMustFail alice do
+    exerciseCmd original (Send alice)
+  unchanged <- queryContractId alice original
+  assert (unchanged == Some (TokenLot issuer alice 100))
+  received <- submit alice do
+    exerciseCmd original (Send bob)
+  old <- queryContractId issuer original
+  new <- queryContractId bob received
   assert (old == None)
-  assert (current == Some (Holding issuer bob 100))
-  aliceHoldings <- query @Holding alice
-  assert (null aliceHoldings)
+  assert (new == Some (TokenLot issuer bob 100))
+  submitMustFail alice do
+    exerciseCmd original (Send bob)
 
-unauthorized : Script ()
-unauthorized = script do
-  (issuer, alice, bob, cid) <- setup
-  submitMustFail issuer do exerciseCmd cid (Transfer bob)
-  current <- queryContractId alice cid
-  assert (current == Some (Holding issuer alice 100))
-
-replay : Script ()
-replay = script do
-  (issuer, alice, bob, cid) <- setup
-  _ <- submit alice do exerciseCmd cid (Transfer bob)
-  submitMustFail alice do exerciseCmd cid (Transfer bob)
-
-quantityInvariant : Script ()
-quantityInvariant = script do
+policyChecks : Script ()
+policyChecks = script do
   issuer <- allocateParty "Issuer"
   alice <- allocateParty "Alice"
-  submitMustFail issuer do createCmd (Holding issuer alice 0)
-  submitMustFail issuer do createCmd (Holding issuer alice (-1))
-  holdings <- query @Holding issuer
-  assert (null holdings)
-
-selfTransfer : Script ()
-selfTransfer = script do
-  (issuer, alice, bob, cid) <- setup
-  submitMustFail alice do exerciseCmd cid (Transfer alice)
-  current <- queryContractId alice cid
-  assert (current == Some (Holding issuer alice 100))
-
-issuanceAuthority : Script ()
-issuanceAuthority = script do
-  (issuer, alice, bob, cid) <- setup
-  submitMustFail alice do createCmd (Holding issuer alice 100)
-  submitMustFail alice do exerciseCmd cid Archive
+  bob <- allocateParty "Bob"
+  submitMustFail issuer do createCmd (TokenLot issuer alice 0)
+  submitMustFail issuer do createCmd (TokenLot issuer alice (-1))
+  submitMustFail alice do createCmd (TokenLot issuer alice 100)
+  first <- submit issuer do createCmd (TokenLot issuer alice 100)
+  second <- submit issuer do createCmd (TokenLot issuer bob 40)
+  _ <- submit alice do exerciseCmd first (Send bob)
+  lots <- query @TokenLot bob
+  assert (length lots == 2)
+  assert (sum (map (\(_, lot) -> lot.units) lots) == 140)
+  submitMustFail bob do exerciseCmd second Archive
+  submit issuer do exerciseCmd second Archive
 ```
 
 ```bash
@@ -219,98 +190,61 @@ dpm build
 dpm test
 ```
 
-`dpm build` produced the DAR, and all six validation scenarios passed under `dpm test`. The runner also executes the shared `setup` helper as a Script, so its output contains seven `ok` entries. The scenarios cover a successful transfer, unauthorized transfer, reuse of a consumed ID, zero/negative quantities, self-transfer, and rejection of owner-initiated issuance and archival. The compiler warns that combining templates and tests in one package also brings `daml-script` into its deployment dependencies. This local exercise retains that small layout. Separate the contract and test packages before producing a deployment DAR, as recommended by the [Daml Script guide](https://docs.canton.network/sdks-tools/cli-tools/daml-script).
+Fresh runs of `dpm build` and `dpm test` succeeded. Both `transferChecks` and `policyChecks` above passed. The policy checks rejected zero/negative lots and arbitrary issuance by the holder, and confirmed that Bob's 40- and 100-unit lots remain separate. Direct `Archive` by the holder failed; `Archive` by Issuer succeeded. The bundle SDK was `3.6.0`, compiler and Script `3.6.2`, and Java `21.0.12.1`. The build warns that keeping templates and tests together includes `daml-script` as a dependency. Separate deployment and test packages as described in the [Daml Script guide](https://docs.canton.network/sdks-tools/cli-tools/daml-script).
 
-The Solidity example pins the [official `0.8.37` release](https://github.com/argotorg/solidity/releases/tag/v0.8.37). In a separate local directory, save `TinyToken.sol` and the following `test.cjs`. The optimizer is disabled; the compiler's EVM target and Ganache hardfork are both `shanghai`. This fixes the execution environment instead of depending on a new compiler's default target.
+Save the settings below as `input.json` to compile for the same EVM target used in testing. Supply Alice's address to the constructor, then call `sendAll(Bob's address)` as Alice after deployment.
 
-```javascript
-const fs = require('node:fs');
-const assert = require('node:assert/strict');
-const solc = require('solc');
-const ganache = require('ganache');
-const { ethers } = require('ethers');
-
-async function main() {
-  console.log('Node', process.version, 'solc', solc.version());
-  console.log('ethers', ethers.version, 'ganache', require('ganache/package.json').version);
-  const input = {language:'Solidity', sources:{'TinyToken.sol':{content:fs.readFileSync('TinyToken.sol','utf8')}}, settings:{optimizer:{enabled:false}, evmVersion:'shanghai', outputSelection:{'*':{'*':['abi','evm.bytecode.object']}}}};
-  const output = JSON.parse(solc.compile(JSON.stringify(input)));
-  fs.writeFileSync('compiled.json', JSON.stringify(output,null,2));
-  assert.equal((output.errors || []).filter(e => e.severity === 'error').length,0,JSON.stringify(output.errors));
-  const artifact = output.contracts['TinyToken.sol'].TinyToken;
-  const server = ganache.provider({logging:{quiet:true},chain:{hardfork:'shanghai'},wallet:{totalAccounts:4}});
-  const provider = new ethers.BrowserProvider(server);
-  const [deployer,alice,bob,eve] = await Promise.all([0,1,2,3].map(i=>provider.getSigner(i)));
-  const a = await alice.getAddress(), b = await bob.getAddress();
-  const factory = new ethers.ContractFactory(artifact.abi,artifact.evm.bytecode.object,deployer);
-  async function deploy(q=100n) { const c=await factory.deploy(a,q);await c.waitForDeployment();return c; }
-  async function rejected(p) { await assert.rejects(async()=>{const tx=await p; if(tx.wait) await tx.wait();}); }
-  let c=await deploy();
-  assert.equal(await c.balance(a),100n);assert.equal(await c.balance(b),0n);
-  await (await c.connect(alice).transferAll(b)).wait();
-  assert.equal(await c.balance(a),0n);assert.equal(await c.balance(b),100n);
-  console.log('PASS success: Alice 100 -> 0, Bob 0 -> 100');
-  c=await deploy();
-  await rejected(c.connect(eve).transferAll(b));assert.equal(await c.balance(a),100n);
-  console.log('PASS unauthorized account cannot spend Alice balance');
-  await (await c.connect(alice).transferAll(b)).wait();
-  await rejected(c.connect(alice).transferAll(b));assert.equal(await c.balance(b),100n);
-  console.log('PASS second spend rejected (empty balance; no CID in EVM)');
-  await rejected(factory.deploy(a,0n));await rejected(factory.deploy(a,2n**63n));
-  assert.throws(()=>factory.interface.encodeDeploy([a,-1n]));
-  console.log('PASS quantity: zero/above Int64 max revert; negative rejected by ABI uint64');
-  c=await deploy();await rejected(c.connect(alice).transferAll(a));await rejected(c.connect(alice).transferAll(ethers.ZeroAddress));
-  assert.equal(await c.balance(a),100n);
-  console.log('PASS self/zero recipient rejected; original balance retained');
-  await server.disconnect();
+```json
+{
+  "language": "Solidity",
+  "sources": {"BalanceBook.sol": {"urls": ["BalanceBook.sol"]}},
+  "settings": {
+    "optimizer": {"enabled": false},
+    "evmVersion": "shanghai",
+    "outputSelection": {"*": {"*": ["abi", "evm.bytecode.object"]}}
+  }
 }
-main().catch(e=>{console.error(e);process.exitCode=1;});
 ```
 
 ```bash
-npm install --save-exact solc@0.8.37 ethers@6.15.0 ganache@7.9.2
-node test.cjs
+npm install --save-exact solc@0.8.37
+npx solcjs --standard-json --base-path . < input.json > output.json
 ```
 
-All five test groups passed with Node `26.7.0` and solc-js `0.8.37+commit.f401782d`. Ganache `7.9.2` lacked a native µWS binary for that Node ABI and ran using its JavaScript fallback. Negative quantities are rejected during `uint64` ABI encoding; zero and values above the comparison bound are rejected by the constructor. Those failure stages differ from Daml's negative/zero contract-creation checks.
+Local runtime checks used solc-js `0.8.37`, ethers `6.15.0`, Ganache `7.9.2` and Node `26.7.0`. Optimization was disabled; both the compiler EVM target and Ganache hardfork were `shanghai`. Alice→Bob produced balances 0 and 100; Bob→Alice restored 100 and 0. An unfunded caller, self-transfer, a zero-address recipient and a second spend were checked as mined failed transactions, with balances retained. Deployment with a zero-address initial holder was also rejected. Ganache used its JavaScript fallback instead of native µWS in this Node environment.
 
-Daml ran on the Script local test ledger; Solidity ran on an in-process Ganache EVM. Public DevNet/MainNet, multi-participant consensus, real authentication and party hosting, recipient-acceptance UI, performance and fees were outside the validation scope.
+These results cover a Daml Script local test ledger and an in-process EVM. They do not validate multi-participant consensus, concurrent submission races, wallet integration, public-network deployment, fees or performance.
 
-## Moving to actual token standards
+## Standard compatibility needs its own implementation
 
-Naming a template `Holding` does not provide standard wallet compatibility. [CIP-0056](https://github.com/canton-foundation/cips/blob/main/cip-0056/cip-0056.md) defines standard holding, transfer and allocation interfaces; its checked status is `Final`. [CIP-0112](https://github.com/canton-foundation/cips/blob/main/cip-0112/cip-0112.md) defines Token Standard V2 improvements for privacy, performance and traditional accounting; its checked status is `Approved`. Their approval dates are March 31, 2025 and June 12, 2026 respectively.
+The official documents fetched on October 15, 2026, KST mark [CIP-0056](https://github.com/canton-foundation/cips/blob/main/cip-0056/cip-0056.md) as `Final` and [CIP-0112](https://github.com/canton-foundation/cips/blob/main/cip-0112/cip-0112.md) as `Approved`. CIP-0056 defines standard APIs that wallets and applications can use without relying on each asset's internal implementation. CIP-0112 addresses privacy, performance and accounting in Token Standard V2.
 
-Consult the current [Splice API guide](https://docs.canton.network/sdks-tools/api-reference/splice-apis) and [Token Standard reference](https://docs.canton.network/overview/reference/cip-0056) for interfaces and compatibility conditions. The dashboard's Token Standard `1.14.0` is a package-version label. It is not interchangeable with the V1/V2 standard generation or a Daml SDK version. CIP approval alone does not establish that every asset or wallet supports V2 behavior.
+Renaming `TokenLot` to resemble a standard holding, or completing a local transfer, does not implement those interfaces and rules. An actual asset needs to match the packages supported by its target network, transfer and allocation interfaces, issuance policy and recipient authorization requirements. A CIP's status does not establish support by a particular wallet or deployment and adoption on a network.
 
-A real asset implementation needs a target network's supported packages, a registry, authorization and recipient-consent policies, and issuance/burning constraints. The transferable lesson from this exercise is the `create → exercise → consume/archive → create` lifecycle and the explicit authorization at each step. Once that small transfer is clear, it is easier to distinguish data replacement from business approval when implementing standard interfaces.
+The useful design distinction is the unit of state and authority: an aggregate balance updated by address, or a particular holding contract consumed by an authorized choice. That decision determines where to handle repeated spending, balance queries and recipient consent.
 
 ## Further reading
 
-- [Daml authorization deep dive](https://docs.canton.network/appdev/deep-dives/authorization): The scope of delegated authority in nested choices.
-- [Detailed ledger model](https://docs.canton.network/overview/reference/ledger-model-detailed): Consumption, atomicity and ledger validity rules.
-- [CIP-0056 guide](https://docs.canton.network/overview/reference/cip-0056): Actual asset interfaces to study after the teaching example.
+- [Daml authorization model](https://docs.canton.network/appdev/modules/m3-authorization): Extend the example with recipient consent and propose-accept patterns.
+- [Canton Token Standard guide](https://docs.canton.network/overview/reference/cip-0056): The actual standard interfaces to study after the teaching model.
+- [Solidity mappings](https://github.com/argotorg/solidity/blob/v0.8.37/docs/types/mapping-types.rst): Address-indexed balances and generated getters.
 
 ## References
 
-All sources were checked on October 15, 2026, KST. Code and the comparison diagram were written for this tutorial.
+Official documentation accessed October 15, 2026, KST. The code is original educational material for this article.
 
-- [Daml SDK 3.6.0 release](https://github.com/digital-asset/dpm-assembly/releases/tag/3.6.0)
-- [SDK component manifest](https://github.com/digital-asset/dpm-assembly/blob/3.6.0/latest/open-source/3.6.yaml)
-- [Version Compatibility Dashboard](https://docs.canton.network/shared/version-compatibility-dashboard)
 - [Daml language reference](https://docs.canton.network/appdev/reference/daml-language-reference)
-- [Daml authorization](https://docs.canton.network/appdev/deep-dives/authorization)
-- [Daml authorization module](https://docs.canton.network/appdev/modules/m3-authorization)
-- [Daml compiler](https://docs.canton.network/sdks-tools/development-tools/daml-compiler)
-- [Daml-LF reference](https://docs.canton.network/appdev/reference/daml-lf-reference)
-- [Ledger model](https://docs.canton.network/overview/reference/ledger-model-detailed)
+- [Daml choices](https://docs.canton.network/appdev/modules/m3-choices)
+- [Daml authorization model](https://docs.canton.network/appdev/modules/m3-authorization)
+- [Detailed ledger model](https://docs.canton.network/overview/reference/ledger-model-detailed)
 - [Privacy model](https://docs.canton.network/overview/learn/privacy-model)
+- [Ledger API authorization](https://docs.canton.network/appdev/deep-dives/authorization)
 - [DPM](https://docs.canton.network/sdks-tools/cli-tools/dpm)
 - [Daml Script](https://docs.canton.network/sdks-tools/cli-tools/daml-script)
-- [Solidity 0.8.37 release](https://github.com/argotorg/solidity/releases/tag/v0.8.37)
-- [Solidity value types](https://github.com/argotorg/solidity/blob/v0.8.37/docs/types/value-types.rst)
-- [Solidity control structures](https://github.com/argotorg/solidity/blob/v0.8.37/docs/control-structures.rst)
+- [SDK 3.6.0 release](https://github.com/digital-asset/dpm-assembly/releases/tag/3.6.0)
+- [Solidity mappings](https://github.com/argotorg/solidity/blob/v0.8.37/docs/types/mapping-types.rst)
 - [Solidity global variables](https://github.com/argotorg/solidity/blob/v0.8.37/docs/units-and-global-variables.rst)
+- [Solidity control structures](https://github.com/argotorg/solidity/blob/v0.8.37/docs/control-structures.rst)
+- [Solidity visibility and getters](https://github.com/argotorg/solidity/blob/v0.8.37/docs/contracts/visibility-and-getters.rst)
 - [CIP-0056](https://github.com/canton-foundation/cips/blob/main/cip-0056/cip-0056.md)
 - [CIP-0112](https://github.com/canton-foundation/cips/blob/main/cip-0112/cip-0112.md)
-- [Splice APIs](https://docs.canton.network/sdks-tools/api-reference/splice-apis)
-- [Token Standard guide](https://docs.canton.network/overview/reference/cip-0056)
