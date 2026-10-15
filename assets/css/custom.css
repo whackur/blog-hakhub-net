@@ -1,1 +1,22 @@
 /* Add your own custom styles here */
+
+.post-tags-label {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.post-tags-list {
+  display: flex;
+  flex: 1 1 0%;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.post-tags-list > li {
+  min-width: 0;
+}
+
+.post-tags-list a {
+  overflow-wrap: anywhere;
+}

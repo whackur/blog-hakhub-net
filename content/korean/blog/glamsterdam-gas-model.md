@@ -3,7 +3,7 @@ title: "Glamsterdam의 새 가스 모델: EIP-8037 상태 가스, EIP-8038 접�
 meta_title: ""
 description: "Glamsterdam이 가스를 실행 가스와 상태 가스로 나누고, 상태 접근 비용을 올리고, 고정 21,000 기본 비용을 분해하는 방식. 2026년 10월 15일 기준 스펙에서 확인한 파라미터, 리저버 모델, 환급과 되돌리기, 개발자 영향, 아직 정해지지 않은 것."
 date: 2026-10-15T01:19:45+09:00
-lastmod: 2026-10-15T01:19:45+09:00
+lastmod: 2026-10-15T15:36:20+09:00
 image: "/images/posts/glamsterdam-gas-model/glamsterdam-gas-cover.png"
 categories: ["Blockchain"]
 tags: ["ethereum", "glamsterdam", "gas", "evm", "eip-8037", "eip-8038", "eip-2780"]
@@ -22,9 +22,9 @@ draft: false
 
 이 포크를 다루는 글에서는 세 종류의 "상태"가 자주 섞입니다. 서로 다른 질문에 대한 답이라 나눠서 봅니다.
 
-**EIP 프로세스 상태.** EIP-8037, EIP-8038, EIP-2780은 모두 `Last Call`이고 `last-call-deadline`은 2026-11-01입니다. Last Call 전환은 2026-10-06 날짜의 커밋 하나로 들어갔습니다([ethereum/EIPs PR #12442](https://github.com/ethereum/EIPs/pull/12442)). Last Call은 본문이 거의 확정됐다는 뜻이지 동결됐다는 뜻은 아닙니다. EIP-8037 본문에도 의존하는 EIP-8038 값이 "아직 최종이 아니다(not yet final)"라고 적혀 있고, EIP-2780은 자기 기본값을 "잠정치(provisional)"라고 부릅니다.
+**EIP 프로세스 상태.** 2026-10-15에 확인한 ethereum/EIPs 커밋 `5ef3801`의 front matter에는 EIP-8037, EIP-8038, EIP-2780이 모두 `Last Call`, `last-call-deadline`은 2026-11-01로 적혀 있습니다. Last Call 전환은 2026-10-06 날짜의 커밋 하나로 들어갔습니다([ethereum/EIPs PR #12442](https://github.com/ethereum/EIPs/pull/12442)). 이 표기는 인용한 커밋의 날짜가 붙은 스냅샷입니다. Last Call은 본문이 거의 확정됐다는 뜻이지 동결됐다는 뜻은 아니며, Glamsterdam 활성화 전까지 상태와 파라미터가 달라질 수 있습니다. EIP-8037 본문에도 의존하는 EIP-8038 값이 "아직 최종이 아니다(not yet final)"라고 적혀 있고, EIP-2780은 자기 기본값을 "잠정치(provisional)"라고 부릅니다.
 
-**포크 포함 여부.** Glamsterdam 메타 EIP인 [EIP-7773](https://eips.ethereum.org/EIPS/eip-7773)은 세 EIP를 모두 "포함 예정(Scheduled for Inclusion, SFI)" 목록에 올려 두었습니다. EIP-8037은 2026년 1월 포함 검토(CFI) 상태가 됐고, 토론 스레드의 저자 답변에 따르면 6월에는 이미 SFI였습니다. EIP-2780과 EIP-8038은 2026-08-05 EIP-7773 커밋에서 CFI에서 SFI로 옮겨졌습니다. EIP-7773 자체는 `Review` 상태입니다.
+**포크 포함 여부.** 2026-10-15에 확인한 [EIP-7773 커밋 `644b847`](https://github.com/ethereum/EIPs/blob/644b84799ba6873edcb13c0e21fdd319b4efbc08/EIPS/eip-7773.md)에서는 EIP-8037, EIP-8038, EIP-2780이 모두 "포함 예정(Scheduled for Inclusion, SFI)" 목록에 있습니다. [2026-01-20 변경](https://github.com/ethereum/EIPs/commit/34a80f249de50ab10607d51353843f609211dfcf)에서 EIP-8037이 포함 검토(CFI) 상태가 됐고, [토론 스레드](https://ethereum-magicians.org/t/eip-8037-state-creation-gas-cost-increase/25694)에서 저자는 6월에는 SFI였다고 밝혔습니다. EIP-2780과 EIP-8038은 [2026-08-05 EIP-7773 변경](https://github.com/ethereum/EIPs/commit/7b761e3d176730c488bfc4f1e3b261e3d93898b8)에서 CFI에서 SFI로 옮겨졌습니다. 인용한 커밋에서 EIP-7773 자체는 `Review` 상태입니다. 이는 절차상 스냅샷이며 네트워크 활성화를 보장하지 않습니다.
 
 **네트워크 활성화.** EIP-7773의 활성화 표에는 Sepolia 한 줄만 채워져 있습니다. epoch 353024, 타임스탬프 1791294816(2026-10-06 13:53:36 UTC)입니다. Hoodi와 Mainnet 칸은 비어 있고, 메타 EIP는 클라이언트 팀이 시점을 정하면 채운다고 적고 있습니다. [이더리움 재단의 테스트넷 공지](https://blog.ethereum.org/2026/09/17/glamsterdam-testnet-announcement)도 같은 내용입니다. Hoodi와 메인넷 활성화 날짜는 아직 정해지지 않았고, 이 공지는 메인넷 업그레이드 일정을 잡는 공지가 아니라고 명시합니다.
 
@@ -304,6 +304,147 @@ EIP는 기본값이 ETH 송금으로 블록을 채운 실행 레이어 벤치마
 
 **존재하지 않는 계정으로 값을 보내는 내부 `CALL`.** 콜드 접근 3,000 + `CALL_VALUE` 11,300의 실행 가스에 상태 183,600이 더해지고, 자식 프레임 전에 부과됩니다.
 
+## Solidity 예시: 스토리지 변경
+
+아래 숫자는 EIP가 정한 `SSTORE` 접근·쓰기 항목입니다. Solidity 함수 전체나 트랜잭션 영수증의 `gasUsed`를 뜻하지 않습니다. EIP-8037에서 `GAS`와 `gasleft()`가 읽는 값은 실행 가스 `gas_left`뿐이며, 별도 상태 가스 리저버를 더한 총량이 아닙니다. 컴파일러 버전, optimizer, `evmVersion`, 실제 바이트코드와 콜드·웜 접근 상태에 따라 함수별 사용량은 달라집니다.
+
+### 0에서 0이 아닌 값으로 새 슬롯 만들기
+
+```solidity
+pragma solidity ^0.8.30;
+
+contract LedgerCreation {
+    mapping(address => uint256) public balances;
+
+    function credit(uint256 amount) external {
+        balances[msg.sender] = amount;
+    }
+}
+```
+
+트랜잭션 시작 때 `balances[msg.sender]`가 0이고 이 트랜잭션에서 아직 쓰지 않았으며 첫 슬롯 접근이 콜드라고 가정합니다. `amount`는 0이 아닙니다.
+
+**Before Glamsterdam.** 새 슬롯 쓰기 비용은 기존 `SSTORE` 실행 가스 스케줄에서 처리했습니다.
+
+**After Glamsterdam.** [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037)은 64 × 1,530, 즉 97,920을 새 슬롯의 상태 가스로 부과합니다. [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038)의 콜드 접근 2,100과 첫 쓰기 `STORAGE_WRITE` 10,000은 실행 가스 항목으로 따로 잡힙니다.
+
+**Why it changes.** 새 상태를 만드는 가격과 이미 존재하는 상태를 읽고 쓰는 실행 비용을 서로 다른 가스 차원에서 셉니다.
+
+**What to do.** 추정과 한도 점검에서 상태 가스와 실행 가스를 모두 고려하세요. `gasleft()`만으로 트랜잭션 전체에 남은 가스를 계산하지 마세요.
+
+### 이전 트랜잭션에서 만든 슬롯 갱신하기
+
+```solidity
+pragma solidity ^0.8.30;
+
+contract ExistingValue {
+    uint256 public value;
+
+    function update(uint256 next) external {
+        value = next;
+    }
+}
+```
+
+별도 선행 트랜잭션에서 `value`를 0이 아닌 값으로 설정합니다. 비교할 호출에서는 기존 값과 다른 0이 아닌 `next`를 전달합니다.
+
+**Before Glamsterdam.** `SSTORE` 접근·쓰기 항목은 콜드일 때 5,000, 같은 트랜잭션 안에서 이미 웜 상태라면 2,900 실행 가스였습니다.
+
+**After Glamsterdam.** 첫 접근이 콜드라면 2,100 + 10,000 = 12,100 실행 가스, 같은 트랜잭션에서 이미 웜이면 100 + 10,000 = 10,100입니다. 기존 슬롯 갱신이므로 EIP-8037 상태 가스는 없습니다. 이 숫자는 `SSTORE` 스케줄만 가리키며 Solidity 함수 전체 비용은 아닙니다.
+
+**Why it changes.** EIP-8038은 트랜잭션 시작 때의 원래 값과 현재 값이 같고 새 값이 달라지는 첫 변경에 `STORAGE_WRITE`를 더합니다. 원래 값과 현재 값은 트랜잭션 단위이고, 접근 웜 상태도 트랜잭션이 끝나면 사라집니다.
+
+**What to do.** 이 사례처럼 기존 슬롯 갱신을 검증하려면 초기화와 갱신을 서로 다른 트랜잭션에 두세요. 초기화한 앞선 트랜잭션은 현재 호출에서 슬롯을 웜으로 만들지 않습니다. 같은 트랜잭션 안에서 미리 읽었다면 그 뒤 접근은 웜일 수 있습니다.
+
+### 0이 아닌 슬롯 삭제하기
+
+```solidity
+pragma solidity ^0.8.30;
+
+contract ClearableBalances {
+    mapping(address => uint256) private balances;
+
+    function setBalance(address owner, uint256 amount) external {
+        balances[owner] = amount;
+    }
+
+    function clear(address owner) external {
+        delete balances[owner];
+    }
+
+    function balanceOf(address owner) external view returns (uint256) {
+        return balances[owner];
+    }
+}
+```
+
+삭제 전 별도 트랜잭션에서 해당 슬롯에 0이 아닌 잔액을 저장해 두어야 합니다.
+
+**Before Glamsterdam.** 0이 아닌 슬롯을 비우면 그 삭제 트랜잭션의 환급 카운터에 기존 `SSTORE` 삭제 환급 4,800이 더해졌습니다.
+
+**After Glamsterdam.** [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038)은 삭제한 슬롯에 대해 같은 트랜잭션의 환급 크레딧을 11,616으로 둡니다. 환급 크레딧에 적용되는 20% 상한은 2021년의 [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529)에서 이미 정해졌습니다. 이 상한은 사용하지 않은 `gasLimit`을 정산 때 돌려주는 양을 막지 않습니다. 미사용 가스 반환과 삭제 환급은 별개입니다.
+
+**Why it changes.** 삭제 환급은 실행 중 호출 프레임에 더해지는 가스가 아니라 삭제 트랜잭션 정산 때 반영되는 크레딧입니다. 슬롯 값이 0이 됐다고 나중의 getter 접근 비용이 내려가지는 않습니다.
+
+**What to do.** 다음 트랜잭션의 슬롯 읽기는 값이 0이어도 새 접근으로 계산됩니다. 온체인 트랜잭션이나 다른 컨트랙트가 실행하는 getter는 가스를 소비합니다. 오프체인 `eth_call`은 노드가 수행하는 RPC 시뮬레이션이라 호출자가 온체인 수수료를 내지는 않지만, 노드는 RPC 한도 안에서 코드를 실행합니다.
+
+### 고정 가스 한도를 쓰는 하위 호출
+
+```solidity
+pragma solidity ^0.8.30;
+
+interface IWorker {
+    function update(uint256 next) external;
+}
+
+contract Worker {
+    uint256 public value;
+
+    function update(uint256 next) external {
+        value = next;
+    }
+}
+
+contract FixedGasWrapper {
+    uint256 public marker;
+    uint256 public immutable childGasCap;
+
+    constructor(uint256 cap) {
+        childGasCap = cap;
+    }
+
+    function keepFailure(address target, uint256 markerValue, uint256 next)
+        external
+        returns (bool ok)
+    {
+        marker = markerValue;
+        (ok,) = target.call{gas: childGasCap}(
+            abi.encodeCall(IWorker.update, (next))
+        );
+    }
+
+    function revertOnFailure(address target, uint256 markerValue, uint256 next)
+        external
+    {
+        marker = markerValue;
+        (bool ok,) = target.call{gas: childGasCap}(
+            abi.encodeCall(IWorker.update, (next))
+        );
+        require(ok, "child call failed");
+    }
+}
+```
+
+비교 전에 별도 트랜잭션에서 `Worker.value`와 `FixedGasWrapper.marker`를 0이 아닌 값으로 초기화합니다. 각 호출은 이 값을 다른 0이 아닌 값으로 바꾸며, 바깥 트랜잭션에는 고정 한도를 온전히 넘길 만큼 가스가 있다고 가정합니다.
+
+**Before Glamsterdam.** 같은 컴파일러와 입력, 같은 콜드·웜 상태에서 자식의 기존 슬롯 갱신은 예전 실행 스케줄을 따릅니다.
+
+**After Glamsterdam.** 실행 가스가 늘어납니다. 예전 스케줄의 실행을 감당하지만 새 스케줄에는 모자라는 기호적 `childGasCap`을 택하면, 예전에는 자식 호출이 성공하고 변경 뒤에는 자식이 OOG로 끝나 low-level 호출의 `ok`가 `false`가 될 수 있습니다. 검증된 임계값은 제시하지 않습니다. 정확한 경계는 컴파일러 버전, optimizer, `evmVersion`, 생성된 opcode와 콜드·웜 접근에 따라 달라집니다.
+
+**Why it changes.** 바깥 `gasLimit`을 올려도 immutable `childGasCap`은 바뀌지 않습니다. `keepFailure`는 `false`를 반환하고 정상 종료하므로 앞서 바꾼 `marker`를 유지합니다. `revertOnFailure`의 `require(ok)`는 wrapper 프레임 전체를 되돌려 `marker` 변경도 취소합니다. 자식의 명시적 `REVERT`도 호출 결과는 `false`지만 남은 전달 가스를 돌려줍니다. OOG 같은 예외적 중단은 호출 결과가 `false`이고 자식에게 전달된 가스를 소진합니다([EIP-140](https://eips.ethereum.org/EIPS/eip-140)).
+
+**What to do.** 고정 가스 하위 호출은 새 스케줄과 동일한 초기 상태에서 다시 측정하고, `false`를 어떻게 처리하는지 점검하세요. 기존 값을 0이 아닌 다른 값으로 바꾸는 이 자식 예시는 새 슬롯의 EIP-8037 상태 가스와 EIP-8038 쓰기 실행 비용을 혼동하지 않도록 한 사례입니다.
+
 ## 개발자가 확인할 것
 
 스펙의 해당 절과 재단의 [재조정 안내](https://blog.ethereum.org/2026/08/24/glamsterdam-repricing-testing)가 가리키는 목록은 거의 같습니다.
@@ -337,7 +478,7 @@ EIP는 기본값이 ETH 송금으로 블록을 채운 실행 레이어 벤치마
 ## 아직 정해지지 않은 것
 
 - **메인넷과 Hoodi 활성화**: 스냅샷 시점에 어느 공식 자료에도 정해져 있지 않습니다. [ACDT #100 안건](https://github.com/ethereum/pm/issues/2264)은 클라이언트 팀에 10월 16일까지 Hoodi 릴리스를 요청했는데, 이는 준비 단계이지 활성화 시점이 아닙니다.
-- **최종 파라미터 값**: Last Call은 11월 1일까지이고, EIP-8037과 EIP-2780 모두 일부 입력값을 최종이 아니거나 잠정치라고 적습니다.
+- **최종 파라미터 값**: 인용한 커밋에는 Last Call 마감일이 11월 1일로 적혀 있고, EIP-8037과 EIP-2780 모두 일부 입력값을 최종이 아니거나 잠정치라고 적습니다.
 - 리저버 분할 아래에서 클라이언트별 **`eth_call` 동작**.
 - 같은 트랜잭션 안의 `CREATE` + `SELFDESTRUCT`에 대한 **리필**: 요청되고 ACDE에서 논의됐지만 현재 본문에는 없습니다.
 
@@ -358,6 +499,8 @@ Sepolia 초기 수치는 설계 결함보다는 하드코딩한 한도부터 깨
 ## 참고 자료
 
 - [EIP-8037: State Creation Gas Cost Increase](https://eips.ethereum.org/EIPS/eip-8037), 원문 [ethereum/EIPs `5ef3801`](https://github.com/ethereum/EIPs/blob/5ef380124bd68d09c02fa90d0de0f2455f37d5ee/EIPS/eip-8037.md), 조회일 2026-10-15
+- [EIP-3529: Reduction in refunds](https://eips.ethereum.org/EIPS/eip-3529), 조회일 2026-10-15
+- [EIP-140: REVERT instruction](https://eips.ethereum.org/EIPS/eip-140), 조회일 2026-10-15
 - [EIP-8038: State-access gas cost update](https://eips.ethereum.org/EIPS/eip-8038), 원문 [`5ef3801`](https://github.com/ethereum/EIPs/blob/5ef380124bd68d09c02fa90d0de0f2455f37d5ee/EIPS/eip-8038.md), 조회일 2026-10-15
 - [EIP-2780: Resource-based intrinsic transaction gas](https://eips.ethereum.org/EIPS/eip-2780), 원문 [`5ef3801`](https://github.com/ethereum/EIPs/blob/5ef380124bd68d09c02fa90d0de0f2455f37d5ee/EIPS/eip-2780.md), 조회일 2026-10-15
 - [EIP-7773: Hardfork Meta - Glamsterdam](https://eips.ethereum.org/EIPS/eip-7773), 원문 [`644b847`](https://github.com/ethereum/EIPs/blob/644b84799ba6873edcb13c0e21fdd319b4efbc08/EIPS/eip-7773.md), 조회일 2026-10-15
