@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000" role="img" aria-labelledby="title desc">
+<title id="title">Transfer 100 units: Solidity and Daml</title>
+<desc id="desc">Solidity updates two entries in the same balance mapping. Daml consumes Alice's holding H1 and creates Bob's holding H2, atomically. H1 cannot be spent again.</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="#0284c7" stroke-width="2"/></marker></defs>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#15263d}.bg{fill:#f2f6fa}.panel{fill:#fff;stroke:#c5d3e1;stroke-width:2}.box{fill:#edf5ff;stroke:#3979b2;stroke-width:2}.spent{fill:#f5f0ee;stroke:#927970;stroke-width:2}.muted{fill:#53657a}.small{font-size:28px}.label{font-size:32px;font-weight:700}.heading{font-size:34px;font-weight:700}.line{stroke:#0284c7;stroke-width:4;marker-end:url(#arrow)}@media(prefers-color-scheme:dark){.bg{fill:#101b2b}.panel{fill:#18273a;stroke:#4c627e}.box{fill:#213e5c;stroke:#7eb8ea}.spent{fill:#3a3031;stroke:#af9690}text{fill:#f1f5fa}.muted{fill:#c1d0e0}}</style>
+<rect class="bg" width="1000" height="1000"/>
+<text x="50" y="67" font-size="40" font-weight="700">Alice → Bob: 100 units</text>
+<text x="50" y="111" class="small muted">Whole holding transfer · educational models</text>
+<rect class="panel" x="40" y="150" width="920" height="340" rx="20"/>
+<text x="70" y="200" class="heading">Solidity · mutate the mapping</text>
+<text x="70" y="243" class="small muted">Same deployed contract</text>
+<rect class="box" x="70" y="270" width="350" height="135" rx="12"/>
+<text x="95" y="315" class="label">Before</text><text x="95" y="356" class="small">Alice: 100 · Bob: 0</text>
+<line class="line" x1="441" y1="338" x2="548" y2="338"/>
+<rect class="box" x="575" y="270" width="350" height="135" rx="12"/>
+<text x="600" y="315" class="label">After</text><text x="600" y="356" class="small">Alice: 0 · Bob: 100</text>
+<text x="70" y="455" class="small">transferAll(Bob) · caller: Alice</text>
+<rect class="panel" x="40" y="520" width="920" height="430" rx="20"/>
+<text x="70" y="572" class="heading">Daml · consume, then create</text>
+<text x="70" y="615" class="small muted">One atomic transaction</text>
+<rect class="spent" x="70" y="650" width="350" height="172" rx="12"/>
+<text x="95" y="693" class="label">H1 · Alice · 100</text><text x="95" y="736" class="small">Active → archived</text><text x="95" y="779" class="small muted">H1 cannot be reused</text>
+<line class="line" x1="441" y1="735" x2="548" y2="735"/>
+<rect class="box" x="575" y="650" width="350" height="172" rx="12"/>
+<text x="600" y="693" class="label">H2 · Bob · 100</text><text x="600" y="736" class="small">New contract ID</text><text x="600" y="779" class="small muted">Active holding</text>
+<text x="70" y="875" class="small">exercise H1 (Transfer Bob) · controller: Alice</text>
+<text x="70" y="919" class="small muted">Issuer stays the signatory on H1 and H2</text>
+</svg>
