@@ -54,12 +54,12 @@
             {{ $tags:= .Params.tags }}
             {{ if $tags }}
               <div class="lg:col-6 mb-10 flex items-center lg:mb-0">
-                <h5 class="mr-3">{{ T "tags" | default "Tags" }} :</h5>
-                <ul>
+                <h5 class="post-tags-label mr-3">{{ T "tags" | default "Tags" }} :</h5>
+                <ul class="post-tags-list">
                   {{ range $i,$p:= $tags }}
-                    <li class="inline-block">
+                    <li>
                       <a
-                        class="bg-light hover:bg-primary dark:bg-darkmode-light dark:hover:bg-darkmode-primary dark:hover:text-text-dark m-1 block rounded px-3 py-1 hover:text-white"
+                        class="bg-light hover:bg-primary dark:bg-darkmode-light dark:hover:bg-darkmode-primary dark:hover:text-text-dark block rounded px-3 py-1 hover:text-white"
                         href="{{ `tags/` | relLangURL }}{{ . | urlize | lower }}/">
                         {{ . | humanize }}
                       </a>
