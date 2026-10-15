@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="1870" viewBox="0 0 700 1870" role="img" aria-labelledby="title desc">
+<title id="title">Selective data access and a possible AI feedback loop</title>
+<desc id="desc">Content passes through purpose-specific conditions. Three independent outcomes are stacked vertically: internal use subject to rights, approved external use, and unavailable uses or users. A separate conceptual loop links data, AI quality and distribution, interactions, and new data. No market quantities are measured.</desc>
+<style>
+.bg{fill:#f5f7fb}.card{fill:#fff;stroke:#b6c3d4;stroke-width:2}.ink{fill:#152c49}.muted{fill:#40536c}.gate{fill:#e4eefc;stroke:#416ea3;stroke-width:2}.green{fill:#e0f2eb;stroke:#36806a;stroke-width:2}.grey{fill:#edf0f4;stroke:#8995a6;stroke-width:2}.line{fill:none;stroke:#416181;stroke-width:4}.loop{fill:#fff;stroke:#36806a;stroke-width:2}text{font-family:Arial,sans-serif;text-anchor:middle}.h{font-size:36px;font-weight:700}.sub{font-size:26px}.label{font-size:30px;font-weight:700}.small{font-size:26px}
+@media(prefers-color-scheme:dark){.bg{fill:#111c2c}.card,.loop{fill:#1d2c40;stroke:#8fa5c0}.ink{fill:#f0f5ff}.muted{fill:#cad6e7}.gate{fill:#203b60;stroke:#8ab6f0}.green{fill:#183f37;stroke:#8bcdb6}.grey{fill:#303a49;stroke:#a2aec0}.line{stroke:#a4bfe0}}
+</style>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10Z" fill="#567a9d"/></marker></defs>
+<rect class="bg" width="700" height="1870"/>
+<text x="350" y="58" class="h ink">Selective data access</text>
+<text x="350" y="100" class="sub muted">Conceptual model • no market measurements</text>
+<rect x="55" y="135" width="590" height="120" rx="18" class="card"/>
+<text x="350" y="182" class="label ink">Content + user contributions</text>
+<text x="350" y="224" class="small muted">Hosting does not confer all rights</text>
+<path d="M350 255V295" class="line" marker-end="url(#arrow)"/>
+<rect x="55" y="300" width="590" height="245" rx="18" class="gate"/>
+<text x="350" y="347" class="label ink">Purpose-specific conditions</text>
+<text x="350" y="390" class="sub ink">Collect • Train • Retrieve</text>
+<text x="350" y="427" class="sub ink">Display • Transact</text>
+<text x="350" y="470" class="small muted">Permission, price, retention, attribution</text>
+<text x="350" y="513" class="small muted">Each purpose needs its own permission</text>
+<path d="M350 545V575H45V945 M45 645H95 M45 795H95 M45 945H95" class="line"/>
+<path d="M80 645H95 M80 795H95 M80 945H95" class="line" marker-end="url(#arrow)"/>
+<rect x="100" y="585" width="540" height="120" rx="16" class="green"/>
+<text x="370" y="633" class="label ink">Internal use</text>
+<text x="370" y="675" class="small muted">Rights and privacy still apply</text>
+<rect x="100" y="735" width="540" height="120" rx="16" class="card"/>
+<text x="370" y="783" class="label ink">External use</text>
+<text x="370" y="825" class="small muted">Approved API or license terms</text>
+<rect x="100" y="885" width="540" height="120" rx="16" class="grey"/>
+<text x="370" y="933" class="label ink">Unavailable</text>
+<text x="370" y="975" class="small muted">Some uses or users</text>
+<text x="350" y="1075" class="label ink">Possible feedback within a service</text>
+<text x="350" y="1120" class="small muted">Strength depends on quality</text>
+<text x="350" y="1157" class="small muted">and available substitutes</text>
+<rect x="100" y="1200" width="500" height="100" rx="15" class="loop"/>
+<text x="350" y="1261" class="label ink">Data</text>
+<path d="M350 1300V1335" class="line" marker-end="url(#arrow)"/>
+<rect x="100" y="1340" width="500" height="100" rx="15" class="loop"/>
+<text x="350" y="1401" class="label ink">AI quality + distribution</text>
+<path d="M350 1440V1475" class="line" marker-end="url(#arrow)"/>
+<rect x="100" y="1480" width="500" height="100" rx="15" class="loop"/>
+<text x="350" y="1541" class="label ink">User interactions</text>
+<path d="M350 1580V1615" class="line" marker-end="url(#arrow)"/>
+<rect x="100" y="1620" width="500" height="100" rx="15" class="loop"/>
+<text x="350" y="1681" class="label ink">New data</text>
+<path d="M600 1670H655V1250H605" class="line" marker-end="url(#arrow)"/>
+<text x="350" y="1790" class="small muted">HakHub • source basis and caveats</text>
+<text x="350" y="1830" class="small muted">in the article</text>
+</svg>
