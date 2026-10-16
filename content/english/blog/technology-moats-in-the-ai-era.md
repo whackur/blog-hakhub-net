@@ -55,7 +55,7 @@ Even if you build a similar product search interface and price comparison featur
 📎 [Data Enclosure and Platform Monopolization in the AI Era](https://blog.hakhub.net/blog/ai-data-enclosure-platform-monopolization/)
 This article examines how the end of data access, restrictions on use, contracts, and pricing affect platform competition through NAVER's Shopping Search API shutdown and cases involving Reddit, X, and Cloudflare.
 
-## Seven things that are difficult to reproduce
+## Six things that are difficult to reproduce
 
 ### 1. Platforms with established user networks and customer access
 

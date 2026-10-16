@@ -55,7 +55,7 @@ draft: false
 📎 [AI 시대의 데이터 폐쇄화(Data Enclosure)와 플랫폼 독점화 동향](https://blog.hakhub.net/blog/ai-data-enclosure-platform-monopolization/)
 네이버 쇼핑 검색 API 종료와 Reddit·X·Cloudflare 사례로 데이터 접근의 종료, 용도 제한, 계약과 과금이 플랫폼 경쟁에 미치는 영향을 살펴봅니다.
 
-## 쉽게 재현하기 어려운 일곱 가지
+## 쉽게 재현하기 어려운 여섯 가지
 
 ### 1. 이미 사용자 네트워크와 고객 접점을 확보한 플랫폼
 
