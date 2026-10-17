@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1740" viewBox="0 0 600 1740" role="img" aria-labelledby="title desc">
+  <title id="title">Glamsterdam: block construction and execution validation</title>
+  <desc id="desc">Two distinct flows. ePBS uses a builder commitment, proposer inclusion, and payload reveal with timeliness attestations. BAL production records actual accesses and post-transaction changes; receivers prefetch state, validate execution, and verify the BAL and state root. Dependencies remain and execution correctness must be checked.</desc>
+  <style>
+    text{font-family:Arial,Helvetica,sans-serif;fill:#14253d} .major{font-size:34px;font-weight:700} .label{font-size:29px;font-weight:700} .note{font-size:25px} .panel{fill:#eef3fb;stroke:#c9d5e7;stroke-width:2} .box{fill:#fff;stroke:#7990b0;stroke-width:2} .line{fill:none;stroke:#526b8d;stroke-width:3} .accent{fill:#2758a6}
+    @media(prefers-color-scheme:dark){.bg{fill:#111c2d}text{fill:#edf3ff}.panel{fill:#192a43;stroke:#435a7c}.box{fill:#223953;stroke:#829bbb}.line{stroke:#b6c8e1}.accent{fill:#a7c7ff}}
+  </style>
+  <defs><marker id="arrow" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="10" viewBox="0 0 12 10" refX="11" refY="5" orient="auto"><path d="M0 0 11 5 0 10" fill="#7990b0"/></marker></defs>
+  <rect class="bg" width="600" height="1740" fill="#fff"/>
+  <text x="40" y="60" class="major">Glamsterdam</text>
+  <rect x="20" y="95" width="560" height="555" rx="20" class="panel"/>
+  <text x="40" y="145" class="major accent"><tspan x="40">ePBS · block</tspan><tspan x="40" dy="40">construction</tspan></text>
+  <rect x="40" y="210" width="520" height="105" rx="12" class="box"/>
+  <text x="60" y="250" class="label"><tspan x="60">Builder signs payload</tspan><tspan x="60" dy="36">commitment + bid</tspan></text>
+  <path d="M300 320V350" class="line" marker-end="url(#arrow)"/>
+  <rect x="40" y="360" width="520" height="105" rx="12" class="box"/>
+  <text x="60" y="400" class="label"><tspan x="60">Proposer includes bid ·</tspan><tspan x="60" dy="36">payment is reserved</tspan></text>
+  <path d="M300 470V500" class="line" marker-end="url(#arrow)"/>
+  <rect x="40" y="510" width="520" height="105" rx="12" class="box"/>
+  <text x="60" y="550" class="label"><tspan x="60">Reveal · PTC checks</tspan><tspan x="60" dy="36">timing + availability</tspan></text>
+  <rect x="20" y="680" width="560" height="840" rx="20" class="panel"/>
+  <text x="40" y="730" class="major accent"><tspan x="40">BAL · execution data</tspan><tspan x="40" dy="40">and validation</tspan></text>
+  <rect x="40" y="795" width="520" height="180" rx="12" class="box"/>
+  <text x="60" y="835" class="label"><tspan x="60">Producer executes</tspan><tspan x="60" dy="36">and records</tspan></text>
+  <text x="60" y="918" class="note"><tspan x="60">Actual touched locations +</tspan><tspan x="60" dy="32">post-transaction changes</tspan></text>
+  <path d="M300 980V1007" class="line" marker-end="url(#arrow)"/>
+  <rect x="40" y="1020" width="520" height="180" rx="12" class="box"/>
+  <text x="60" y="1060" class="label"><tspan x="60">Receiver prefetches state</tspan><tspan x="60" dy="36">and validates</tspan></text>
+  <text x="60" y="1142" class="note"><tspan x="60">Parallel reads / execution /</tspan><tspan x="60" dy="32">state-root computation</tspan></text>
+  <path d="M300 1205V1232" class="line" marker-end="url(#arrow)"/>
+  <rect x="40" y="1245" width="520" height="240" rx="12" class="box"/>
+  <text x="60" y="1285" class="label"><tspan x="60">Verify commitment AND</tspan><tspan x="60" dy="36">execution correctness</tspan></text>
+  <text x="60" y="1403" class="note"><tspan x="60">Compare actual accesses</tspan><tspan x="60" dy="32">and changes ·</tspan><tspan x="60" dy="32">check state root</tspan></text>
+  <text x="40" y="1580" class="label">State dependencies remain.</text>
+  <text x="40" y="1630" class="note"><tspan x="40">A matching BAL hash alone</tspan><tspan x="40" dy="36">does not prove</tspan><tspan x="40" dy="36">correct execution.</tspan></text>
+</svg>
