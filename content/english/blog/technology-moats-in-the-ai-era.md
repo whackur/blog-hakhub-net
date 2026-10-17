@@ -1,9 +1,9 @@
 ---
 title: "Technology Moats in the AI Era"
 meta_title: ""
-description: "As AI makes features easier to reproduce, what keeps customers choosing a product? A personal view of technology moats through technical difficulty and business foundations."
+description: "Building new software and earning a sustainable profit are separate challenges. A look at why customers pay and stay, and which technical and business advantages competitors struggle to reproduce."
 date: 2026-10-16T02:04:00+09:00
-lastmod: 2026-10-16T02:04:00+09:00
+lastmod: 2026-10-17T09:59:27+09:00
 image: "/images/posts/technology-moats-in-the-ai-era/cover.webp"
 categories: ["AI"]
 tags: ["ai-agents", "software", "competition", "data", "platforms"]
@@ -12,7 +12,7 @@ translationKey: "technology-moats-in-the-ai-era"
 draft: false
 ---
 
-## Replicating a product and recreating a business are different things
+## Building software and making money are different things
 
 I recently attended an AI conference. As I looked at the many products and demonstrations, one question kept coming back to me.
 
@@ -22,11 +22,13 @@ This was only my subjective impression from the exhibits and demos, but it seeme
 
 Of course, building a prototype that behaves similarly is different from building a product that actual customers can trust and use. Visible features alone don't tell us how well a product performs, how reliable or secure it is, or how mature its operations are. But one thing seems clear: anyone can now implement software to a fairly convincing level.
 
-**Does that mean software has no value?**
+But having software doesn't mean you can make money from it. That applies to genuinely new products as well as products modeled on existing ones. You still have to find out whether customers are willing to pay to solve the problem, how to reach those customers, and why they would buy again or keep paying after the first purchase.
+
+Revenue isn't the same as profit. You need to cover the costs of delivering and operating the product and still earn a profit over time. Even confirmed willingness to pay doesn't guarantee profitability. What competitive advantage can technology provide in that process?
 
 ## The barriers to building and analyzing software are both falling
 
-Something recently made me feel I couldn't keep putting off writing about this question: [REA (Reverse Engineer Anything)](https://github.com/morluto/rea). REA connects AI agents to reverse engineering tools, helping them analyze the structure and behavior of programs without source code and reimplement similar functionality.
+One tool recently made the falling barriers to development feel more concrete to me: [REA (Reverse Engineer Anything)](https://github.com/morluto/rea). REA connects AI agents to reverse engineering tools, helping them analyze the structure and behavior of programs without source code and reimplement similar functionality.
 
 Previously, this kind of analysis required a reverse engineering specialist to work directly with tools such as IDA Pro and trace a program's structure. Now you can ask an agent, “Analyze how this particular feature works in this product, and implement something similar in my project.”
 
@@ -40,7 +42,7 @@ Over the past year, I've also felt the pace of product launches and improvements
 
 If these changes continue, it will become increasingly difficult to assume that a feature you worked hard to implement will remain difficult for competitors to build for very long.
 
-Where, then, will the technology moats of software remain?
+Earning a sustained income from software requires delivering value to customers while responding to competition. Where can technology still create advantages that competitors struggle to match?
 
 ## Being able to write the code doesn't mean being able to obtain the data
 
@@ -139,16 +141,16 @@ The difficulty of implementing a product and the difficulty of establishing the 
 
 Implementing an approval workflow feature is different from reproducing its established position within a customer's approval and accounting processes. Products such as robots, which require design and control technology alongside production and supply capabilities, can have barriers on both axes.
 
-This distinction isn't intended to assign fixed scores to industries. It is a way to examine **whether competitors struggle to catch up because of the technology, the business foundation, or both**.
+This distinction isn't intended to assign fixed scores to industries. It is a way to examine **whether competitors struggle to catch up because of the technology, the business foundation, or both**. These axes help explain how long a competitive advantage might last, but they aren't a sufficient test of profitability. Even with a moat, it is difficult to earn a profit if customer payments don't cover the costs of delivering and operating the product.
 
-## Software isn't losing its value, but we now need to think before building
+## The value of software and the conditions for making money over time
 
 AI making some features easier to implement doesn't mean technology loses its value. Technology that delivers high performance and reliability at lower cost, or solves problems that remain unsolved, still matters.
 
-But **being able to build a feature is no longer enough to explain a business's competitiveness.** Securing the necessary data and rights, becoming part of customers' work, and earning trust through real operations still remain.
+But **being able to build a feature doesn't tell us whether it can generate a sustained income.** Even an original product has to reach paying customers and leave a profit after delivery and operating costs. Securing the necessary data and rights, becoming part of customers' work, and earning trust through real operations can give customers reasons to keep choosing it, but they don't guarantee a profit.
 
 Of course, these business foundations aren't permanent moats either. AI can reduce the cost of changing systems, and trust can weaken when operations and responses fall short of expectations. A competitor may also emerge that solves the customer's problem differently, without copying the existing product.
 
 The moat lies in **the reasons a product remains difficult to replace even after others build the same functionality**, beyond features that others can't build.
 
-**“If someone builds exactly the same features tomorrow, why would customers keep choosing this product?”**
+Alongside “Can I build this?”, I now find it important to ask: **“Do customers have a reason to keep paying, and will those payments leave a profit after costs?”**
