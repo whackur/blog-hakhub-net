@@ -1,9 +1,9 @@
 ---
-title: "China's draft AI export controls and future DeepSeek and Qwen weight releases"
+title: "China’s AI technology export controls: temporary registration and the draft catalogue"
 meta_title: ""
-description: "China's proposal does not impose a blanket ban on Hugging Face releases. Existing public technology, new releases, temporary registration, automatic licensing and API services follow different paths."
+description: "The legal status and classification criteria of China’s October 16, 2026 AI technology export measures, and their implications for public weights, first releases, APIs and overseas deployment."
 date: 2026-10-21T11:30:00+09:00
-lastmod: 2026-10-21T12:00:50+09:00
+lastmod: 2026-10-21T12:48:17+09:00
 image: "/images/posts/china-ai-export-controls-open-weights/cover.webp"
 categories: ["AI"]
 tags: ["open-weights", "export-controls", "deepseek", "qwen", "hugging-face", "local-llm"]
@@ -12,23 +12,9 @@ translationKey: "china-ai-export-controls-open-weights"
 draft: false
 ---
 
-**China's new measures do not establish that future DeepSeek or Qwen weights cannot be released on Hugging Face.** As of October 21, 2026, temporary pre-export registration is already in effect for the relevant technologies. The expanded prohibited and restricted technology list remains a consultation draft, which proposes automatic licensing and other facilitation for open-source exports of restricted AI technology. A future first release, however, does not automatically qualify for the exclusion covering technology that is already public. ([Official announcement and Annex 1](https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_0a31a3c9ac404f7a9b0e917ce3412997.html), [official Q&A](https://www.mofcom.gov.cn/xwfb/xwfyrth/art/2026/art_d7661dbf62794345a221404f82a25959.html))
+On October 16, 2026, China’s Ministry of Commerce (MOFCOM) and Ministry of Science and Technology issued Announcement No. 48, proposing changes to the prohibited and restricted technology export catalogue and introducing temporary pre-export registration for AI and other technologies. **As of October 21, registration is in effect; the revised catalogue remains open for consultation.** ([Official announcement](https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_0a31a3c9ac404f7a9b0e917ce3412997.html))
 
-For developers who self-host models, the useful question is **which classification and procedure a new weight release must satisfy**. Downloading weights to run inference yourself differs from accessing a model running in China through an API. The two arrangements transfer different things.
-
-## Publication status and delivery method change the result
-
-These cases summarize the distinctions in the announcement, annex and Q&A. Some describe current obligations; others describe the proposed regime after formal implementation.
-
-| Case | Treatment described in the announcement or proposal |
-| --- | --- |
-| AI technology already in the public domain through open-source release or academic publication | Excluded from scope. The extent of what has actually been disclosed matters. |
-| First open-source release of previously unpublished restricted technology | Temporary pre-export registration must currently be assessed; the draft proposes automatic licensing and other facilitation for the future regime. |
-| New export of technology proposed for the prohibited category | Prohibited if that classification is adopted. The facilitation for restricted open-source technology cannot simply be applied to it. |
-| Local deployment of a restricted model on overseas servers | Described as a technology export after formal implementation. Deployment in an exporter’s own overseas cloud may qualify for automatic licensing. |
-| Overseas API, app, web or SaaS access to a restricted model deployed in China | The Q&A places these outside large-model technology export management, distinguishing service access from transferring weights or core technology overseas. |
-
-Sources: [Annex 1, AI footnotes 1 and 2](https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_0a31a3c9ac404f7a9b0e917ce3412997.html), [Q&A on open source and overseas deployment](https://www.mofcom.gov.cn/xwfb/xwfyrth/art/2026/art_d7661dbf62794345a221404f82a25959.html).
+For international AI development and deployment, the change matters because weight releases, overseas technology transfers and API services follow different procedures. The draft excludes already-public technology and proposes automatic licensing and other facilitation for open-source exports of restricted AI technology. It also distinguishes overseas server deployment from overseas access to models deployed in China. ([Official Q&A](https://www.mofcom.gov.cn/xwfb/xwfyrth/art/2026/art_d7661dbf62794345a221404f82a25959.html))
 
 ## Registration applies now; the expanded licensing regime is proposed
 
@@ -36,7 +22,7 @@ The Ministry of Commerce (MOFCOM) and Ministry of Science and Technology issued 
 
 A temporary registration requirement applies from the announcement date until the revised catalogue takes effect. Exporters must register before exporting the relevant technology, including exports that have started but remain incomplete. Covered transactions include transferring ownership overseas, licensing technology held in China for overseas use, and changes that place domestic technology under foreign ownership or actual control. Registration asks for information about the exporter and recipient, destination, technology and intended use, and estimated export value. ([Announcement, section III](https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_0a31a3c9ac404f7a9b0e917ce3412997.html))
 
-Registration and authorization are different procedures. Treating temporary registration as immediate implementation of every proposed prohibition and licensing requirement overstates the current measure. Treating the whole announcement as an unenforceable draft misses the registration obligation. Baker McKenzie’s [October 18 legal explanation](https://sanctionsnews.bakermckenzie.com/china-proposes-expanded-export-controls-on-ai-biopharma-and-solar-energy-technologies/) likewise distinguishes registration from approval or permission to export.
+Registration submits information about an export; authorization permits it. The current registration obligation and the prohibitions and licensing requirements in the proposed catalogue have different legal status. Baker McKenzie’s [October 18 legal explanation](https://sanctionsnews.bakermckenzie.com/china-proposes-expanded-export-controls-on-ai-biopharma-and-solar-energy-technologies/) likewise distinguishes registration from approval or permission to export.
 
 [Articles 30 and 31 of the Technology Import and Export Administration Regulations](https://www.baoji.gov.cn/bmpd/bjsswj/gzdt/tzgg/202606/t20260609_1276358.html) establish that prohibited technology cannot be exported and restricted technology requires a license. Automatic licensing is proposed facilitation for specified exports in the restricted category. The authorities describe a process approaching immediate export upon filing, but that is no guarantee that every future model will qualify. Final rules and implementation guidance still matter. ([Official Q&A](https://www.mofcom.gov.cn/xwfb/xwfyrth/art/2026/art_d7661dbf62794345a221404f82a25959.html), [Baker McKenzie](https://sanctionsnews.bakermckenzie.com/china-proposes-expanded-export-controls-on-ai-biopharma-and-solar-energy-technologies/))
 
@@ -56,13 +42,27 @@ There is also an exception for the important-data branch. It covers use of only 
 
 The AI section separately proposes prohibitions for high-performance agents intended specifically or primarily for sensitive infrastructure, defense and core government applications, and for specified offensive technologies. A general chatbot or coding-model label does not establish that a model belongs to those categories. Data classification, technical characteristics and use conditions matter alongside size.
 
+## Publication status and delivery method change the result
+
+Publication status and delivery method determine how the classifications apply. Current registration obligations remain distinct from the treatment proposed for the period after formal implementation.
+
+| Case | Treatment described in the announcement or proposal |
+| --- | --- |
+| AI technology already in the public domain through open-source release or academic publication | Excluded from scope. The extent of what has actually been disclosed matters. |
+| First open-source release of previously unpublished restricted technology | Temporary pre-export registration must currently be assessed; the draft proposes automatic licensing and other facilitation for the future regime. |
+| New export of technology proposed for the prohibited category | Prohibited if that classification is adopted. The facilitation for restricted open-source technology cannot simply be applied to it. |
+| Local deployment of a restricted model on overseas servers | Described as a technology export after formal implementation. Deployment in an exporter’s own overseas cloud may qualify for automatic licensing. |
+| Overseas API, app, web or SaaS access to a restricted model deployed in China | The Q&A places these outside large-model technology export management, distinguishing service access from transferring weights or core technology overseas. |
+
+Sources: [Annex 1, AI footnotes 1 and 2](https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_0a31a3c9ac404f7a9b0e917ce3412997.html), [Q&A on open source and overseas deployment](https://www.mofcom.gov.cn/xwfb/xwfyrth/art/2026/art_d7661dbf62794345a221404f82a25959.html).
+
 ## Existing public technology differs from a first release
 
 The exclusion concerns technology that has **already entered the public domain** through open-source release, academic publication or similar means. An architecture disclosed in a paper and unpublished weights are different bodies of information. Publishing an earlier version does not make a later private checkpoint public. ([Annex 1, footnote 1](https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_0a31a3c9ac404f7a9b0e917ce3412997.html))
 
 For unpublished restricted technology, the act of releasing it may itself raise an export-procedure question. The draft addresses that case by offering automatic licensing and other facilitation for open-source exports of restricted AI technology. The same footnote covers Chinese companies building and operating their own overseas computing centers, overseas chip fabrication, joint R&D using overseas resources, and participation in international standards development. This supports continued publication, but does not mean that becoming public afterward eliminates procedures that apply before release. ([Annex 1, footnote 2](https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_0a31a3c9ac404f7a9b0e917ce3412997.html))
 
-The distinction applies to DeepSeek and Qwen. Existing public examples include the official model cards for [DeepSeek-V3.2](https://huggingface.co/deepseek-ai/DeepSeek-V3.2) and [Qwen3-235B-A22B](https://huggingface.co/Qwen/Qwen3-235B-A22B). Their availability is separate from a decision about the next release. The announcement does not announce cancellation of a particular DeepSeek or Qwen version. It does not establish that DeepSeek V4 or any particular Qwen successor has had its weight release prohibited or canceled.
+The distinction applies to DeepSeek and Qwen. Existing public examples include the official model cards for [DeepSeek-V3.2](https://huggingface.co/deepseek-ai/DeepSeek-V3.2) and [Qwen3-235B-A22B](https://huggingface.co/Qwen/Qwen3-235B-A22B). The public-domain exclusion can be assessed for what has already been disclosed, while a first release of future private weights requires a separate assessment of classification and export procedures. These are examples of existing public technology, not evidence of whether a successor will be released.
 
 Hugging Face is a [platform for hosting model repositories and files](https://huggingface.co/docs/hub/models-the-hub). The announcement provides no exemption for using that platform. The relevant questions concern the technology, the rights granted and the way it is supplied abroad.
 
@@ -72,17 +72,15 @@ Here, **open weights** means that trained weights are accessible for running the
 
 The official Q&A explicitly discusses the period after the revised catalogue takes effect. It describes overseas local deployment of restricted technology as a technology export. Deployment in an exporter’s own overseas cloud, where risks are relatively controllable, may qualify for automatic licensing and other facilitation. ([Q&A on overseas deployment](https://www.mofcom.gov.cn/xwfb/xwfyrth/art/2026/art_d7661dbf62794345a221404f82a25959.html))
 
-The same answer places overseas API, app, web and SaaS services using restricted large models deployed in China outside large-model technology export management. It also lists lightweight on-device deployment as a separate type. Calling a transfer of full weights to an overseas server an API service does not make it one. Nor does the reference to lightweight on-device deployment establish an exemption for every offline weight deployment. These are distinctions within this technology export framework, not exemptions from all other data, security or service obligations.
+The same answer places overseas API, app, web and SaaS services using restricted large models deployed in China outside large-model technology export management. It also lists lightweight on-device deployment as a separate type. Transferring full weights to an overseas server is distinct from accessing an API service. The reference to lightweight on-device deployment cannot be extended into an exemption for every offline weight deployment. These are distinctions within this technology export framework, not exemptions from all other data, security or service obligations.
 
-For developers, the practical difference remains substantial. Continued API access does not guarantee downloadable weights for an isolated network or a model you can modify. If service access and weight distribution follow different procedures, API availability and downloadable releases could arrive at different times. That is a possible policy scenario, not an announced schedule adopted by either company.
+For development and operations, API access and access to weights are separate conditions. Running inference on an isolated network or modifying a model requires checking actual weight availability and the license. A paper, model card or API model name alone does not establish that downloadable weights have been released.
 
-## What self-hosting developers can verify
+## Established obligations and pending decisions
 
-For an existing deployment, record the model card and license alongside the exact repository revision and versions of the weights, tokenizer and execution code. Since the exclusion for existing public technology does not guarantee future updates, an operating plan should not depend entirely on an unreleased successor.
+As of October 21, the established obligation is temporary pre-export registration for the relevant technology. The proposed catalogue separates prohibited and restricted categories by training data, technical characteristics and intended use. It combines an exclusion for existing public technology with simplified procedures for certain exports of restricted technology. First weight releases, overseas local deployment and service access to models deployed in China receive different treatment within that structure.
 
-For a new release, check the company’s official announcement and whether weights are actually available. A paper, model card or API model name alone does not prove a downloadable release. The next regulatory checkpoints are the final catalogue’s effective date, classification at the time of export, and the eligibility and filing procedure for automatic licensing.
-
-The measures may add procedures and uncertainty to future releases. The supported conclusion, however, is not a blanket ban on Chinese open-weight models. The proposal excludes existing public technology, offers a simplified route for future open-source exports of restricted technology, and treats sensitive prohibited technology separately. The availability of the next model will depend on the final rules and the developer’s actual release decision.
+Pending decisions include the final catalogue’s contents and effective date, how classifications apply at the time of export, and eligibility and filing procedures for automatic licensing. International joint research and model deployment plans need to account for those implementing rules alongside developers’ actual release decisions. The availability of an existing public model does not settle the conditions for future updates.
 
 ## Further reading
 
