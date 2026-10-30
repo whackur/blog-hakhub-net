@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1160" viewBox="0 0 960 1160" role="img" aria-labelledby="title desc">
+  <title id="title">Descending nonce-range authorization processing</title>
+  <desc id="desc">Conditional on the explorer-displayed prestate nonce 18914809 and the other application conditions: the first 15 higher-nonce authorizations are skipped, the sixteenth matches and increments the account nonce to 18914810, and the final 34 lower-nonce entries are skipped. One authorization applies, not fifty code executions. This is not an archive prestate replay.</desc>
+  <style>
+    .bg{fill:#f4f7fa}.panel{fill:#fff;stroke:#a3b2c2;stroke-width:2}.match{fill:#e4f5ef;stroke:#197456;stroke-width:3}.ink{fill:#172a3d}.muted{fill:#45576a}.line{stroke:#536b7e;stroke-width:3;fill:none}text{font-family:Arial,Helvetica,sans-serif}.label{font-size:34px;font-weight:700}.body{font-size:30px}.small{font-size:27px}
+    @media(prefers-color-scheme:dark){.bg{fill:#101c29}.panel{fill:#1c2d3f;stroke:#8098ae}.match{fill:#163d34;stroke:#77d9b5}.ink{fill:#f1f6fc}.muted{fill:#c2d1df}.line{stroke:#b7cbdc}}
+  </style>
+  <defs><marker id="arrow" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="12" viewBox="0 0 14 12" refX="13" refY="6" orient="auto"><path d="M1 1 L12 6 L1 11" fill="none" stroke="#71879a" stroke-width="2.5"/></marker></defs>
+  <rect class="bg" width="960" height="1160" rx="20"/>
+  <text class="ink label" x="60" y="76">50 authorizations, descending order</text>
+  <text class="muted body" x="60" y="124">Conditional prestate: nonce 18914809</text>
+  <rect class="panel" x="60" y="170" width="840" height="192" rx="18"/>
+  <text class="ink label" x="94" y="221">Entries 1 to 15: skip</text>
+  <text class="ink body" x="94" y="271">18914824 → … → 18914810</text>
+  <text class="muted small" x="94" y="319">Higher than account nonce 18914809</text>
+  <path class="line" d="M480 363 V409" marker-end="url(#arrow)"/>
+  <rect class="match" x="60" y="420" width="840" height="230" rx="18"/>
+  <text class="ink label" x="94" y="472">Entry 16: match 18914809</text>
+  <text class="ink body" x="94" y="523">Apply delegation once</text>
+  <text class="ink body" x="94" y="572">Account nonce → 18914810</text>
+  <text class="muted small" x="94" y="616">Other application conditions assumed satisfied</text>
+  <path class="line" d="M480 651 V697" marker-end="url(#arrow)"/>
+  <rect class="panel" x="60" y="708" width="840" height="192" rx="18"/>
+  <text class="ink label" x="94" y="759">Entries 17 to 50: skip</text>
+  <text class="ink body" x="94" y="809">18914808 → … → 18914775</text>
+  <text class="muted small" x="94" y="857">Lower than updated nonce 18914810</text>
+  <text class="ink body" x="60" y="968">Earlier entries are not revisited.</text>
+  <text class="ink body" x="60" y="1020">One applied authorization ≠ 50 executions.</text>
+  <text class="muted small" x="60" y="1090">Explorer prestate assumption, not archive replay</text>
+</svg>
