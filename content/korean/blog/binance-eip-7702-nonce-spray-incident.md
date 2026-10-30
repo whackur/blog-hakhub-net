@@ -3,7 +3,7 @@ title: "바이낸스 Ethereum 지갑 유출과 EIP-7702 nonce-range spray 분석
 meta_title: ""
 description: "Binance 14 위임 거래의 유효 서명 50개, 주요 유출·차단 거래와 후속 스왑을 대조하고 서명 권한 침해와 프로토콜 검증 결함을 구분합니다."
 date: 2026-10-30T14:00:00+09:00
-lastmod: 2026-10-30T14:27:42+09:00
+lastmod: 2026-10-30T14:53:07+09:00
 image: "/images/posts/binance-eip-7702-nonce-spray-incident/cover.webp"
 categories: ["Blockchain", "Security"]
 tags: ["ethereum", "eip-7702", "binance", "custody", "incident-analysis"]
@@ -155,6 +155,16 @@ Etherscan의 Authorizations 표는 nonce `18914809`만 Validity=True, 나머지 
 
 정상 지갑 구현의 `execute` 서명 검증이 재사용되거나 우회되는 취약점과도 구분해야 합니다. 여기에는 처음부터 공격에 사용된 구현을 가리키는 authorization이 있습니다. 정상 delegate의 실행 검증 버그를 추가로 가정하지 않아도 초기 경로를 설명할 수 있습니다. Blockaid는 해당 구현을 운영자 주소가 하드코딩된 sweeper로 분석했습니다. 여기서 sweeper라는 표현은 그 분석과 관찰된 반복 자산 이동에 근거하며, 구현 바이트코드나 접근 제어를 독립 감사했다는 뜻은 아닙니다. [Blockaid 원문](https://x.com/blockaid_/status/2115924317888495661)
 
+## Etherscan에 공개된 Claude 재구성 소스
+
+2026-10-30 14:49 KST에 확인한 [위임 구현의 Etherscan 코드 페이지](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code)는 `Source Code Verified / Exact Match`를 표시합니다. 컴파일러는 `v0.8.28+commit.7893614a`, optimizer는 200 runs, EVM 대상은 `cancun`으로 나옵니다. 이는 컴파일한 소스와 배포 코드의 일치 검증 표시이며 보안 감사나 안전성 보증은 아닙니다. 같은 페이지의 감사 항목은 `No Contract Security Audit Submitted`로 표시됐습니다.
+
+공개된 `Target.sol`의 주석은 이를 원본 소스가 아닌 AI 재구성 소스로 명시합니다. 주석에 따르면 Claude가 배포된 런타임 바이트코드에서 2026-10-30 00:30 UTC(09:30 KST)에 재구성했고, `solc 0.8.28`, `via-ir`, optimizer 200 runs, `cancun`으로 컴파일하면 끝부분 메타데이터 해시를 제외한 런타임 바이트코드가 일치한다고 합니다. 컨트랙트명과 매개변수명도 추정이라고 적혀 있습니다. Claude라는 귀속과 재구성 시각은 소스 주석의 주장이며, 작성자 신원이나 업로드 시각을 독립 확인한 자료는 아닙니다. Etherscan의 `Exact Match` 표시와 이 메타데이터 단서는 구분해서 읽어야 하며, 별도 재컴파일이나 바이트코드 대조 결과는 확보하지 않았습니다. [공개 소스](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code)
+
+이 재구성 소스에서는 `onlyAuthorized`가 호출자를 하드코딩된 `authorizedCaller`인 `0x7C8601d4645b93cea45F71e118A729332e6B5CA0`으로 제한합니다. 앞서 바깥 type-4 거래 서명에서 복구한 제출자와 같은 주소입니다. `sweep`, `withdrawETH`, `withdrawToken`, `callExecute`에 이 제한이 붙어 있어 자산 전송과 외부 실행 호출의 구조를 읽기 쉬워졌습니다. 이는 공개된 재구성 소스의 구조를 확인한 것이며 개별 거래의 실행 trace를 독립 검증한 결과는 아닙니다. [구현 코드](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code)
+
+이 자료는 배포된 sweeper의 동작을 이해하는 데 도움을 줍니다. 기존의 유효한 위임 서명 50개라는 검증 결과는 달라지지 않으며, 서명을 누가 어떤 경로로 얻었는지도 밝혀주지 않습니다. 재구성 소스의 공개는 공격자의 원본 소스를 확보했다거나 Claude가 공격 코드를 작성했다는 증거가 아닙니다.
+
 ## 위임의 범위와 외부 지갑 권한
 
 일반 ERC-20 `approve`는 특정 토큰의 allowance를 부여합니다. EIP-7702 authorization은 계정이 사용할 실행 코드를 정합니다. 서명에는 `chain_id`, 구현 `address`, 계정 `nonce`가 묶이지만 바깥 거래의 sender, 개별 수취인, 금액, calldata, 만료 시각은 기본 필드에 포함되지 않습니다. 세부 실행 제한은 안전한 delegate와 상위 승인 정책이 구현해야 합니다. [명세와 보안 고려사항](https://eips.ethereum.org/EIPS/eip-7702#security-considerations)
@@ -208,7 +218,7 @@ RAD를 풀 경유로 ETH로 바꾼 경로입니다. 중간 USDC는 풀 사이에
 - **계정 코드 변경과 외부 권한을 함께 감시합니다.** 위임 변경을 탐지하고 침해 주소의 자동 입금·리필을 중단합니다. 해당 EOA가 외부 월렛의 owner나 관리자인지도 조사해 권한을 분리하거나 교체합니다.
 - **복구를 위임 삭제로 끝내지 않습니다.** signer·키 침해가 남았는지 확인하고 안전한 계정으로 자산과 외부 권한을 옮기는 절차를 검토합니다. 계속 유효한 서명을 만들 수 있는 공격자는 다시 위임을 설정할 수 있습니다.
 
-확인된 사건 경로는 EIP-7702 authorization을 악용한 계정 권한 탈취와 반복 스윕입니다. 최초 서명 획득 경로, 아카이브 prestate의 nonce·코드, 구현의 접근 제어, 외부 월렛의 정확한 권한 경로와 전체 반출 대사는 남아 있습니다. 이 구분을 유지해야 프로토콜 검증과 수탁 서명 정책 중 어느 경계를 추가로 조사해야 하는지 좁힐 수 있습니다.
+확인된 사건 경로는 EIP-7702 authorization을 악용한 계정 권한 탈취와 반복 스윕입니다. 최초 서명 획득 경로, 아카이브 prestate의 nonce·코드, 재구성 소스에서 읽은 접근 제어의 실제 실행 검증, 외부 월렛의 정확한 권한 경로와 전체 반출 대사는 남아 있습니다. 이 구분을 유지해야 프로토콜 검증과 수탁 서명 정책 중 어느 경계를 추가로 조사해야 하는지 좁힐 수 있습니다.
 
 ## 함께 보면 좋을 자료
 
@@ -219,6 +229,7 @@ RAD를 풀 경유로 ETH로 바꾼 경로입니다. 중간 USDC는 풀 사이에
 
 - [EIP-7702: Set Code for EOAs](https://eips.ethereum.org/EIPS/eip-7702): Ethereum 공식 명세, 조회일 2026-10-30.
 - [위임 거래 원시 바이트](https://etherscan.io/getRawTx?tx=0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b): 거래 해시·목록 순서·서명 검증의 원자료, 조회일 2026-10-30. 대표 거래 7개와 후속 거래는 해당 절에 전체 해시로 연결했습니다.
+- [위임 구현의 재구성 소스](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code): Etherscan 검증 표시와 공개된 `Target.sol`, 확인 시각 2026-10-30 14:49 KST. Claude 귀속·재구성 시각·메타데이터 해시 예외는 소스 주석의 주장입니다.
 - [Blockaid의 사건 분석](https://x.com/blockaid_/status/2115924317888495661): nonce-range spray와 sweeper 구현 분석의 공개 출처, 조회일 2026-10-30.
 - [Binance Says User Funds Are Completely Safe After $3.5 Billion Drains From Its Hot Wallets](https://unchainedcrypto.com/binance-says-user-funds-are-completely-safe-after-3-5-billion-drains-from-its-hot-wallets/): Unchained의 보도 맥락과 외부 월렛 권한 경로 설명, 조회일 2026-10-30.
 - [주요 수취 주소](https://etherscan.io/address/0x5227f603C1eE34CE3C06eFe6477003BDfCCB2f8c): 2026-10-30 13:19~13:30 KST 탐색기 관찰, 동일 블록에 고정되지 않은 잔액 자료.
