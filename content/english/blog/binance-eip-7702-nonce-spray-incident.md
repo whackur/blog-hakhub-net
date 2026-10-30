@@ -3,7 +3,7 @@ title: "Binance Ethereum Wallet Incident and EIP-7702 Nonce-Range Spray"
 meta_title: ""
 description: "A detailed account of 50 valid Binance 14 delegation signatures, seven key transactions, later swaps, and the unresolved boundary of signing-authority compromise."
 date: 2026-10-30T14:00:00+09:00
-lastmod: 2026-10-30T14:27:42+09:00
+lastmod: 2026-10-30T14:53:07+09:00
 image: "/images/posts/binance-eip-7702-nonce-spray-incident/cover.webp"
 categories: ["Blockchain", "Security"]
 tags: ["ethereum", "eip-7702", "binance", "custody", "incident-analysis"]
@@ -155,6 +155,16 @@ Some of these hypotheses could overlap. The on-chain evidence does not select on
 
 A separate class of incident involves replay or bypass of an execution signature in an otherwise legitimate wallet implementation. Here, authorizations point directly to the implementation used in the attack. A bug in a legitimate delegate's `execute` checks is not needed to explain the initial observed path. Blockaid describes the implementation as a sweeper with a hardcoded operator. The sweeper description here rests on that analysis and the observed repeated asset movements, not an independent bytecode or access-control audit. [Blockaid's original analysis](https://x.com/blockaid_/status/2115924317888495661)
 
+## Claude-reconstructed source published on Etherscan
+
+At 14:49 KST on October 30, 2026, the [delegate implementation's Etherscan code page](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code) displayed `Source Code Verified / Exact Match`. It listed compiler `v0.8.28+commit.7893614a`, optimizer 200 runs, and EVM target `cancun`. This is an explorer verification of compiled-source matching, not a security audit or safety endorsement. The same page displayed `No Contract Security Audit Submitted`.
+
+The published `Target.sol` comment explicitly identifies it as AI-reconstructed source rather than the original source code. According to that comment, Claude reconstructed it from deployed runtime bytecode at 00:30 UTC (09:30 KST) on October 30, 2026. It claims that compilation with `solc 0.8.28`, `via-ir`, optimizer 200 runs, and `cancun` produces identical runtime bytecode apart from the trailing metadata hash. Contract and parameter names are described as guesses. The Claude attribution and reconstruction time are source-comment claims, not independently authenticated authorship or an upload timestamp. The explorer's `Exact Match` label and the comment's metadata caveat must be read separately; no independent recompilation or bytecode comparison has been performed here. [Published source](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code)
+
+In this reconstructed source, `onlyAuthorized` restricts the caller to the hardcoded `authorizedCaller`, `0x7C8601d4645b93cea45F71e118A729332e6B5CA0`. That is the same address recovered from the outer type-4 transaction signature above. The restriction appears on `sweep`, `withdrawETH`, `withdrawToken`, and `callExecute`, making the asset-transfer and external-execution structure easier to read. These are observations of the published reconstructed source, not independent verification of individual transaction execution traces. [Implementation code](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code)
+
+This material helps explain the deployed sweeper's behavior. It does not change the finding of 50 valid delegation signatures or establish who obtained them and how. Publication of reconstructed source is not evidence that the attacker's original source was recovered or that Claude authored the attack code.
+
 ## Delegation scope and authority over external wallets
 
 An ordinary ERC-20 `approve` grants an allowance for a particular token. EIP-7702 authorization selects code to execute as the account. Its signed fields bind `chain_id`, delegate `address`, and account `nonce`. They do not inherently bind the outer sender, an individual recipient, amount, calldata, or expiration time. A safe delegate and higher-level approval policy must provide granular execution constraints. [Specification and security considerations](https://eips.ethereum.org/EIPS/eip-7702#security-considerations)
@@ -208,7 +218,7 @@ The operational task is to control both withdrawal approval and signatures that 
 - **Monitor code changes and external powers together.** Detect delegation changes and halt automatic deposits or refills into compromised accounts. Identify external wallets where the EOA is an owner or administrator and separate or replace that authority.
 - **Extend recovery beyond clearing delegation.** Investigate continuing key or signer compromise and plan migration of assets and external authority to safe accounts. An attacker who can still obtain valid signatures can install delegation again.
 
-The established path is account authority takeover through EIP-7702 authorization and repeated sweeping. The initial signature-acquisition path, archive prestate nonce and code, implementation access controls, exact external-wallet authority path, and full outflow reconciliation remain open. Keeping those questions distinct helps identify whether further evidence is needed at protocol verification or the custody signing-policy boundary.
+The established path is account authority takeover through EIP-7702 authorization and repeated sweeping. The initial signature-acquisition path, archive prestate nonce and code, runtime verification of the access controls read in the reconstructed source, exact external-wallet authority path, and full outflow reconciliation remain open. Keeping those questions distinct helps identify whether further evidence is needed at protocol verification or the custody signing-policy boundary.
 
 ## Further reading
 
@@ -219,6 +229,7 @@ The established path is account authority takeover through EIP-7702 authorizatio
 
 - [EIP-7702: Set Code for EOAs](https://eips.ethereum.org/EIPS/eip-7702): Official Ethereum specification, accessed October 30, 2026.
 - [Raw delegation transaction](https://etherscan.io/getRawTx?tx=0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b): Primary bytes for the hash, list order, and signature checks, accessed October 30, 2026. The seven representative and subsequent transactions are linked by full hash in their respective sections.
+- [Reconstructed delegate source](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code): Etherscan verification display and published `Target.sol`, observed at 14:49 KST on October 30, 2026. Claude attribution, reconstruction time, and the metadata-hash exception are source-comment claims.
 - [Blockaid incident analysis](https://x.com/blockaid_/status/2115924317888495661): Public source for the nonce-range spray and sweeper implementation analysis, accessed October 30, 2026.
 - [Binance Says User Funds Are Completely Safe After $3.5 Billion Drains From Its Hot Wallets](https://unchainedcrypto.com/binance-says-user-funds-are-completely-safe-after-3-5-billion-drains-from-its-hot-wallets/): Unchained's reporting context and account of the external-wallet authority path, accessed October 30, 2026.
 - [Main recipient account](https://etherscan.io/address/0x5227f603C1eE34CE3C06eFe6477003BDfCCB2f8c): Explorer observations at 13:19 to 13:30 KST on October 30, 2026, not a block-pinned balance snapshot.
