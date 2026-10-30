@@ -3,7 +3,7 @@ title: "Binance Ethereum Wallet Incident and EIP-7702 Nonce-Range Spray"
 meta_title: ""
 description: "A detailed account of 50 valid Binance 14 delegation signatures, seven key transactions, later swaps, and the unresolved boundary of signing-authority compromise."
 date: 2026-10-30T14:00:00+09:00
-lastmod: 2026-10-30T14:53:07+09:00
+lastmod: 2026-10-30T15:16:16+09:00
 image: "/images/posts/binance-eip-7702-nonce-spray-incident/cover.webp"
 categories: ["Blockchain", "Security"]
 tags: ["ethereum", "eip-7702", "binance", "custody", "incident-analysis"]
@@ -17,7 +17,10 @@ draft: false
 .content:has(#binance-7702-mobile) :not(pre) > code { white-space: normal; }
 .content:has(#binance-7702-mobile) pre { max-width: 100%; overflow-x: auto; overflow-wrap: normal; }
 .content:has(#binance-7702-mobile) pre code { white-space: pre; overflow-wrap: normal; }
-.content:has(#binance-7702-mobile) table { display: block; max-width: 100%; overflow-x: auto; }
+.content:has(#binance-7702-mobile) table { display: table; width: 100%; max-width: 100%; table-layout: fixed; }
+.content:has(#binance-7702-mobile) :is(th, td) { overflow-wrap: anywhere; }
+.content:has(#binance-7702-mobile) table code::before,
+.content:has(#binance-7702-mobile) table code::after { content: none; }
 </style>
 
 Early on October 30, 2026 in Korea, the Ethereum account labeled **Binance 14** by Etherscan acquired an EIP-7702 delegation. Three minutes and 24 seconds later, an external executor called the account, and ETH plus multiple ERC-20 tokens moved to the attacker recipient. The raw delegation transaction contains 50 valid signatures that recover to the victim account. The observed path is consistent with **account authority takeover using valid delegation signatures**. The available evidence does not establish a signature-verification bypass or a break of ECDSA. [Delegation transaction](https://etherscan.io/tx/0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b), [main sweep](https://etherscan.io/tx/0x53bd38b816c23e74134786c29a8c18d792777998a3b9326047b583100e88e2f3)

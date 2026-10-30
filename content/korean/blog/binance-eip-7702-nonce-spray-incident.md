@@ -3,7 +3,7 @@ title: "바이낸스 Ethereum 지갑 유출과 EIP-7702 nonce-range spray 분석
 meta_title: ""
 description: "Binance 14 위임 거래의 유효 서명 50개, 주요 유출·차단 거래와 후속 스왑을 대조하고 서명 권한 침해와 프로토콜 검증 결함을 구분합니다."
 date: 2026-10-30T14:00:00+09:00
-lastmod: 2026-10-30T14:53:07+09:00
+lastmod: 2026-10-30T15:16:16+09:00
 image: "/images/posts/binance-eip-7702-nonce-spray-incident/cover.webp"
 categories: ["Blockchain", "Security"]
 tags: ["ethereum", "eip-7702", "binance", "custody", "incident-analysis"]
@@ -17,7 +17,10 @@ draft: false
 .content:has(#binance-7702-mobile) :not(pre) > code { white-space: normal; }
 .content:has(#binance-7702-mobile) pre { max-width: 100%; overflow-x: auto; overflow-wrap: normal; }
 .content:has(#binance-7702-mobile) pre code { white-space: pre; overflow-wrap: normal; }
-.content:has(#binance-7702-mobile) table { display: block; max-width: 100%; overflow-x: auto; }
+.content:has(#binance-7702-mobile) table { display: table; width: 100%; max-width: 100%; table-layout: fixed; }
+.content:has(#binance-7702-mobile) :is(th, td) { overflow-wrap: anywhere; }
+.content:has(#binance-7702-mobile) table code::before,
+.content:has(#binance-7702-mobile) table code::after { content: none; }
 </style>
 
 2026년 10월 30일 새벽, Etherscan이 **Binance 14**로 식별한 Ethereum 계정에 EIP-7702 위임이 설정됐습니다. 3분 24초 뒤 외부 실행자가 이 계정을 호출했고, ETH와 여러 ERC-20 토큰이 공격자 수취 주소로 이동했습니다. 위임 거래의 원시 바이트에는 피해 계정으로 복구되는 유효한 서명 50개가 들어 있습니다. 확인된 경로는 **유효한 위임 서명을 이용한 계정 권한 탈취**와 부합합니다. 서명 검증을 건너뛰었거나 ECDSA가 깨졌다는 증거는 확보되지 않았습니다. [위임 거래](https://etherscan.io/tx/0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b), [주요 스윕 거래](https://etherscan.io/tx/0x53bd38b816c23e74134786c29a8c18d792777998a3b9326047b583100e88e2f3)
