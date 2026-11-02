@@ -1,9 +1,9 @@
 ---
 title: "Glamsterdam의 새 가스 모델: EIP-8037 상태 가스, EIP-8038 접근 비용, EIP-2780 기본 가스"
 meta_title: ""
-description: "Glamsterdam의 세 가스 제안이 Solidity의 새 슬롯·기존 값 갱신·삭제·고정 내부 호출에 미치는 영향. 실행·상태 예산과 최종 청구량, 명세 상태와 네트워크 활성화를 구분합니다."
+description: "Glamsterdam의 세 가스 제안이 Solidity의 새 슬롯·기존 값 갱신·삭제·고정 내부 호출과 gasleft() 기반 실패 검사에 미치는 영향. 실행·상태 예산, 최종 청구량, Hoodi 연기 이후의 네트워크 상태를 정리합니다."
 date: 2026-10-15T01:19:45+09:00
-lastmod: 2026-10-15T16:10:31Z
+lastmod: 2026-11-02T00:32:07Z
 image: "/images/posts/glamsterdam-gas-model/glamsterdam-resource-costs-20261015.webp"
 categories: ["Blockchain"]
 tags: ["ethereum", "glamsterdam", "gas", "evm", "eip-8037", "eip-8038", "eip-2780"]
@@ -12,19 +12,22 @@ translationKey: "glamsterdam-gas-model"
 draft: false
 ---
 
-Glamsterdam의 세 가스 제안은 **새 상태를 영구 저장하는 비용과 기존 상태를 갱신하는 비용을 올리고**, 작업이 적은 일부 트랜잭션의 기본 비용을 낮춥니다. 명세상 새 콜드 스토리지 슬롯에 쓰면 실행 가스 12,100에 상태 가스 97,920이 붙고, 기존 슬롯의 트랜잭션 시작 값이 0이 아니고 콜드 상태에서 그 값과 다르게 처음 바꾸면 실행 가스 12,100이 들며 상태 가스는 들지 않습니다. 두 비용 모두 트랜잭션의 `gasLimit` 하나로 충당하지만 `gasleft()`는 별도 상태 가스 리저버를 보여 주지 않습니다. 이 숫자는 명세의 구성 비용이며 Solidity 함수 전체의 측정값이나 메인넷 적용 공지가 아닙니다. [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037), [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038), [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780)이 이 변경을 함께 정의합니다.
+Glamsterdam의 세 가스 제안은 **새 상태를 영구 저장하는 비용과 기존 상태를 갱신하는 비용을 올리고**, 작업이 적은 일부 트랜잭션의 기본 비용을 낮춥니다. 명세상 새 콜드 스토리지 슬롯에 쓰면 실행 가스 12,100에 상태 가스 97,920이 붙고, 기존 슬롯의 트랜잭션 시작 값이 0이 아니고 콜드 상태에서 그 값과 다르게 처음 바꾸면 실행 가스 12,100이 들며 상태 가스는 들지 않습니다. 두 비용 모두 트랜잭션의 `gasLimit` 하나로 충당하지만 `gasleft()`는 별도 상태 가스 리저버를 보여 주지 않고, 같은 트랜잭션에서 만든 상태를 되돌리면 `gasleft()`가 오히려 늘 수 있습니다. 2026년 11월 2일 기준 Glamsterdam 일정표에 오른 네트워크 가운데 실제로 활성화된 곳은 Sepolia뿐입니다. Hoodi 적용은 EIP-8037이 기존 컨트랙트에 미치는 영향을 더 조사하기 위해 연기됐고 메인넷 일정은 정해지지 않았습니다. [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037), [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038), [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780)이 이 변경을 함께 정의합니다.
 
 ## 명세 상태와 네트워크 활성화
 
-2026년 10월 15일 UTC에 확인한 ethereum/EIPs 커밋 [`8b1cae5`](https://github.com/ethereum/EIPs/tree/8b1cae50601fb194452db0ed857f4c237ca62c1f/EIPS)의 상태는 다음과 같습니다.
+2026년 11월 2일 UTC에 ethereum/EIPs 커밋 [`dc5d5fa`](https://github.com/ethereum/EIPs/tree/dc5d5fa688b7fe87b95a907fcc128b4fde2f4d2f/EIPS)(2026년 11월 1일 병합)와 이더리움 재단 공지를 확인한 결과입니다.
 
-| 구분 | 공개된 내용 |
+| 구분 | 확인한 내용 |
 | --- | --- |
-| 명세 확정 절차 | 세 제안 모두 `Last Call`, 마감일은 2026년 11월 1일입니다. EIP-8037은 의존하는 파라미터가 아직 최종값이 아니라고 밝히고, EIP-2780은 가격 산출값을 잠정치라고 설명합니다. |
+| 명세 확정 절차 | 세 제안 모두 `Last Call`이며 마감일은 2026년 11월 1일로 적혀 있습니다. 마감일이 지났지만 상태가 `Final`로 바뀌지는 않았습니다. EIP-8037은 EIP-8038이 정하는 일부 값이 아직 최종값이 아니라고 밝힙니다. EIP-2780은 선택한 값이 클라이언트 측정에 근거한 가격 목표이며 모든 클라이언트·수신자 경우의 최댓값은 아니라고 설명합니다. |
 | Glamsterdam 포함 여부 | [EIP-7773](https://eips.ethereum.org/EIPS/eip-7773)의 포함 예정(Scheduled for Inclusion) 목록에 셋 모두 있습니다. 메타 EIP 자체는 `Review`입니다. |
-| 공개된 활성화 시각 | Sepolia: epoch 353,024, 타임스탬프 1,791,294,816, 2026년 10월 6일 13:53:36 UTC입니다. Hoodi와 Mainnet 칸은 비어 있습니다. |
+| 공지된 활성화 일정 | Sepolia: epoch 353,024, 2026년 10월 6일 13:53:36 UTC. Hoodi: EIP-7773 표에는 epoch 132,352, 2026년 10월 26일 17:42:48 UTC가 남아 있지만 재단이 10월 22일 연기를 공지했고 새 날짜는 없습니다. 표에서 이 값을 지우는 [PR](https://github.com/ethereum/EIPs/pull/12568)은 병합 전입니다. Mainnet: 비어 있습니다. |
+| 실제 활성화 | 공개 RPC 엔드포인트로 읽은 Sepolia 블록 헤더에는 10월 6일 활성화 시각 이후 [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928)의 블록 수준 액세스 리스트 해시 같은 새 필드가 있습니다. 같은 방법으로 11월 2일 읽은 Hoodi 최신 블록에는 이 필드가 없습니다. |
 
-[이더리움 재단의 테스트넷 공지](https://blog.ethereum.org/2026/09/17/glamsterdam-testnet-announcement)는 Sepolia를 대상으로 하며 메인넷 일정을 잡는 공지가 아니라고 명시합니다. 확인 시점에는 Sepolia의 공지된 활성화 시각이 지났으므로, 변경을 시험할 네트워크로 공지된 곳은 Sepolia입니다. 다만 일정만으로는 그 이후의 명세 수정 중 어디까지 특정 클라이언트나 RPC 제공자가 구현했는지 알 수 없습니다. 아래 사례는 확인한 명세의 동작을 설명하며 실제 체인에서 수행한 포크 전후 벤치마크가 아닙니다. 포크 포함 결정, 문서 확정, 특정 네트워크 활성화는 서로 다른 사실입니다.
+[재단의 연기 공지](https://blog.ethereum.org/2026/10/22/glamsterdam-hoodi-delay)에 따르면 코어 개발자들은 10월 22일 [ACDE #248](https://github.com/ethereum/pm/issues/2267)에서 EIP-8037이 메인넷 스마트 컨트랙트와 어떻게 상호작용하는지 더 조사하기 위해 Hoodi 활성화를 미뤘습니다. 이 회의 안건에는 EIP-8037·8038의 보안 우려와 [ChainSecurity의 분석](https://www.chainsecurity.com/blog/glamsterdam-gas)이 올라 있었습니다. 이 분석은 호출 실패 뒤 남은 가스로 원인을 판별하는 컨트랙트가 새 규칙에서 다른 분기를 탈 수 있다고 지적하며, 그 경로는 아래 별도 절에서 설명합니다. 공지는 메인넷 날짜를 정하지 않으며 메인넷 사용자에게 필요한 조치는 없다고 밝힙니다.
+
+2026년 10월 1일 이후 세 EIP의 커밋은 front matter(`Last Call` 전환, 저자 목록, 제목 대소문자)와 산출 근거(Rationale) 절만 바꿨고, 아래 규칙을 정하는 Specification 절은 그대로입니다. 헤더 필드는 Sepolia에서 포크가 활성화됐다는 근거이지만, 이 필드도 문서와 일정도 특정 클라이언트나 RPC 제공자가 명세의 어느 개정을 실행하는지까지 알려 주지는 않습니다. 리저버 환급 방식을 바꾸자는 제안도 열려 있으므로 메인넷에 적용될 규칙이 지금 문서와 같다고 단정할 수 없습니다. 포크 포함 결정, 문서 확정, 특정 네트워크 활성화는 서로 다른 사실입니다.
 
 ## 트랜잭션 필드에서 실행 예산까지
 
@@ -47,7 +50,7 @@ EOA는 외부 소유 계정(externally owned account)입니다. 기본 12,000은
 
 ## 같은 Solidity 대입문의 서로 다른 스토리지 경로
 
-다음 작은 컨트랙트는 다른 업무 로직 없이 세 연산을 보여 줍니다.
+`Slot` 컨트랙트는 함수 두 개로 새 슬롯 쓰기, 기존 값 갱신, 삭제를 실행합니다.
 
 ```solidity
 pragma solidity 0.8.30;
@@ -65,7 +68,7 @@ contract Slot {
 }
 ```
 
-아래 비교는 `value`를 바꾸는 `SSTORE` opcode의 비용입니다. 함수 전체 비용은 아닙니다. 함수 선택, ABI 디코딩, 스택 연산, 필요한 메모리 작업은 실행 가스를 더 씁니다. 최종 영수증에는 트랜잭션 기본 가스와 calldata도 반영됩니다. 예제는 Solidity 0.8.30, optimizer 활성화 및 200 runs, `viaIR: false`, `evmVersion: "prague"`로 컴파일했습니다. 컴파일은 코드와 생성된 명령을 확인하는 절차이며, 이전·새 포크에서 런타임 비용을 측정했다는 뜻은 아닙니다.
+아래 비교는 `value`를 바꾸는 `SSTORE` opcode의 비용입니다. 함수 전체 비용은 아닙니다. 함수 선택, ABI 디코딩, 스택 연산, 필요한 메모리 작업은 실행 가스를 더 씁니다. 최종 영수증에는 트랜잭션 기본 가스와 calldata도 반영됩니다. 이 글의 컨트랙트는 Solidity 0.8.30, optimizer 활성화 및 200 runs, `viaIR: false`, `evmVersion: "prague"` 설정으로 컴파일됩니다. 컴파일러 검사일 뿐 어느 가스 스케줄에서도 런타임 시험을 한 것은 아닙니다. 표의 숫자는 명세가 정한 opcode 비용이며 체인에서 측정한 값이 아닙니다.
 
 콜드 행은 액세스 리스트가 없고 해당 트랜잭션에서 이 스토리지 키를 앞서 건드리지 않았다고 가정합니다. “원래 값”은 트랜잭션 시작 시점, “현재 값”은 해당 `SSTORE` 직전의 값입니다. 이전 트랜잭션으로 초기값을 만들 수는 있지만 웜 상태가 다음 트랜잭션까지 유지되지는 않습니다. 변경 전 비교값은 [EIP-2200](https://eips.ethereum.org/EIPS/eip-2200), [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929), [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529)의 스케줄을 따릅니다.
 
@@ -128,11 +131,11 @@ contract FixedAllowance {
 
 `target`에는 코드 없는 주소가 아니라 실제 `Slot` 주소를 넣습니다. 이전 트랜잭션에서 `Slot.value`와 `FixedAllowance.marker`를 모두 7로 초기화하고 `run(target, 9, ...)`를 호출합니다. 비교할 때마다 같은 상태에서 시작하고 자식의 슬롯은 콜드로 둡니다. 호출자 비용과 63/64 규칙을 적용한 뒤에도 고정 한도를 전부 넘길 수 있도록 바깥 트랜잭션 가스를 충분히 줍니다. 두 쓰기 모두 기존의 0이 아닌 값을 바꾸므로 상태 생성 비용 없이 실행 가스 재조정만 비교합니다.
 
-고정 한도가 이전 컴파일 코드 경로에는 충분하고 재조정된 경로에는 부족하다면, 이전에는 성공하던 자식이 변경 후 OOG(out-of-gas, 가스 부족)로 실패할 수 있습니다. 여기서는 숫자로 된 경계값이나 재현된 회귀를 주장하지 않습니다. 경계값은 표의 `SSTORE`만이 아니라 자식의 컴파일된 전체 실행 코드에 달려 있습니다. 바깥 트랜잭션 한도를 올려도 `childGasCap`은 늘지 않으므로 내부 한도나 호출 설계를 바꿔야 합니다.
+고정 한도가 이전 컴파일 코드 경로에는 충분하고 재조정된 경로에는 부족하다면, 이전에는 성공하던 자식이 변경 후 OOG(out-of-gas, 가스 부족)로 실패할 수 있습니다. 그 경계값은 표의 `SSTORE`만이 아니라 자식의 컴파일된 전체 실행 코드에 달려 있으므로 대상 코드로 직접 계산하거나 시험해야 합니다. 바깥 트랜잭션 한도를 올려도 `childGasCap`은 늘지 않으므로 내부 한도나 호출 설계를 바꿔야 합니다.
 
 `mustSucceed = false`라면 자식 OOG는 `false`를 반환합니다. 래퍼는 정상 종료해 `marker = 9`를 유지할 수 있지만 자식의 쓰기는 롤백됩니다. `mustSucceed = true`라면 `require(ok)`가 래퍼 프레임도 revert해 marker까지 되돌립니다. 결과를 처리할 호출자 가스가 충분하다는 조건입니다. 자식의 `REVERT`는 쓰지 않은 실행 가스를 돌려주고 OOG 같은 예외적 중단은 전달된 실행 예산을 소진합니다. 어느 쪽도 low-level 호출자의 자동 revert를 뜻하지 않습니다. [EIP-140](https://eips.ethereum.org/EIPS/eip-140), [EIP-8037 롤백 규칙](https://eips.ethereum.org/EIPS/eip-8037#gas-accounting-for-halts-and-reverts)
 
-그대로 유지되는 2,300 stipend는 이 쓰기의 회귀 사례로 적절하지 않습니다. `SSTORE` 검사는 남은 실행 가스가 2,300 이하인 프레임을 이미 거부하며 리저버도 이 검사를 우회하지 못합니다. 이전 규칙에서도 실패하던 쓰기를 새로운 Glamsterdam 실패로 볼 수는 없습니다.
+그대로 유지되는 2,300 stipend는 이 쓰기의 회귀 사례로 적절하지 않습니다. `SSTORE` 검사는 남은 실행 가스가 2,300 이하인 프레임을 이미 거부하며, EIP-8037은 이 검사가 `gas_left`에만 적용되고 리저버는 계산에 넣지 않는다고 정합니다. 이전 규칙에서도 실패하던 쓰기를 새로운 Glamsterdam 실패로 볼 수는 없습니다. [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037#pre-state-and-post-state-gas-validation)
 
 ## 리저버가 gasleft의 관측 범위를 바꾸는 방식
 
@@ -153,7 +156,29 @@ state_gas_reservoir = evm_gas - gas_left
 
 리필은 해당 프레임이 상태 비용을 `gas_left`에서 냈던 미복원분만큼 `gas_left`를 먼저 채우고, 나머지를 리저버로 돌립니다. 이 때문에 `gasleft()`가 증가할 수 있습니다. 명세의 `SSTORE(k, 1); GAS; SSTORE(k, 0); GAS` 순서에서 슬롯의 원래 값이 0이고 리저버도 비어 있었다면, 두 번째 읽기에는 97,920 리필에서 사이에 든 실행 비용을 뺀 만큼이 반영됩니다. 두 쓰기 전체를 감싸서 측정하면 비용 부과와 취소가 모두 포함됩니다. 성공한 자식 프레임을 병합할 때도 복원된 상태 예산이 호출자의 `gas_left`로 이동할 수 있습니다. 그러면 `beforeGas - gasleft()` 같은 뺄셈이 Solidity의 검사 산술에서 언더플로를 일으킬 수 있습니다. [EIP-8037의 계량 경고](https://eips.ethereum.org/EIPS/eip-8037#gas_left-can-increase)
 
-롤백 시 프레임은 리저버 기준선을 복원하고 되돌린 변경의 상태 비용을 취소합니다. revert한 자식은 그 결과 남은 실행 가스를 돌려주지만 예외적으로 중단된 자식은 이를 소진합니다. 성공한 자식을 병합할 때 추가 계산이 필요한 이유는 한 프레임이 앞선 프레임이 만든 상태를 지울 수 있기 때문입니다. 이 규칙은 삭제 호출이 실패해 원래 상태가 복원됐는데도 리필만 남는 일을 막습니다.
+롤백 시 프레임은 리저버 기준선을 복원하고, 그 프레임이 `gas_left`에서 냈던 상태 비용을 `gas_left`로 되돌립니다. revert한 자식은 이렇게 늘어난 `gas_left`를 호출자에게 돌려주고, 예외적으로 중단된 자식은 이를 소진합니다. 성공한 자식을 병합할 때 추가 계산이 필요한 이유는 한 프레임이 앞선 프레임이 만든 상태를 지울 수 있기 때문입니다. 이 규칙은 삭제 호출이 실패해 원래 상태가 복원됐는데도 리필만 남는 일을 막습니다. [EIP-8037 롤백 규칙](https://eips.ethereum.org/EIPS/eip-8037#gas-accounting-for-halts-and-reverts)
+
+## 남은 가스로 실패 원인을 판별하는 코드
+
+외부 호출이 실패해도 계속 진행하는 컨트랙트는 실패가 로직 오류인지 가스 부족인지 구분하려 합니다. 호출자가 일부러 가스를 적게 줘서 정상적인 작업을 영구 실패로 기록하게 만드는 공격을 막기 위해서입니다. 흔한 방법은 호출이 실패하면 실패를 기록하기 전에 남은 가스를 확인하는 것입니다. 아래 코드는 권장하는 방어책이 아니라 새 규칙에서 약해지는 패턴을 보여 주는 예입니다.
+
+```solidity
+(bool ok,) = target.call{gas: gasReq}(data);
+if (!ok) {
+    if (gasleft() < gasReq / 63) revert("insufficient gas");
+    failed[id] = true;
+}
+```
+
+자식이 OOG로 끝나면 호출자에게는 63/64 규칙으로 남겨 둔 작은 몫만 남으므로 이 검사에서 revert한다는 가정입니다. 검사 없이 `failed[id] = true` 같은 새 슬롯 쓰기가 가스 부족으로 revert되리라는 데 기대는 코드도 있습니다. 현재 EIP-8037 명세에서는 다음 세 경로가 이 가정을 깨뜨릴 수 있습니다.
+
+- 리저버가 상태 비용 97,920을 모두 낼 수 있으면 새 콜드 슬롯 쓰기가 `gas_left`에서 가져가는 양은 12,100입니다. 이전 스케줄의 22,100보다 적으므로 전에는 revert하던 실패 처리가 끝까지 실행될 수 있습니다. 리저버는 `tx.gas`가 16,777,216을 넘거나 리필이 리저버로 들어갈 때 생기며, 63/64 규칙과 상관없이 자식에게 통째로 넘어갑니다.
+- 트랜잭션 시작 때 0이던 슬롯을 같은 트랜잭션에서 설정했다가 지우면, 그 프레임이 `gas_left`에서 낸 미복원 상태 비용만큼 `gas_left`가 곧바로 늘어납니다. 슬롯 하나에 최대 97,920입니다. 호출이 실패한 뒤 이런 삭제를 먼저 하고 남은 가스를 검사하면 임계값을 넘을 수 있습니다.
+- 중간 컨트랙트가 상태를 만든 뒤 자식의 실패를 `REVERT`로 전파하면, 롤백이 그 상태 비용 가운데 `gas_left`에서 낸 몫을 `gas_left`로 되돌려 호출자에게 넘깁니다. 중간 컨트랙트가 쓰지 않은 가스보다 많은 양이 돌아올 수 있습니다. 중간 컨트랙트가 OOG 같은 예외적 중단으로 끝나면 이 가스는 돌아오지 않습니다.
+
+ChainSecurity는 호출 뒤 `gasleft()`로 실패 원인을 추론하는 방식에 의존하지 말고, 가능하면 실패를 전파해 작업 전체를 되돌리거나 복구 경로를 남기라고 권합니다. 호출 오버헤드와 63/64 규칙을 정확히 반영한 사전 검사라면 정한 예산이 전달되는 것은 여전히 보장합니다. 다만 그 예산이 새 스케줄에서 모든 실행 경로에 충분한지는 리저버의 도움 없이 다시 계산해야 합니다. [ChainSecurity 분석](https://www.chainsecurity.com/blog/glamsterdam-gas)
+
+이 동작을 바꾸려는 제안도 있습니다. ethereum/EIPs [PR #12581](https://github.com/ethereum/EIPs/pull/12581)은 리필과 롤백이 리저버에만 들어가 `gas_left`가 한 프레임 안에서 늘지 않게 하고, 상태 생성 비용 일부를 `gas_left`에서 이전 스케줄만큼 먼저 가져가자고 제안합니다. [PR #12577](https://github.com/ethereum/EIPs/pull/12577)은 프레임의 리저버를 읽는 `RESERVOIR` opcode를 새 EIP로 제안합니다. 2026년 11월 2일 확인했을 때 둘 다 열린 채 병합되지 않았으므로 현재 명세가 아닙니다.
 
 ## 미사용 예산, 환급, 최종 청구량
 
@@ -202,25 +227,32 @@ EIP-7702 권한 위임 처리는 별도 규칙을 따릅니다. 위임 항목마
 
 ## 바뀐 가정을 드러내는 테스트
 
-컨트랙트 관리자가 비교할 것은 컴파일러 설정, 트랜잭션 입력, 초기 상태를 고정한 같은 연산의 두 스케줄입니다. 새 슬롯, 이전 트랜잭션에서 초기화한 비영 값 갱신, 삭제, 같은 트랜잭션의 왕복 쓰기, 콜드 경로와 의도적으로 웜으로 만든 경로를 포함합니다. 고정 내부 호출은 영수증과 함께 자식 성공 플래그, 호출자의 최종 상태를 기록합니다. 수수료 추정만으로 실패 처리가 올바른지 확인할 수는 없습니다.
+컨트랙트 관리자가 비교할 것은 컴파일러 설정, 트랜잭션 입력, 초기 상태를 고정한 같은 연산의 두 스케줄입니다. 새 슬롯, 이전 트랜잭션에서 초기화한 비영 값 갱신, 삭제, 같은 트랜잭션의 왕복 쓰기, 콜드 경로와 의도적으로 웜으로 만든 경로를 포함합니다. 고정 내부 호출은 영수증과 함께 자식 성공 플래그, 호출자의 최종 상태를 기록합니다. 실패 처리 경로는 자식 호출을 일부러 실패시킨 뒤, 리저버가 빈 경우와 채워진 경우 모두에서 가스 부족을 재시도할 수 없는 실패로 잘못 기록하지 않는지 확인합니다. 수수료 추정만으로 실패 처리가 올바른지 확인할 수는 없습니다.
+
+이더리움 재단은 2026년 8월 과거 메인넷 트랜잭션을 새 스케줄로 재실행한 결과를 [안내문](https://blog.ethereum.org/2026/08/24/glamsterdam-repricing-testing)으로 공개했습니다. 대부분의 컨트랙트는 영향을 받지 않고, 영향을 받는 경우도 대부분 가스 한도를 올리면 해결된다고 밝힙니다. 한도를 크게 올려도 실패할 수 있는 경우는 주로 고정 stipend, 호출에 하드코딩한 가스 값, `gasleft()`에 따른 분기, 고정 한도의 사전 서명 트랜잭션에 의존하는 컨트랙트입니다. 안내문의 영향 컨트랙트 검색에서 주소별 실패 유형을 확인할 수 있습니다.
 
 지갑·RPC 관리자는 `eth_estimateGas`에 두 차원과 상태 의존 실행 전 비용을 반영해야 합니다. `eth_call` 성공은 선택한 한도의 트랜잭션이 포함돼 성공한다는 증거가 아닙니다. 클라이언트·제공자별로 시뮬레이션 가스 정책이 다를 수 있으므로 실제 노드 버전과 포크 설정을 시험해야 합니다. ERC-4337 번들러에서는 `gasleft()` 차이만으로 번들의 공유 리저버가 낸 상태 비용을 연산별로 배분할 수 없고 한 연산의 리필이 다른 연산에 영향을 줄 수 있습니다. EIP-8037은 번들러와 `EntryPoint` 구현이 이 차이에만 의존하지 말고 상태 가스를 따로 계산하도록 명시합니다. [호환성](https://eips.ethereum.org/EIPS/eip-8037#backwards-compatibility), [번들 집계](https://eips.ethereum.org/EIPS/eip-8037#interaction-with-erc-4337-bundles)
 
-배포 도구는 고정 한도를 가진 사전 서명 팩토리 트랜잭션도 따로 확인해야 합니다. EIP-8037은 재조정이 처음부터 켜진 새 네트워크에서 기존 한도가 부족할 수 있다고 경고합니다. 이미 배포된 팩토리가 포크 때문에 다시 배포되는 것은 아닙니다. 실제 대응 대상은 시스템이 상태를 새로 만드는 지점, 가스를 고정해 넘기는 지점, `gasleft()`를 전체 예산으로 취급하는 지점입니다.
+배포 도구는 고정 한도를 가진 사전 서명 팩토리 트랜잭션도 따로 확인해야 합니다. EIP-8037은 재조정이 처음부터 켜진 새 네트워크에서 기존 한도가 부족할 수 있다고 경고합니다. 이미 배포된 팩토리가 포크 때문에 다시 배포되는 것은 아닙니다. 실제 대응 대상은 시스템이 상태를 새로 만드는 지점, 가스를 고정해 넘기는 지점, `gasleft()`를 전체 예산으로 취급하거나 실패 원인 판별에 쓰는 지점입니다.
 
 ## 함께 보면 좋을 자료
 
+- [Glamsterdam Repricing Impact for Smart Contract Developers](https://blog.ethereum.org/2026/08/24/glamsterdam-repricing-testing): 메인넷 재실행으로 찾은 영향 유형과 영향 컨트랙트 검색 도구입니다.
+- [Glamsterdam Hard Fork: When Spent Gas Comes Back](https://www.chainsecurity.com/blog/glamsterdam-gas): ChainSecurity가 정리한 실패 처리 검사의 우회 경로와 점검 순서입니다.
 - [EIP-7825: Transaction Gas Limit Cap](https://eips.ethereum.org/EIPS/eip-7825): 리저버 모델에서도 유지하는 실행 가스 상한입니다.
 - [EIP-7928: Block-Level Access Lists](https://eips.ethereum.org/EIPS/eip-7928): 상태 접근 기록과 생성 연산의 접근 시점 제약입니다.
 - [EIP-7778: Block Gas Accounting without Refunds](https://eips.ethereum.org/EIPS/eip-7778): 유료 트랜잭션 가스와 블록 용량 집계가 달라지는 이유입니다.
 
 ## 참고 자료
 
-- [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037), [고정 커밋 원문](https://github.com/ethereum/EIPs/blob/8b1cae50601fb194452db0ed857f4c237ca62c1f/EIPS/eip-8037.md): Ethereum EIPs, 조회일 2026년 10월 15일 UTC.
-- [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038), [고정 커밋 원문](https://github.com/ethereum/EIPs/blob/8b1cae50601fb194452db0ed857f4c237ca62c1f/EIPS/eip-8038.md): Ethereum EIPs, 조회일 2026년 10월 15일 UTC.
-- [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780), [고정 커밋 원문](https://github.com/ethereum/EIPs/blob/8b1cae50601fb194452db0ed857f4c237ca62c1f/EIPS/eip-2780.md): Ethereum EIPs, 조회일 2026년 10월 15일 UTC.
-- [EIP-7773](https://eips.ethereum.org/EIPS/eip-7773), [고정 커밋 원문](https://github.com/ethereum/EIPs/blob/8b1cae50601fb194452db0ed857f4c237ca62c1f/EIPS/eip-7773.md): 포크 범위와 활성화 표, 조회일 2026년 10월 15일 UTC.
-- [Glamsterdam Testnet Announcement](https://blog.ethereum.org/2026/09/17/glamsterdam-testnet-announcement): 이더리움 재단, 조회일 2026년 10월 15일 UTC.
-- [EIP-2200](https://eips.ethereum.org/EIPS/eip-2200), [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929), [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): 비교 기준 스토리지·환급 규칙, 조회일 2026년 10월 15일 UTC.
-- [EIP-140](https://eips.ethereum.org/EIPS/eip-140): `REVERT`, 조회일 2026년 10월 15일 UTC.
-- [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623), [EIP-7976](https://eips.ethereum.org/EIPS/eip-7976), [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708): calldata 하한과 전송 로그, 조회일 2026년 10월 15일 UTC.
+- [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037), [고정 커밋 원문](https://github.com/ethereum/EIPs/blob/dc5d5fa688b7fe87b95a907fcc128b4fde2f4d2f/EIPS/eip-8037.md): Ethereum EIPs, 조회일 2026년 11월 2일 UTC.
+- [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038), [고정 커밋 원문](https://github.com/ethereum/EIPs/blob/dc5d5fa688b7fe87b95a907fcc128b4fde2f4d2f/EIPS/eip-8038.md): Ethereum EIPs, 조회일 2026년 11월 2일 UTC.
+- [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780), [고정 커밋 원문](https://github.com/ethereum/EIPs/blob/dc5d5fa688b7fe87b95a907fcc128b4fde2f4d2f/EIPS/eip-2780.md): Ethereum EIPs, 조회일 2026년 11월 2일 UTC.
+- [EIP-7773](https://eips.ethereum.org/EIPS/eip-7773), [고정 커밋 원문](https://github.com/ethereum/EIPs/blob/dc5d5fa688b7fe87b95a907fcc128b4fde2f4d2f/EIPS/eip-7773.md): 포크 범위와 활성화 표, 조회일 2026년 11월 2일 UTC.
+- [Glamsterdam Testnet Announcement](https://blog.ethereum.org/2026/09/17/glamsterdam-testnet-announcement), [Glamsterdam Hoodi Testnet Announcement](https://blog.ethereum.org/2026/10/16/glamsterdam-hoodi-announcement), [Glamsterdam on Hoodi Postponed](https://blog.ethereum.org/2026/10/22/glamsterdam-hoodi-delay): 이더리움 재단, 조회일 2026년 11월 2일 UTC.
+- [All Core Devs - Execution (ACDE) #248](https://github.com/ethereum/pm/issues/2267): 2026년 10월 22일 회의 안건, 조회일 2026년 11월 2일 UTC.
+- [ethereum/EIPs PR #12581](https://github.com/ethereum/EIPs/pull/12581), [PR #12577](https://github.com/ethereum/EIPs/pull/12577), [PR #12568](https://github.com/ethereum/EIPs/pull/12568): 병합 전 제안, 조회일 2026년 11월 2일 UTC.
+- [Glamsterdam Hard Fork: When Spent Gas Comes Back](https://www.chainsecurity.com/blog/glamsterdam-gas): ChainSecurity, 2026년 10월 13일, 조회일 2026년 11월 2일 UTC.
+- [EIP-2200](https://eips.ethereum.org/EIPS/eip-2200), [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929), [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529): 비교 기준 스토리지·환급 규칙, 조회일 2026년 11월 2일 UTC.
+- [EIP-140](https://eips.ethereum.org/EIPS/eip-140): `REVERT`, 조회일 2026년 11월 2일 UTC.
+- [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623), [EIP-7976](https://eips.ethereum.org/EIPS/eip-7976), [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708): calldata 하한과 전송 로그, 조회일 2026년 11월 2일 UTC.
