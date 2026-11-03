@@ -3,7 +3,7 @@ title: "Apify x402 and Coinbase Wallets, in Depth: How Agents Buy Web Automation
 meta_title: ""
 description: "Apify opened more than 20,000 Actors to x402. This deep dive explains the HTTP 402 flow, EIP-3009 and Permit2, facilitators, Coinbase Agentic Wallet, Bazaar discovery, security practices, the agentic-payment ecosystem, and country-level constraints."
 date: 2026-07-05T01:10:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:14:41+00:00
 image: "/images/posts/apify-x402-agentic-payments-coinbase-wallet/x402-payment-flow.png"
 categories: ["Blockchain"]
 tags: ["x402", "agentic-payments", "apify", "coinbase", "ai-agent", "usdc", "base", "eip-3009", "stablecoin"]
@@ -28,7 +28,7 @@ Apify runs web scraping and browser automation in the cloud. The execution unit 
 
 Until now the customer was usually a human: create an account, add billing, generate an API token, then call the API. The x402 integration changes that assumption. An agent calls an Actor API endpoint, receives an HTTP 402 payment requirement, signs a payment payload from its wallet, and retries the same request. Apify also added x402 support to [`mcpc`](https://github.com/apify/mcpc), its universal CLI client for the Model Context Protocol, so tool discovery and payment can sit in the same agent workflow.
 
-The important shift is that an agent's usable tool list is no longer frozen at deploy time. It can decide at runtime that it needs an Instagram profile scraper, buy a dollar's worth of access, run it, and continue the task. Apify's integration is not just a crypto checkout. It is a runtime-purchasable tool supply layer for agents.
+An agent's usable tool list is no longer frozen at deploy time. It can decide at runtime that it needs an Instagram profile scraper, buy a dollar's worth of access, run it, and continue the task. Apify's integration combines a crypto checkout with a tool supply layer that agents can buy from at runtime.
 
 ## The x402 payment flow
 
@@ -73,7 +73,7 @@ One detail is easy to mix up. The manual prepaid-token path in the [Apify x402 d
 
 The Coinbase name is the easiest source of confusion. The `awal` tool that Apify recommends is Coinbase Agentic Wallet CLI, not a Coinbase exchange account. It lets an agent authenticate by email OTP, hold USDC, read a 402 challenge, and sign the payment payload.
 
-Where the funds live is the important part. The [Apify docs](https://docs.apify.com/platform/integrations/x402) state that funds live in the wallet itself, not in a Coinbase exchange account, and can come from any source that sends USDC on Base. You can withdraw from an exchange, send from another wallet, or use an onramp. The protocol requirement is a funded wallet that can speak the supported asset and network, not a Coinbase exchange signup.
+Where the funds live is the important part. The [Apify docs](https://docs.apify.com/platform/integrations/x402) state that funds live in the wallet itself, not in a Coinbase exchange account, and can come from any source that sends USDC on Base. You can withdraw from an exchange, send from another wallet, or use an onramp. The protocol requires a funded wallet that supports the asset and network, not a Coinbase exchange signup.
 
 That does not remove wallet risk. Agentic Wallet replaces a human approval button with a programmable signing surface, spend controls, policies, and auditability. An agent wallet should be treated like a low-balance hot wallet or prepaid debit card. Operators still need to define balances, token allowances, task budgets, and the list of Actors the agent is allowed to buy.
 

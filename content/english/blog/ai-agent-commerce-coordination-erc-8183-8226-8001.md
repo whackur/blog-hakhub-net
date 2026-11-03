@@ -3,7 +3,7 @@ title: "AI Agent Commerce and Coordination: ERC-8183, ERC-8226, ERC-8001, ERC-80
 meta_title: ""
 description: "The application layer above the ERC-8004/8126/8196 trust stack: job escrow (ERC-8183), regulated-asset compliance delegation (ERC-8226), multi-agent coordination (ERC-8001, Final), and fixed-supply agent collections (ERC-8041), with a builder's view of what is usable now."
 date: 2026-07-01T09:00:00+09:00
-lastmod: 2026-07-17T17:50:08+09:00
+lastmod: 2026-11-03T07:05:12+00:00
 image: "/images/posts/ai-agent-commerce-coordination-erc-8183-8226-8001/erc8183-job-lifecycle-1200.png"
 categories: ["Blockchain"]
 tags: ["ai-agent", "ethereum", "eip", "erc-8183", "erc-8226", "erc-8001", "erc-8041"]
@@ -16,7 +16,7 @@ The [ERC-8004/8126/8196 trust stack](../ai-agent-wallet-trust-stack-erc-8004-812
 
 The harder part starts after that trust exists. Even a trusted agent still needs a way to provide a service and get paid, permission to touch regulated assets, and a way to split one job across several agents. The trust stack does not define any of that. Trust is a precondition; what a trusted agent can actually do lives in a separate application layer.
 
-This post looks at four ERC proposals that try to standardize that application layer. First, the status, because it matters throughout. **ERC-8001 is Final. ERC-8183, ERC-8226, and ERC-8041 are all Draft, and the underlying ERC-8004 is Draft too.** A Draft spec can change anything from function names to struct fields, so read the drafts as design in progress, not as settled interfaces.
+Four ERC proposals aim to standardize that application layer, but their status differs. **ERC-8001 is Final. ERC-8183, ERC-8226, and ERC-8041 are all Draft, and the underlying ERC-8004 is Draft too.** A Draft spec can change anything from function names to struct fields, so read the drafts as design in progress, not as settled interfaces.
 
 ## The four proposals at a glance
 
@@ -100,7 +100,7 @@ An evaluator's ruling can optionally carry a reason and a hash. Those values sup
 
 ### Extending it with hooks
 
-ERC-8183 lets each job carry an optional hook contract. A hook-free implementation (the reference `AgenticCommerce` contract) is fully spec-compliant on its own, and a hook only needs to implement `IACPHook`, two functions: `beforeAction` and `afterAction`. The core functions `setProvider`, `setBudget`, `fund`, `submit`, `complete`, and `reject` all call the hook before and after execution, but `claimRefund` cannot be hooked at all. That closes off the one path a malicious hook could otherwise use to block refunds after expiry.
+ERC-8183 lets each job carry an optional hook contract. A hook-free implementation (the reference `AgenticCommerce` contract) is fully spec-compliant on its own, and a hook only needs to implement `IACPHook`, two functions: `beforeAction` and `afterAction`. The core functions `setProvider`, `setBudget`, `fund`, `submit`, `complete`, and `reject` all call the hook before and after execution, but `claimRefund` cannot be hooked at all. This prevents a malicious hook from blocking refunds after expiry.
 
 Hook calls should carry a gas limit so a hook cannot stall a job by burning unbounded gas. The spec also flags that "advanced hooks" (ones that custody extra tokens, like a two-phase escrow) carry more revert paths and tighter coupling to external logic than a plain, hook-free job, and recommends reserving them for agents and users who understand and accept that trade-off. A simple job is usually better off with no hook, or a hook that only enforces policy checks.
 
@@ -145,7 +145,7 @@ A principal can call `revokeMandate` with a signature to end a mandate at any ti
 
 The mandate's `metadata` field is non-normative. It is a human-readable pointer (for example, a hash of the legal text behind the delegation) and cannot be verified on-chain, so implementations and integrators must not use it in enforcement decisions.
 
-On the account-side execution path (an EIP-7702 delegate or a standalone executor), `IAgentExecutor` keeps a mapping from each action selector to the position of its amount argument, and reads the gated value from that position at execution time. That mapping is itself a trusted surface: get a position wrong and a cap silently stops applying to the right value, so whoever maintains it needs the same scrutiny as an enforcer.
+On the account-side execution path (an EIP-7702 delegate or a standalone executor), `IAgentExecutor` keeps a mapping from each action selector to the position of its amount argument, and reads the gated value from that position at execution time. The design also relies on trusting this mapping: get a position wrong and a cap silently stops applying to the right value, so whoever maintains it needs the same scrutiny as an enforcer.
 
 ### Relation to ERC-8196
 
@@ -238,15 +238,15 @@ One end-to-end scenario shows the overlap. Take an agent registered in ERC-8004,
 
 ## What this means for builders
 
-Here is how far you can actually take these standards today.
+Their standards status determines how far they can be used in practice.
 
 ### Usable now
 
-ERC-8001 is Final. The EIP-712 domain, the hashing rules for intents and acceptances, the state enum, the mandatory events, and the verification rules are settled, so code written against this interface will not have the signatures pulled out from under it. It supports EOAs (ECDSA), contract wallets (ERC-1271), and compact signatures (EIP-2098), so it works regardless of wallet type. Just remember that ERC-8001 records the coordination agreement and nothing more. Actually doing and verifying the work is left to the application or to a separate layer like ERC-8183.
+ERC-8001 is Final. The EIP-712 domain, the hashing rules for intents and acceptances, the state enum, the mandatory events, and the verification rules are settled, so code written against this interface can rely on the signatures remaining unchanged. It supports EOAs (ECDSA), contract wallets (ERC-1271), and compact signatures (EIP-2098), so it works regardless of wallet type. Just remember that ERC-8001 records the coordination agreement and nothing more. Actually doing and verifying the work is left to the application or to a separate layer like ERC-8183.
 
 ### Still unstable
 
-ERC-8183, ERC-8226, and ERC-8041 are Draft. Function names, struct fields, and state enums can shift during review, so it is risky for a production contract to hardcode a dependency on these interfaces. On top of that, the ERC-8004 that ERC-8041 and the ERC-8183/ERC-8226 composition lean on is itself still Draft; when the base moves, everything above it moves too. Good for experiments and prototypes, but do not stake mainnet assets on them without budgeting for migration.
+ERC-8183, ERC-8226, and ERC-8041 are Draft. Function names, struct fields, and state enums can shift during review, so it is risky for a production contract to hardcode a dependency on these interfaces. On top of that, the ERC-8004 that ERC-8041 and the ERC-8183/ERC-8226 composition lean on is itself still Draft; changes to the base interfaces affect the layers above them too. Good for experiments and prototypes, but do not stake mainnet assets on them without budgeting for migration.
 
 ### Worth watching
 
@@ -258,9 +258,9 @@ ERC-8183, ERC-8226, and ERC-8041 are Draft. Function names, struct fields, and s
 
 ## Takeaways
 
-ERC-8001 has reached Final on the Ethereum standards track. The other three (ERC-8183, ERC-8226, ERC-8041) are still Draft. It cannot be said too often: do not treat a Draft as a settled production foundation.
+ERC-8001 has reached Final on the Ethereum standards track. The other three (ERC-8183, ERC-8226, ERC-8041) are still Draft. Do not treat a Draft as a settled production foundation.
 
-The direction is clear. As AI agents take on more substantive on-chain roles as service providers, collaborators, and compliance participants, the trust stack alone is not enough. Agents need standard ways to earn fees, coordinate with other agents, satisfy compliance, and operate within defined collection parameters. These four proposals are moving that way. Whether these specific drafts reach Final or get replaced by revised proposals is still open. When the specs settle, this post will be updated.
+As AI agents take on more substantive on-chain roles as service providers, collaborators, and compliance participants, the trust stack alone is not enough. Agents need standard ways to earn fees, coordinate with other agents, satisfy compliance, and operate within defined collection parameters. These four proposals are moving that way. Whether these specific drafts reach Final or get replaced by revised proposals is still open. When the specs settle, this post will be updated.
 
 ## Further reading
 

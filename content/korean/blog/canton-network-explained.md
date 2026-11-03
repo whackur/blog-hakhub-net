@@ -3,7 +3,7 @@ title: "Canton Network 이해하기: 금융 프라이버시와 원자적 결제,
 meta_title: "Canton Network 구조와 기관 도입 현황 (2026년 10월)"
 description: "Daml 계약, 선택적 정보 공유, Global Synchronizer와 Canton Coin의 역할을 설명하고 DTCC·Tradeweb·MUFG 등 기관 발표의 실제 진행 단계를 구분합니다."
 date: 2026-10-15T09:00:00+09:00
-lastmod: 2026-10-15T09:00:00+09:00
+lastmod: 2026-11-03T08:24:30+00:00
 image: "/images/posts/canton-network-explained/cover.png"
 categories: ["Blockchain"]
 tags: ["canton", "daml", "tokenization", "institutional-finance", "privacy", "settlement"]
@@ -12,19 +12,19 @@ translationKey: "canton-network-explained"
 draft: false
 ---
 
-증권을 산다는 행위에는 여러 원장이 관여합니다. 거래소나 거래 플랫폼에는 체결 기록이 남고, 수탁기관에는 증권 보유 기록이 남습니다. 지급을 담당하는 은행은 현금 장부를 따로 관리합니다. 서로 다른 기관이 같은 거래를 각자의 시스템에 기록하므로, 거래 후에는 금액과 권리, 처리 상태를 다시 맞추는 대사 작업이 필요합니다. 모든 기관이 하나의 공개 장부를 사용하면 단순해 보이지만 고객 잔액과 거래 전략까지 공개할 수는 없습니다.
+증권을 살 때는 여러 원장이 관여합니다. 거래소나 거래 플랫폼에는 체결 기록이 남고 수탁기관에는 증권 보유 기록이 남습니다. 지급을 담당하는 은행은 현금 장부를 따로 관리합니다. 서로 다른 기관이 같은 거래를 각자의 시스템에 기록하므로 거래 후에는 금액과 권리, 처리 상태를 다시 맞추는 대사 작업이 필요합니다. 모든 기관이 하나의 공개 장부를 사용하면 단순해 보이지만 고객 잔액과 거래 전략까지 공개할 수는 없습니다.
 
-Canton은 이 문제에서 출발한 분산원장 프로토콜입니다. **계약에 관여하는 주체끼리 필요한 상태를 공유하고, 여러 애플리케이션의 상태 변경을 하나의 거래로 묶는 것**이 설계의 중심입니다. 참여자 모두에게 금융 데이터를 방송하는 대신 계약 권한에 따라 정보를 나눕니다. 그 위에 연결된 애플리케이션과 운영 인프라의 생태계가 Canton Network입니다. [프로토콜 명세](https://docs.canton.network/overview/reference/canton-protocol-specification)가 이 구분의 출발점입니다.
+Canton은 이 문제에서 출발한 분산원장 프로토콜입니다. **계약에 관여하는 주체끼리 필요한 상태를 공유하고 여러 애플리케이션의 상태 변경을 하나의 거래로 묶는 것**이 설계의 중심입니다. 참여자 모두에게 금융 데이터를 방송하는 대신 계약 권한에 따라 정보를 나눕니다. 그 위에 연결된 애플리케이션과 운영 인프라의 생태계가 Canton Network입니다. [프로토콜 명세](https://docs.canton.network/overview/reference/canton-protocol-specification)가 이 구분의 출발점입니다.
 
-이 글은 먼저 계약과 합의 구조를 설명한 다음 기관 도입 현황을 살펴봅니다. 현황 확인 기준일은 **2026년 10월 15일 KST**입니다. 공식 문서와 아래에 연결한 기관 발표를 확인했으며, 모든 기관의 비공개 거래 원장이나 실시간 운영 상태를 조사한 결과는 아닙니다. 거래 완료, 제품 지원, 개념검증(PoC), 출시 계획을 구별해서 읽어야 실제 진척을 판단할 수 있습니다.
+이 글은 먼저 계약과 합의 구조를 설명한 다음 기관 도입 현황을 살펴봅니다. 현황 확인 기준일은 **2026년 10월 15일 KST**입니다. 공식 문서와 아래에 연결한 기관 발표를 확인했으며 모든 기관의 비공개 거래 원장이나 실시간 운영 상태를 조사한 결과는 아닙니다. 거래 완료, 제품 지원, 개념검증(PoC), 출시 계획을 구별해서 읽어야 실제 진척을 판단할 수 있습니다.
 
 ## 금융기관이 공유해야 하는 상태
 
-매수자가 돈을 지급했는데 증권을 받지 못하거나, 매도자가 증권을 넘겼는데 돈을 받지 못하면 결제 위험이 발생합니다. 증권 인도와 대금 지급을 연결하는 DvP(Delivery versus Payment)는 이 위험을 줄이는 방식입니다. Canton에서는 적절히 모델링한 증권 계약과 현금 계약을 같은 Daml 트랜잭션에서 소비하고 새 보유 계약을 만드는 방식으로 두 상태 변경을 결합합니다. [공식 DvP 예제](https://docs.canton.network/overview/reference/cross-sync-dvp-example)는 이 조합을 구체적으로 설명합니다.
+매수자가 돈을 지급했는데 증권을 받지 못하거나 매도자가 증권을 넘겼는데 돈을 받지 못하면 결제 위험이 발생합니다. 증권 인도와 대금 지급을 연결하는 DvP(Delivery versus Payment)는 이 위험을 줄이는 방식입니다. Canton에서는 적절히 모델링한 증권 계약과 현금 계약을 같은 Daml 트랜잭션에서 소비하고 새 보유 계약을 만드는 방식으로 두 상태 변경을 결합합니다. [공식 DvP 예제](https://docs.canton.network/overview/reference/cross-sync-dvp-example)는 이 조합을 구체적으로 설명합니다.
 
 공유 범위는 업무마다 다릅니다. 증권 등록기관은 증권 소유권 변경을 알아야 하지만 매수자의 전체 현금 잔액까지 알 필요는 없습니다. 지급 은행도 거래 상대방의 모든 증권 포트폴리오를 볼 이유가 없습니다. Canton은 거래 전체를 무조건 복제하지 않고 관련 하위 거래의 정보를 필요한 participant에 전달합니다. 이는 단순히 화면에서 민감한 열을 숨기는 방식과 다릅니다. [프라이버시 모델](https://docs.canton.network/overview/learn/privacy-model)을 계약 설계와 함께 읽어야 하는 이유입니다.
 
-대사가 모두 사라지는 것은 아닙니다. 원장 안에서 공유하는 계약 상태는 일치시킬 수 있지만, 외부 은행 처리나 수탁 장부, 기업행사, 가격 데이터는 연결해야 합니다. 토큰이 나타내는 권리의 법적 근거도 별도로 존재합니다. 기술의 효과를 평가하려면 어떤 기록을 공동으로 관리하고 어떤 기록은 외부 시스템에 남기는지 먼저 정해야 합니다. 단순히 블록체인을 도입했다는 사실만으로 업무의 모든 경계가 없어지지는 않습니다.
+대사가 모두 사라지는 것은 아닙니다. 원장 안에서 공유하는 계약 상태는 일치시킬 수 있지만 외부 은행 처리나 수탁 장부, 기업행사, 가격 데이터는 연결해야 합니다. 토큰이 나타내는 권리의 법적 근거도 별도로 존재합니다. 기술의 효과를 평가하려면 어떤 기록을 공동으로 관리하고 어떤 기록은 외부 시스템에 남기는지 먼저 정해야 합니다. 단순히 블록체인을 도입했다는 사실만으로 업무의 모든 경계가 없어지지는 않습니다.
 
 ## Daml에서 Canton Coin까지의 역할
 
@@ -48,7 +48,7 @@ Canton 소프트웨어로 기관 전용 환경을 운영하는 일과 공개 GS�
 
 Daml의 계약 인스턴스는 생성된 뒤 내용을 직접 덮어쓰지 않습니다. 보유자가 바뀌면 기존 계약을 소비하고 새로운 보유자를 나타내는 계약을 만듭니다. 이를 UTXO와 연결해 설명하기도 하지만 Bitcoin의 결제 스크립트와 동일한 모델은 아닙니다. Daml은 금융 자산뿐 아니라 거래 제안, 수탁 위임, 담보 요청처럼 여러 주체의 권한이 얽힌 업무도 계약으로 표현합니다. [상세 원장 모델](https://docs.canton.network/overview/reference/ledger-model-detailed)이 상태 변경과 권한을 정의합니다.
 
-`template`은 계약 데이터와 규칙의 정의이고, 실제 계약 인스턴스에는 고유한 식별자가 붙습니다. `choice`는 그 계약에서 수행할 업무 행위입니다. 기본적인 consuming choice가 성공하면 입력 계약은 더 이상 소비할 수 없습니다. 새 계약이 만들어졌다면 애플리케이션은 새 식별자를 추적해야 합니다. `nonconsuming` choice는 원 계약을 남기지만 다른 계약을 만들거나 소비하는 업무를 포함할 수 있습니다. 이름만 보고 아무 상태도 바꾸지 않는 조회라고 해석하면 안 됩니다. [Daml 언어 참조](https://docs.canton.network/appdev/reference/daml-language-reference)를 기준으로 구별할 수 있습니다.
+`template`은 계약 데이터와 규칙의 정의이고 실제 계약 인스턴스에는 고유한 식별자가 붙습니다. `choice`는 그 계약에서 수행할 업무 행위입니다. 기본적인 consuming choice가 성공하면 입력 계약은 더 이상 소비할 수 없습니다. 새 계약이 만들어졌다면 애플리케이션은 새 식별자를 추적해야 합니다. `nonconsuming` choice는 원 계약을 남기지만 다른 계약을 만들거나 소비하는 업무를 포함할 수 있습니다. 이름만 보고 아무 상태도 바꾸지 않는 조회라고 해석하면 안 됩니다. [Daml 언어 참조](https://docs.canton.network/appdev/reference/daml-language-reference)를 기준으로 구별할 수 있습니다.
 
 권한을 나타내는 주요 역할은 다음과 같습니다.
 
@@ -58,7 +58,7 @@ Daml의 계약 인스턴스는 생성된 뒤 내용을 직접 덮어쓰지 않�
 | `controller` | 특정 choice를 실행할 권한을 가진 주체입니다. |
 | `observer` | 계약 정보를 볼 수 있는 추가 주체입니다. 관찰 권한만으로 choice 실행 권한을 얻지는 않습니다. |
 
-예를 들어 A가 거래 제안을 만들고 B가 이를 수락하는 업무를 생각할 수 있습니다. A의 제안 계약에 B를 관찰자로 두고, B가 실행하는 수락 choice에서 양측 권한을 결합해 최종 계약을 생성합니다. 제안을 소비하면 같은 제안을 다시 수락하는 문제도 막습니다. 이 설명은 권한 모델의 예시이며 증권 발행이나 은행 지급을 구현한 완성된 금융 계약은 아닙니다.
+예를 들어 A가 거래 제안을 만들고 B가 이를 수락하는 업무를 생각할 수 있습니다. A의 제안 계약에 B를 관찰자로 두고 B가 실행하는 수락 choice에서 양측 권한을 결합해 최종 계약을 생성합니다. 제안을 소비하면 같은 제안을 다시 수락하는 문제도 막습니다. 이 설명은 권한 모델의 예시이며 증권 발행이나 은행 지급을 구현한 완성된 금융 계약은 아닙니다.
 
 로그인, API 권한, 계약 권한도 다른 층입니다. 웹 서비스에 로그인했다고 모든 party의 명령을 제출할 수 있는 것은 아닙니다. API의 `actAs`와 `readAs`, 계약의 controller와 observer, 실제 서명 주체가 각각 맞아야 합니다. 계약 식별자를 알고 있다는 사실도 실행 권한을 대신하지 않습니다. 따라서 코드 리뷰에서는 화면에 표시한 사용자가 누구인지와 원장이 인정하는 권한 주체가 누구인지를 함께 확인해야 합니다. [보안 지침](https://docs.canton.network/appdev/modules/m7-security)은 애플리케이션과 원장의 경계를 다룹니다.
 
@@ -80,7 +80,7 @@ Proof of Stakeholder의 stakeholder는 계약의 이해관계자를 뜻합니다
 
 거래를 제출하면 제출 participant가 명령을 해석하고 관련 계약과 party, 패키지, 동기화 경로를 확인합니다. 필요한 view를 암호화해 보내면 수신 participant가 검증하고 확인을 회신합니다. 조정 결과가 전달된 뒤 승인된 변경을 각 participant의 가시성 범위에 반영합니다. 순서는 각 Synchronizer의 범위에서 정해집니다. 네트워크 전체가 언제나 하나의 공개 블록 순서와 완전한 금융 상태를 공유한다고 설명하면 맞지 않습니다.
 
-이 분리는 운영 책임도 나눕니다. Participant 운영자는 데이터와 실행 환경을 관리하고, Synchronizer 운영자는 메시지 전달과 순서, 조정 서비스의 가용성을 담당합니다. 전용 Synchronizer가 한 운영자에게 의존하는지, GS 같은 공동 운영 인프라를 사용하는지는 신뢰 판단에 영향을 줍니다. 운영자가 분산되어 있다는 설명만으로 개별 배포의 장애 허용 조건을 알 수는 없습니다. 실제 구성과 정책을 확인해야 합니다.
+이 분리는 운영 책임도 나눕니다. Participant 운영자는 데이터와 실행 환경을 관리하고 Synchronizer 운영자는 메시지 전달과 순서, 조정 서비스의 가용성을 담당합니다. 전용 Synchronizer가 한 운영자에게 의존하는지, GS 같은 공동 운영 인프라를 사용하는지는 신뢰 판단에 영향을 줍니다. 운영자가 분산되어 있다는 설명만으로 개별 배포의 장애 허용 조건을 알 수는 없습니다. 실제 구성과 정책을 확인해야 합니다.
 
 ## 선택적 정보 공유의 효과와 경계
 
@@ -102,7 +102,7 @@ Synchronizer가 금융 내용을 복호화하지 않더라도 메시지 시간, 
 
 Reassignment는 준비 과정의 일부입니다. Unassign은 됐는데 assign이 끝나지 않았다면 계약을 잠시 업무에 사용하지 못할 수 있습니다. 자산 발행자가 공통 Synchronizer 사용을 허용하지 않거나 필요한 패키지가 준비되지 않은 경우도 있습니다. 모든 Canton 자산이 이름만으로 즉시 조합되는 것은 아닙니다. 업무 트랜잭션의 원자성과 준비·이동 절차 전체의 즉시 완료는 별개입니다.
 
-원자성의 범위도 분명해야 합니다. 한 트랜잭션 안의 계약 변경을 함께 성공시키는 성질은 은행 지급의 법적 확정성, 수탁기관 장부의 권리 이전, 발행자의 상환 능력까지 대신하지 않습니다. 토큰이 외부 기록을 표현한다면 그 기록과 토큰의 관계가 중요합니다. 외부 블록체인으로의 이동도 별도 프로토콜과 신뢰 조건을 갖습니다. Canton 내부 DvP의 설명을 임의의 외부 체인 전체에 대한 원자성 보장으로 확장하면 안 됩니다.
+원자성의 범위도 분명해야 합니다. 한 트랜잭션 안의 계약 변경을 함께 성공시키는 성질은 은행 지급의 법적 확정성, 수탁기관 장부의 권리 이전, 발행자의 상환 능력까지 대신하지 않습니다. 토큰이 외부 기록을 표현한다면 그 기록과 토큰의 관계가 중요합니다. 외부 블록체인으로 이동할 때도 별도 프로토콜과 신뢰 조건이 따릅니다. Canton 내부 DvP의 설명을 임의의 외부 체인 전체에 대한 원자성 보장으로 확장하면 안 됩니다.
 
 ## 전형적인 공개 EVM 모델과의 차이
 
@@ -132,11 +132,11 @@ V2인 [CIP-0112](https://github.com/canton-foundation/cips/blob/main/cip-0112/ci
 
 지갑과 dApp을 연결하는 [CIP-0103](https://github.com/canton-foundation/cips/blob/main/cip-0103/cip-0103.md)은 자산 표준과 또 다른 층입니다. 계정과 네트워크 확인, 거래 준비·서명·실행 등의 접점을 표준화합니다. 원문 상태는 `Active`, 승인일은 2026년 1월 29일입니다. 앱이 특정 노드나 키 관리 제품에 고정되지 않도록 돕지만 지갑의 보안이나 사용자 심사를 대신하지는 않습니다. 외부 서명에서도 준비된 거래 내용과 해시를 검증하고 원장 완료를 확인해야 합니다. [서명 가이드](https://docs.canton.network/sdks-tools/sdks/wallet-sdk/guides/preparing-and-signing-a-transaction)가 이 절차를 설명합니다.
 
-운영 버전은 이 표준 세대와 별개입니다. 10월 14일 갱신된 대시보드의 MainNet 조합은 Canton 3.5.19와 Splice 0.8.4를 제시합니다. 반면 [Canton 최신 릴리스](https://github.com/digital-asset/canton/releases/tag/v3.6.1)는 10월 5일 공개된 3.6.1입니다. 이는 공식 문서의 조합과 릴리스 메타데이터를 대조한 결과이며 모든 운영 노드를 직접 조회한 값은 아닙니다. [공식 호환성 대시보드](https://docs.canton.network/shared/version-compatibility-dashboard)에서 환경별 조합을 확인하고, 바이너리의 최신 릴리스를 실제 MainNet 배포와 구분해야 합니다. 패키지 번호가 올라갔다고 모든 V2 기능이 켜졌다고 판단하거나 DevNet의 기능을 운영 환경에서 바로 사용할 수 있다고 가정하면 통합 오류가 생깁니다.
+운영 버전은 이 표준 세대와 별개입니다. 10월 14일 갱신된 대시보드의 MainNet 조합은 Canton 3.5.19와 Splice 0.8.4를 제시합니다. 반면 [Canton 최신 릴리스](https://github.com/digital-asset/canton/releases/tag/v3.6.1)는 10월 5일 공개된 3.6.1입니다. 이는 공식 문서의 조합과 릴리스 메타데이터를 대조한 결과이며 모든 운영 노드를 직접 조회한 값은 아닙니다. [공식 호환성 대시보드](https://docs.canton.network/shared/version-compatibility-dashboard)에서 환경별 조합을 확인하고 바이너리의 최신 릴리스를 실제 MainNet 배포와 구분해야 합니다. 패키지 번호가 올라갔다고 모든 V2 기능이 켜졌다고 판단하거나 DevNet의 기능을 운영 환경에서 바로 사용할 수 있다고 가정하면 통합 오류가 생깁니다.
 
 ## Canton Coin과 금융 거래의 현금 leg
 
-CC는 GS traffic 구매와 기여 보상에 연결됩니다. Traffic을 구매하면 CC가 소각되고, 정해진 조건에 맞는 운영자와 애플리케이션 기여에는 보상이 발행됩니다. Burn과 mint는 서로 다른 흐름입니다. 거래 자산의 명목 금액이 크다고 같은 비율로 CC가 소각되는 구조라고 계산할 수는 없습니다. [GS tokenomics](https://docs.canton.network/overview/reference/tokenomics-of-gs)가 가격과 보상, traffic의 관계를 설명합니다.
+CC는 GS traffic 구매와 기여 보상에 연결됩니다. Traffic을 구매하면 CC가 소각되고 정해진 조건에 맞는 운영자와 애플리케이션 기여에는 보상이 발행됩니다. Burn과 mint는 서로 다른 흐름입니다. 거래 자산의 명목 금액이 크다고 같은 비율로 CC가 소각되는 구조라고 계산할 수는 없습니다. [GS tokenomics](https://docs.canton.network/overview/reference/tokenomics-of-gs)가 가격과 보상, traffic의 관계를 설명합니다.
 
 네트워크 사용 비용과 자산 이전 비용도 구별해야 합니다. [CIP-0078](https://github.com/canton-foundation/cips/blob/main/cip-0078/cip-0078.md)의 CC 수수료 제거는 GS traffic이나 수탁 서비스, 다른 토큰 registry의 모든 비용이 무료라는 선언이 아닙니다. 사용자가 비용을 직접 내지 않는 화면에서도 앱이나 운영자가 traffic을 부담할 수 있습니다. 보상 역시 자격과 정책에 따르므로 단순 계약 생성량만으로 수익을 추정해서는 안 됩니다.
 
@@ -161,9 +161,9 @@ USDCx로 증권 대금을 결제하는 행위와 CC로 GS traffic을 구매하�
 | 2025-12-04 | [Circle xReserve와 USDCx](https://www.circle.com/blog/usdcx-on-canton-now-available-via-circle-xreserve) | 출시와 live 거래 발표. USDC 예치와 프로토콜 USDCx 발행을 연결합니다. |
 | 2025-06-26 | [Nasdaq Calypso·QCP 등](https://ir.nasdaq.com/news-releases/news-release-details/nasdaq-and-qcp-set-new-standard-capital-efficiency-connecting) | Margin·collateral 업무 연결 시연. Nasdaq 주식시장 전체가 Canton으로 이전했다는 발표는 아닙니다. |
 
-DTCC의 7월 발표는 실제 production 거래라는 점에서 단순 시연과 구분됩니다. 그러나 이를 10월 서비스의 정식 출시 완료로 바꾸어 쓰면 진행 단계를 앞당기게 됩니다. 10월 15일 확인한 [Canton의 DTCC 준비 페이지](https://www.canton.network/dtcc-tokenization-service-on-canton)는 여전히 10월 출시에 대비한 기술 준비를 안내했습니다. 확인한 DTCC 공식 발표와 해당 준비 페이지에서는 전면 출시 완료를 확인하지 못했습니다. 이는 그 범위에서의 관찰이며 모든 공식 채널을 실시간으로 전수 확인했다는 뜻은 아닙니다.
+DTCC의 7월 발표는 실제 production 거래라는 점에서 단순 시연과 구분됩니다. 그러나 이를 10월 서비스의 정식 출시 완료로 바꾸어 쓰면 진행 단계를 앞당기게 됩니다. 10월 15일 확인한 [Canton의 DTCC 준비 페이지](https://www.canton.network/dtcc-tokenization-service-on-canton)는 여전히 10월 출시에 대비한 기술 준비를 안내했습니다. 확인한 DTCC 공식 발표와 해당 준비 페이지에서는 전면 출시 완료를 확인하지 못했습니다. 이는 그 범위에서 관찰한 결과이며 모든 공식 채널을 실시간으로 전수 확인했다는 뜻은 아닙니다.
 
-Tradeweb의 두 거래는 자산 구조도 다릅니다. 7월 사례는 미국 국채와 USDCx의 결제를 다뤘고, 8월 사례는 미국 국채로 담보된 Marshall Islands의 디지털 국채 USDM1을 repo 담보로 사용했습니다. USDM1을 미국 정부가 직접 발행한 국채나 스테이블코인으로 바꾸어 설명하면 안 됩니다. 개별 거래 완료는 기술과 업무 연결의 증거지만 반복 거래량, 고객 확대, 유동성은 추가로 확인해야 합니다.
+Tradeweb의 두 거래는 자산 구조도 다릅니다. 7월 사례는 미국 국채와 USDCx의 결제를 다뤘고 8월 사례는 미국 국채로 담보된 Marshall Islands의 디지털 국채 USDM1을 repo 담보로 사용했습니다. USDM1을 미국 정부가 직접 발행한 국채나 스테이블코인으로 바꾸어 설명하면 안 됩니다. 개별 거래 완료는 기술과 업무 연결의 증거지만 반복 거래량, 고객 확대, 유동성은 추가로 확인해야 합니다.
 
 MUFG 사례는 기존 장부대체 국채의 법적 성질을 유지하면서 온체인 repo 업무를 검증하는 PoC입니다. 관련 [Secured Finance 발표](https://blog.digitalasset.com/press-release/secured-finance-to-provide-lending-protocol-for-mitsubishi-ufj-trust-and-bankings-proof-of-concept-for-on-chain-japanese-government-bond-jgb-repo-transactions)도 프로토콜 제공 역할을 설명합니다. 계약과 담보 이동을 블록체인으로 옮기는 일과 법적 소유 기록 전체를 대체하는 일이 다를 수 있음을 보여주는 사례입니다.
 
@@ -175,7 +175,7 @@ Chainlink도 데이터와 외부 연결을 나눠 봐야 합니다. [공식 Data
 
 공개 토론에서는 기관 활용에 대한 기대와 네트워크 접근·통제에 대한 의문이 함께 나타납니다. [Reddit의 atomicity·privacy 토론](https://www.reddit.com/r/defi/comments/1s69u2y/chains_with_atomicity_privacy_features/)에는 Canton의 permissioning을 문제 삼는 의견이 있습니다. 이 짧은 토론을 사용자 전체의 평가나 성능 검증으로 일반화할 수는 없습니다. 다만 공개 인프라, validator 가입, 상품 접근을 구분해서 설명해야 한다는 독자의 질문을 보여줍니다.
 
-개발자 관점에서는 [공식 포럼](https://forum.canton.network/top)에 participant별 조회, 수탁 계정, reassignment, 패키지 호환성 같은 질문이 올라옵니다. 연결 가능한 표준과 프라이버시는 개발의 출발점이고, 실제 통합에서는 권한과 가시성, 장애 복구를 구체적으로 맞춰야 한다는 점을 읽을 수 있습니다. 포럼 질문의 존재를 현재 버전의 확정된 결함으로 취급하거나, 반대로 제공업체 설명을 독립적인 실사용 평가로 취급하지는 않았습니다.
+개발자 관점에서는 [공식 포럼](https://forum.canton.network/top)에 participant별 조회, 수탁 계정, reassignment, 패키지 호환성 같은 질문이 올라옵니다. 연결 가능한 표준과 프라이버시는 개발의 출발점이고 실제 통합에서는 권한과 가시성, 장애 복구를 구체적으로 맞춰야 한다는 점을 읽을 수 있습니다. 포럼 질문의 존재를 현재 버전의 확정된 결함으로 취급하거나 반대로 제공업체 설명을 독립적인 실사용 평가로 취급하지는 않았습니다.
 
 큰 숫자일수록 단위를 확인해야 합니다. DTCC가 소개하는 2025년 **114조 달러**는 예탁 자회사의 custody·asset servicing 배경 규모입니다. Canton TVL이나 이미 토큰화한 금액이 아닙니다. Repo의 일간·월간 명목 처리액도 반복해서 거래된 흐름입니다. 같은 담보가 여러 번 사용될 수 있으므로 특정 시점에 묶인 자산 재고와 비교할 수 없습니다. 기관 전체의 고객 자산이나 거래 플랫폼 전체의 처리량을 Canton에 예치된 자산으로 합산하면 규모를 과장하게 됩니다. [DTCC 원문](https://www.dtcc.com/press-releases/2026/dtcc-turns-tokenization-into-reality)의 수치가 설명하는 대상을 유지해야 합니다.
 
@@ -189,7 +189,7 @@ Canton을 평가할 때 남는 질문은 구체적입니다. 어떤 자산과 �
 
 ## 참고 자료
 
-모든 웹 자료의 확인일은 2026년 10월 15일입니다. 날짜를 적은 기관 발표는 해당 발표일 기준이며, 본문의 완료·PoC·지원·계획 구분을 적용했습니다.
+모든 웹 자료의 확인일은 2026년 10월 15일입니다. 날짜를 적은 기관 발표는 해당 발표일 기준이며 본문의 완료·PoC·지원·계획 구분을 적용했습니다.
 
 - [2020 Canton 백서](https://www.canton.io/publications/canton-whitepaper.pdf), [2023 Network 발표](https://blog.digitalasset.com/press-release/new-global-blockchain-network-of-networks-for-financial-market-participants-and-institutional-assets), [2024 GS·CC 가동](https://www.prnewswire.com/news-releases/the-canton-networks-global-synchronizer-and-canton-coin-go-live-302186479.html).
 - [Splice 아키텍처](https://docs.canton.network/sdks-tools/api-reference/splice-architecture), [원장 모델](https://docs.canton.network/overview/reference/ledger-model-detailed), [Daml 언어](https://docs.canton.network/appdev/reference/daml-language-reference), [보안 지침](https://docs.canton.network/appdev/modules/m7-security).

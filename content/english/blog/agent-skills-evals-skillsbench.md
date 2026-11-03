@@ -3,7 +3,7 @@ title: "Don't Ship Agent Skills Without Evals: Philipp Schmid's Testing Method a
 meta_title: "Agent Skills Eval Methodology and SkillsBench"
 description: "A digest of Philipp Schmid's skill eval methodology from Google DeepMind, the SkillsBench paper numbers, and open-source harnesses like skill-eval-harness you can use today."
 date: 2026-07-18T01:00:00+09:00
-lastmod: 2026-08-05T00:00:00+09:00
+lastmod: 2026-11-03T07:04:06+00:00
 image: "/images/posts/agent-skills-evals-skillsbench/eval-harness-flow-1200.png"
 categories: ["AI"]
 tags: ["agent-skills", "evals", "coding-agent", "llm-agents", "hermes-agent"]
@@ -14,7 +14,7 @@ draft: false
 
 If you use a coding agent like Claude Code, Gemini CLI, or Codex, you eventually end up writing skills: Markdown files that hand the agent your team's coding conventions, a specific SDK's usage patterns, or a deployment procedure. The problem is that almost nobody tests them. We would never ship code without tests, yet skills, which directly change how an agent behaves, get shipped after a few manual runs and a gut-level "looks fine."
 
-Philipp Schmid of Google DeepMind tackled this head-on in his AI Engineer talk [Don't Ship Skills Without Evals](https://www.youtube.com/watch?v=0vphxNt4wyk) and the companion post [Practical Guide to Evaluating and Testing Agent Skills](https://www.philschmid.de/testing-skills). This article digests the methodology from the talk and the guide, walks through the SkillsBench paper it draws on, and lists open-source eval tooling you can actually use.
+Philipp Schmid of Google DeepMind addressed this problem in his AI Engineer talk [Don't Ship Skills Without Evals](https://www.youtube.com/watch?v=0vphxNt4wyk) and the companion post [Practical Guide to Evaluating and Testing Agent Skills](https://www.philschmid.de/testing-skills). This article digests the methodology from the talk and the guide, walks through the SkillsBench paper it draws on, and lists open-source eval tooling you can actually use.
 
 ## What an Agent Skill is
 
@@ -44,7 +44,7 @@ Schmid splits skills into two kinds, and the split matters because the maintenan
 
 **Preference skills** encode an organization's own style, workflows, and conventions. No matter how smart models get, they will not know your team's commit message rules or deployment procedure, so these skills are durable assets worth protecting.
 
-The retirement rule is clean: **if the eval passes with the skill unloaded, the model has absorbed the skill's value and you can retire it.** Without an eval, that judgment is impossible. The real reason to maintain evals is not to defend your skills but to retire or rework them aggressively as models evolve.
+The retirement rule is clean: **if the eval passes with the skill unloaded, the model has absorbed the skill's value and you can retire it.** Without an eval, that judgment is impossible. Maintaining evals helps you decide when to retire or rework skills as models evolve, rather than just defend the ones you have.
 
 ## Principles for writing good skills
 
@@ -102,7 +102,7 @@ The headline numbers:
 - Gains vary widely, from +4.1 to +25.7pp across configurations, and by domain from +4.5pp for Software Engineering to +51.9pp for Healthcare. The natural reading is that skills help most in domains where the model's pretraining is weakest.
 - On some tasks, skills made results worse (negative deltas). Skills are not a free win.
 
-The most striking result: skills the agent generated for itself (self-generated skills) were nearly useless or actively harmful. The gap between skills refined by humans observing failures and skills a model produced from its own knowledge was large. That is quantitative backing for exactly Schmid's practical advice: run the eval, then fix the description.
+Skills the agent generated for itself (self-generated skills) were nearly useless or actively harmful. The gap between skills refined by humans observing failures and skills a model produced from its own knowledge was large. That gives quantitative backing to Schmid's practical advice: run the eval, then fix the description.
 
 ## Community reaction
 
@@ -113,7 +113,7 @@ SkillsBench sparked a large [Hacker News thread with 364 points and 171 comments
 - The gap between Healthcare (+51.9pp) and Software Engineering (+4.5pp) fueled the interpretation that skills work best where models are weakest.
 - A paper author joined the thread and confirmed the distinction between feedback-driven and self-generated skills.
 
-Schmid's guide itself was discussed in a [separate HN thread](https://news.ycombinator.com/item?id=46822519), and OpenAI published a [similar skill-eval guide](https://developers.openai.com/blog/eval-skills) around the same time. Skill testing is settling in as an ecosystem-wide concern rather than a single vendor's topic.
+Schmid's guide was also discussed in a [separate HN thread](https://news.ycombinator.com/item?id=46822519), and OpenAI published a [similar skill-eval guide](https://developers.openai.com/blog/eval-skills) around the same time. Skill testing is settling in as an ecosystem-wide concern rather than a single vendor's topic.
 
 ## Skill validation built into agent frameworks
 
@@ -128,7 +128,7 @@ Two operational commands connect directly to this post's ablation and retirement
 - `hermes skills audit`: re-scans every installed hub skill for security. When the scanner improves, skills you installed months ago get caught too.
 - `hermes skills check`: checks installed hub skills for upstream updates, comparing the stored source identifier and content hash to detect drift.
 
-Schmid asks you to keep re-testing whether a skill still earns its tokens. This side asks whether a skill is still the one you validated. Two different questions from the same refusal to ship a skill once and forget it.
+Schmid asks you to keep re-testing whether a skill still earns its tokens. This side asks whether a skill is still the one you validated. Both questions call for checking skills after deployment.
 
 Policy also varies by origin. There are four trust levels: builtin, which ships with Hermes; official, from `optional-skills/` in the repo; trusted, covering sources like openai/skills, anthropics/skills, huggingface/skills, and NVIDIA/skills; and community, covering skills.sh and arbitrary GitHub repos. For community skills, non-dangerous findings can be waived with `--force`, but dangerous verdicts stay blocked. NVIDIA/skills, on the trusted list, ships a signed `skill.oms.sig` alongside a governance `skill-card.md`, which is a concrete look at what signing and governance metadata for a skill actually looks like.
 
@@ -138,7 +138,7 @@ The approval gate is `skills.write_approval`. Turn it on and every agent skill w
 
 Search for Hermes and the name OpenClaw comes up alongside it. OpenClaw is the earlier name in the same lineage: the repo README has a "Migrating from OpenClaw" section, and the `hermes setup` wizard detects a `~/.openclaw` directory and offers to migrate. The `hermes claw migrate` command moves settings, memories, skills, and the command allowlist across. Whether OpenClaw had a skill eval system of its own is not something public sources confirm. Everything described above comes from the current Hermes docs.
 
-One caveat is worth stating. This system does not replace Schmid's evals. The security scanner asks whether a skill does harm; drift checks ask whether it changed. Whether a skill actually makes the agent work better is still something only test cases and ablations tell you. The realistic reading is that when a framework covers the safety axis, whoever writes the skill has more room to work on the efficacy axis.
+This system does not replace Schmid's evals. The security scanner asks whether a skill does harm; drift checks ask whether it changed. Whether a skill actually makes the agent work better is still something only test cases and ablations tell you. The realistic reading is that when a framework covers the safety axis, whoever writes the skill has more room to work on the efficacy axis.
 
 ## Open source you can use today
 

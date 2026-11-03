@@ -3,7 +3,7 @@ title: "Eval 없는 Agent Skill은 배포하지 마라: Philipp Schmid의 스킬
 meta_title: "Agent Skills Eval 방법론과 SkillsBench 정리"
 description: "Google DeepMind Philipp Schmid의 스킬 eval 방법론을 정리하고, SkillsBench 논문 수치와 skill-eval-harness 등 관련 오픈소스를 함께 살펴봅니다."
 date: 2026-07-18T01:00:00+09:00
-lastmod: 2026-08-05T00:00:00+09:00
+lastmod: 2026-11-03T07:04:06+00:00
 image: "/images/posts/agent-skills-evals-skillsbench/eval-harness-flow-1200.png"
 categories: ["AI"]
 tags: ["agent-skills", "evals", "coding-agent", "llm-agents", "hermes-agent"]
@@ -12,13 +12,13 @@ translationKey: "agent-skills-evals-skillsbench"
 draft: false
 ---
 
-Claude Code, Gemini CLI, Codex 같은 코딩 에이전트를 쓰다 보면 자연스럽게 스킬(Agent Skill)을 만들게 된다. 사내 코딩 컨벤션, 특정 SDK 사용법, 배포 절차 같은 지식을 Markdown 파일로 정리해 에이전트에게 물려주는 방식이다. 문제는 거의 아무도 이 스킬을 테스트하지 않는다는 점이다. 코드는 테스트 없이 배포하지 않으면서, 에이전트의 행동을 바꾸는 스킬은 몇 번 돌려 보고 "괜찮네" 수준의 감으로 배포한다.
+Claude Code, Gemini CLI, Codex 같은 코딩 에이전트를 쓰다 보면 자연스럽게 스킬(Agent Skill)을 만들게 된다. 사내 코딩 컨벤션, 특정 SDK 사용법, 배포 절차 같은 지식을 Markdown 파일로 정리해 에이전트에게 물려주는 방식이다. 하지만 거의 아무도 이 스킬을 테스트하지 않는다. 코드는 테스트 없이 배포하지 않으면서 에이전트의 행동을 바꾸는 스킬은 몇 번 돌려 보고 "괜찮네" 수준의 감으로 배포한다.
 
-Google DeepMind의 Philipp Schmid가 AI Engineer 강연 [Don't Ship Skills Without Evals](https://www.youtube.com/watch?v=0vphxNt4wyk)와 블로그 글 [Practical Guide to Evaluating and Testing Agent Skills](https://www.philschmid.de/testing-skills)에서 이 문제를 정면으로 다뤘다. 이 글은 강연과 원문 가이드의 방법론을 정리하고, 근거로 인용된 SkillsBench 논문, 그리고 실제로 가져다 쓸 수 있는 오픈소스 eval 도구들을 함께 살펴본다.
+Google DeepMind의 Philipp Schmid가 AI Engineer 강연 [Don't Ship Skills Without Evals](https://www.youtube.com/watch?v=0vphxNt4wyk)와 블로그 글 [Practical Guide to Evaluating and Testing Agent Skills](https://www.philschmid.de/testing-skills)에서 이 문제를 정면으로 다뤘다. 이 글은 강연과 원문 가이드의 방법론을 정리하고 근거로 인용된 SkillsBench 논문, 그리고 실제로 가져다 쓸 수 있는 오픈소스 eval 도구들을 함께 살펴본다.
 
 ## Agent Skill의 구조
 
-Agent Skill은 모델을 재훈련하거나 fine-tuning하지 않고 에이전트의 능력을 확장하는 "지시문, 스크립트, 리소스 폴더"다. [Anthropic의 Agent Skills 규격](https://agentskills.io/)이 사실상의 표준이 됐고, Claude Code와 Gemini CLI 등 여러 하네스가 같은 구조를 읽는다.
+Agent Skill은 모델을 재훈련하거나 fine-tuning하지 않고 에이전트의 능력을 확장하는 "지시문, 스크립트, 리소스 폴더"다. [Anthropic의 Agent Skills 규격](https://agentskills.io/)이 사실상의 표준이 됐고 Claude Code와 Gemini CLI 등 여러 하네스가 같은 구조를 읽는다.
 
 최소 단위는 `SKILL.md` 파일 하나이며 세 부분으로 구성된다.
 
@@ -26,15 +26,15 @@ Agent Skill은 모델을 재훈련하거나 fine-tuning하지 않고 에이전�
 - **body**: API 사용법, 패턴, 함정 같은 실제 지시문.
 - **resources(선택)**: `scripts/`, `examples/`, `references/` 폴더. 에이전트가 필요할 때만 읽는다.
 
-이 구조가 progressive disclosure 패턴이다. 에이전트는 평소에 description만 보고 있다가, 관련 작업이 오면 body를 읽고, 세부가 필요하면 참조 파일까지 내려간다. 컨텍스트 토큰을 아끼면서 깊은 지식을 담는 방식이다.
+이 구조가 progressive disclosure 패턴이다. 에이전트는 평소에 description만 보고 있다가 관련 작업이 오면 body를 읽고 세부가 필요하면 참조 파일까지 내려간다. 컨텍스트 토큰을 아끼면서 깊은 지식을 담는 방식이다.
 
 ## 스킬에 eval이 필요한 이유
 
 에이전트는 비결정적이다. 같은 프롬프트를 넣어도 실행마다 다른 경로로 문제를 푼다. 스킬을 붙인 에이전트가 작업에 실패했을 때, 모델 한계인지 스킬 설계 결함인지 스킬이 아예 트리거되지 않은 것인지 구분하려면 반복 실행과 측정이 필요하다.
 
-현실은 반대다. 커뮤니티 조사에 따르면 6,300여 개 저장소에서 47,000개가 넘는 스킬이 발견됐지만, eval을 갖춘 사례는 거의 없었고 상당수는 AI가 생성한 것이었다. Schmid의 표현을 빌리면 "테스트 없이 코드를 배포하지 않으면서, 왜 스킬은 eval 없이 배포하는가"이다.
+현실은 반대다. 커뮤니티 조사에 따르면 6,300여 개 저장소에서 47,000개가 넘는 스킬이 발견됐지만 eval을 갖춘 사례는 거의 없었고 상당수는 AI가 생성한 것이었다. Schmid의 표현을 빌리면 "테스트 없이 코드를 배포하지 않으면서, 왜 스킬은 eval 없이 배포하는가"이다.
 
-Schmid는 실패의 절반가량이 스킬 내용이 아니라 **호출 단계**에서 발생한다고 지적한다. description이 모호하면 에이전트가 스킬을 아예 안 읽거나, 반대로 무관한 작업에서 잘못 트리거된다. 이건 스킬 body를 아무리 다듬어도 고쳐지지 않고, 테스트를 돌려야만 보인다.
+Schmid는 실패의 절반가량이 스킬 내용이 아니라 **호출 단계**에서 발생한다고 지적한다. description이 모호하면 에이전트가 스킬을 아예 안 읽거나 반대로 무관한 작업에서 잘못 트리거된다. 이건 스킬 body를 아무리 다듬어도 고쳐지지 않고 테스트를 돌려야만 보인다.
 
 ## Capability 스킬과 Preference 스킬
 
@@ -42,9 +42,9 @@ Schmid는 스킬을 두 종류로 나눈다. 이 구분이 중요한 이유는 �
 
 **Capability 스킬**은 현재 모델이 일관되게 못 하는 작업을 보완한다. 최신 SDK 문법, 새 API 사용법, 모델 지식 컷오프 이후에 나온 도구가 여기 해당한다. 이 스킬은 애초에 한시적이다. 모델이 업데이트되어 그 지식을 흡수하면 스킬은 토큰 낭비이자 잠재적 혼란 요인이 된다.
 
-**Preference 스킬**은 조직 고유의 스타일, 워크플로우, 컨벤션을 담는다. 모델이 아무리 똑똑해져도 우리 팀의 커밋 메시지 규칙이나 배포 절차를 알 수는 없으므로, 이 스킬은 계속 보호하고 관리할 자산이다.
+**Preference 스킬**은 조직 고유의 스타일, 워크플로우, 컨벤션을 담는다. 모델이 아무리 똑똑해져도 우리 팀의 커밋 메시지 규칙이나 배포 절차를 알 수는 없으므로 이 스킬은 계속 보호하고 관리할 자산이다.
 
-은퇴 기준은 명확하다. **스킬을 끈 상태로 eval을 돌렸는데도 통과하면, 모델이 그 스킬의 가치를 이미 흡수한 것이므로 은퇴시킨다.** eval이 없으면 이 판단 자체가 불가능하다. eval을 유지하는 진짜 이유는 스킬을 지키기 위해서가 아니라, 모델의 진화에 맞춰 스킬을 과감하게 버리거나 고치기 위해서다.
+은퇴 기준은 명확하다. **스킬을 끈 상태로 eval을 돌렸는데도 통과하면, 모델이 그 스킬의 가치를 이미 흡수한 것이므로 은퇴시킨다.** eval이 없으면 이 판단 자체가 불가능하다. eval은 스킬을 지키는 데 그치지 않고 모델의 진화에 맞춰 스킬을 과감하게 버리거나 고치는 데 필요하다.
 
 ## 좋은 스킬을 작성하는 원칙
 
@@ -61,7 +61,7 @@ Schmid는 스킬을 두 종류로 나눈다. 이 구분이 중요한 이유는 �
 
 ## Eval 하네스는 이렇게 단순해도 된다
 
-Schmid의 핵심 메시지는 스킬 eval이 거창한 인프라를 요구하지 않는다는 것이다. 원문 가이드의 하네스는 Python 스크립트 하나 수준이다.
+Schmid는 스킬 eval에 거창한 인프라가 필요하지 않다고 강조한다. 원문 가이드의 하네스는 Python 스크립트 하나 수준이다.
 
 ![테스트 케이스를 에이전트 CLI로 실행하고 regex 검사와 LLM judge로 검증한 뒤 ablation 리포트로 모으는 흐름도](/images/posts/agent-skills-evals-skillsbench/eval-harness-flow.svg)
 
@@ -86,9 +86,9 @@ Schmid의 핵심 메시지는 스킬 eval이 거창한 인프라를 요구하지
 
 **5) Ablation.** 같은 테스트를 스킬 on/off 두 조건으로 돌려 통과율 차이를 잰다. 이 차이가 스킬의 기여도이고, 차이가 사라지면 은퇴 시점이다.
 
-여기서 중요한 원칙 하나가 "경로가 아니라 결과를 평가하라"이다. 에이전트는 창의적인 방식으로 문제를 풀기 때문에, 특정 순서로 도구를 쓰는지 검사하면 멀쩡한 해법을 실패로 판정하게 된다.
+여기서 중요한 원칙 하나가 "경로가 아니라 결과를 평가하라"이다. 에이전트는 창의적인 방식으로 문제를 풀기 때문에 특정 순서로 도구를 쓰는지 검사하면 멀쩡한 해법을 실패로 판정하게 된다.
 
-이 방법의 실효성은 가이드의 사례 연구가 보여준다. Gemini Interactions API 스킬을 17개 케이스(Python 12, TypeScript 5)로 테스트했더니 초기 통과율이 66.7%였는데, description을 API 용어에서 사용자 의도 중심으로 다시 쓰고 권고문을 지시문으로 바꾸는 두 가지 수정만으로 100%에 도달했다. 실패 대부분이 스킬 내용이 아니라 트리거 문제였다는 뜻이다.
+가이드의 사례 연구는 이 방법의 실효성을 뒷받침한다. Gemini Interactions API 스킬을 17개 케이스(Python 12, TypeScript 5)로 테스트했더니 초기 통과율이 66.7%였는데 description을 API 용어에서 사용자 의도 중심으로 다시 쓰고 권고문을 지시문으로 바꾸는 두 가지 수정만으로 100%에 도달했다. 실패 대부분이 스킬 내용이 아니라 트리거 문제였다는 뜻이다.
 
 ## SkillsBench: 스킬 효과를 체계적으로 잰 벤치마크
 
@@ -99,10 +99,10 @@ Schmid의 핵심 메시지는 스킬 eval이 거창한 인프라를 요구하지
 논문의 핵심 수치는 다음과 같다.
 
 - 8개 도메인 87개 태스크에서, 사람이 다듬은(curated) 스킬은 평균 통과율을 33.9%에서 50.5%로 올렸다(+16.6%p).
-- 효과는 구성에 따라 +4.1~+25.7%p로 편차가 크고, 도메인별로는 Software Engineering +4.5%p부터 Healthcare +51.9%p까지 벌어진다. 모델이 사전학습에서 약한 도메인일수록 스킬 효과가 커진다는 해석이 자연스럽다.
+- 효과는 구성에 따라 +4.1~+25.7%p로 편차가 크고 도메인별로는 Software Engineering +4.5%p부터 Healthcare +51.9%p까지 벌어진다. 모델이 사전학습에서 약한 도메인일수록 스킬 효과가 커진다는 해석이 자연스럽다.
 - 일부 태스크에서는 스킬이 오히려 성능을 떨어뜨렸다(negative delta). 스킬이 항상 공짜 이득이 아니라는 뜻이다.
 
-특히 눈에 띄는 결과는 에이전트가 스스로 생성한 스킬(self-generated skills)이 거의 효과가 없거나 오히려 해로웠다는 점이다. 사람이 실패를 관찰하고 피드백으로 다듬은 스킬과, 모델이 자기 지식만으로 뽑아낸 스킬의 격차가 컸다. Schmid의 "eval 돌리고 description을 고쳐라"라는 실무 조언과 정확히 같은 방향의 근거다.
+에이전트가 스스로 생성한 스킬(self-generated skills)은 거의 효과가 없거나 오히려 해로웠다. 사람이 실패를 관찰하고 피드백으로 다듬은 스킬과 모델이 자기 지식만으로 뽑아낸 스킬의 격차가 컸다. Schmid의 "eval 돌리고 description을 고쳐라"라는 실무 조언과 같은 방향의 근거다.
 
 ## 커뮤니티 반응
 
@@ -113,7 +113,7 @@ SkillsBench는 [Hacker News에서 364포인트, 댓글 171개](https://news.ycom
 - Healthcare +51.9%p와 Software Engineering +4.5%p의 격차를 두고, 모델이 약한 도메인일수록 스킬이 잘 듣는다는 해석이 힘을 얻었다.
 - 논문 저자도 스레드에 참여해 피드백 기반 스킬과 자동 생성 스킬의 차이를 재확인했다.
 
-Schmid의 원문 가이드 자체도 [별도 HN 스레드](https://news.ycombinator.com/item?id=46822519)에서 논의됐고, OpenAI 역시 같은 시기에 [유사한 스킬 eval 가이드](https://developers.openai.com/blog/eval-skills)를 냈다. 스킬 테스트가 특정 벤더가 아니라 에이전트 생태계 공통의 관심사로 자리 잡는 흐름이다.
+Schmid의 원문 가이드도 [별도 HN 스레드](https://news.ycombinator.com/item?id=46822519)에서 논의됐고 OpenAI 역시 같은 시기에 [유사한 스킬 eval 가이드](https://developers.openai.com/blog/eval-skills)를 냈다. 스킬 테스트가 특정 벤더가 아니라 에이전트 생태계 공통의 관심사로 자리 잡는 흐름이다.
 
 ## 에이전트 프레임워크에 내장된 스킬 검증
 
@@ -128,17 +128,17 @@ Nous Research가 만든 [Hermes Agent](https://github.com/NousResearch/hermes-ag
 - `hermes skills audit`: 설치된 hub 스킬 전체를 보안 관점에서 재스캔한다. scanner가 개선되면 이미 설치돼 있던 스킬도 다시 걸러진다.
 - `hermes skills check`: 설치된 hub 스킬에 upstream 변경이 있는지 확인한다. 저장해 둔 source identifier와 content hash를 비교해 drift를 잡아낸다.
 
-Schmid가 ablation으로 "이 스킬이 아직 값을 하는가"를 계속 되묻자고 했다면, 이쪽은 "이 스킬이 아직 내가 검증한 그 스킬인가"를 되묻는 장치다. 스킬을 한 번 배포하고 잊지 않겠다는 같은 태도에서 나온 서로 다른 질문이다.
+Schmid가 ablation으로 "이 스킬이 아직 값을 하는가"를 계속 되묻자고 했다면 이쪽은 "이 스킬이 아직 내가 검증한 그 스킬인가"를 되묻는 장치다. 스킬을 한 번 배포하고 잊지 않겠다는 같은 태도에서 나온 서로 다른 질문이다.
 
 출처에 따라 정책도 갈린다. trust level은 네 단계다. Hermes에 기본 포함된 builtin, 저장소의 `optional-skills/`에서 오는 official, openai/skills·anthropics/skills·huggingface/skills·NVIDIA/skills 같은 trusted, 그리고 skills.sh나 임의 GitHub 저장소에서 오는 community. community 스킬은 위험하지 않은 findings라면 `--force`로 넘길 수 있지만 dangerous 판정은 넘기지 못한다. trusted 목록의 NVIDIA/skills는 서명된 `skill.oms.sig`와 governance용 `skill-card.md`를 함께 배포한다. 스킬에 서명과 governance 카드를 붙인다는 게 실제로 어떤 모습인지 보여주는 예다.
 
-에이전트가 스스로 만든 스킬은 따로 다룬다. SkillsBench에서 self-generated 스킬이 거의 효과가 없거나 오히려 해로웠다는 결과를 떠올리면 이 구분에 근거가 있다. [Hermes 설정 문서](https://hermes-agent.nousresearch.com/docs/user-guide/configuration)의 `skills.guard_agent_created`는 에이전트가 만들거나 수정한 스킬을 dangerous keyword pattern으로 스캔한다. credential harvesting, 노골적인 prompt injection, exfil 지시문 같은 것을 찾는다. 기본값은 off인데, 정상적인 워크플로우 문서도 `~/.ssh/` 경로나 API 키 환경변수를 자주 언급해 false positive가 많다는 이유다. 이건 content scanner이지 approval gate가 아니다.
+에이전트가 스스로 만든 스킬은 따로 다룬다. SkillsBench에서 self-generated 스킬이 거의 효과가 없거나 오히려 해로웠다는 결과를 떠올리면 이 구분에 근거가 있다. [Hermes 설정 문서](https://hermes-agent.nousresearch.com/docs/user-guide/configuration)의 `skills.guard_agent_created`는 에이전트가 만들거나 수정한 스킬을 dangerous keyword pattern으로 스캔한다. credential harvesting, 노골적인 prompt injection, exfil 지시문 같은 것을 찾는다. 기본값은 off인데 정상적인 워크플로우 문서도 `~/.ssh/` 경로나 API 키 환경변수를 자주 언급해 false positive가 많다는 이유다. 이건 content scanner이지 approval gate가 아니다.
 
-승인 게이트는 `skills.write_approval`이 맡는다. 켜면 에이전트의 모든 스킬 쓰기(생성, 편집, patch, 삭제, 보조 파일)가 pending 디렉토리에 staging된다. `/skills pending`으로 목록을 보고 `/skills diff <id>`로 변경 내용을 확인한 다음 approve나 reject를 결정하는 흐름이다. 세션 중에는 `/skills approval on|off`로 토글할 수 있다. 기본값은 off. 사람이 리뷰 없이 머지하지 않듯, 에이전트가 자기 지시문을 고칠 때 리뷰 단계를 끼워 넣는 구조다.
+승인 게이트는 `skills.write_approval`이 맡는다. 켜면 에이전트의 모든 스킬 쓰기(생성, 편집, patch, 삭제, 보조 파일)가 pending 디렉토리에 staging된다. `/skills pending`으로 목록을 보고 `/skills diff <id>`로 변경 내용을 확인한 다음 approve나 reject를 결정하는 흐름이다. 세션 중에는 `/skills approval on|off`로 토글할 수 있다. 기본값은 off. 사람이 리뷰 없이 머지하지 않듯 에이전트가 자기 지시문을 고칠 때 리뷰 단계를 끼워 넣는 구조다.
 
 Hermes를 찾아보면 OpenClaw라는 이름도 같이 나온다. Hermes의 이전 이름에 해당하는 계보로, 저장소 README에 "Migrating from OpenClaw" 섹션이 있고 `hermes setup` 위저드가 `~/.openclaw` 디렉토리를 자동으로 감지해 마이그레이션을 제안한다. `hermes claw migrate` 명령으로 설정, 메모리, 스킬, 명령 allowlist를 옮긴다. OpenClaw 쪽에 독자적인 스킬 eval 시스템이 있었는지는 공개 소스로 확인되지 않았다. 여기서 정리한 검증 기능은 모두 현재 Hermes 문서에 있는 내용이다.
 
-한 가지는 짚어 둘 필요가 있다. 이 시스템은 Schmid의 eval을 대체하지 않는다. security scanner는 스킬이 해를 끼치지 않는지 보고, drift 검사는 스킬이 바뀌었는지 본다. 스킬이 에이전트를 실제로 더 잘 일하게 만드는지는 여전히 테스트 케이스와 ablation으로만 알 수 있다. 프레임워크가 안전 축을 맡아 주면 스킬을 만드는 사람이 효과 축에 집중할 여유가 생긴다는 정도가 현실적인 정리다.
+이 시스템은 Schmid의 eval을 대체하지 않는다. security scanner는 스킬이 해를 끼치지 않는지 보고 drift 검사는 스킬이 바뀌었는지 본다. 스킬이 에이전트를 실제로 더 잘 일하게 만드는지는 여전히 테스트 케이스와 ablation으로만 알 수 있다. 프레임워크가 안전 축을 맡아 주면 스킬을 만드는 사람이 효과 축에 집중할 여유가 생긴다는 정도가 현실적인 정리다.
 
 ## 바로 가져다 쓸 수 있는 오픈소스
 
@@ -160,9 +160,9 @@ Hermes를 찾아보면 OpenClaw라는 이름도 같이 나온다. Hermes의 이�
 
 ## 정리
 
-스킬은 에이전트 시대의 새로운 배포 단위가 되고 있지만, 테스트 문화는 아직 코드의 10년 전 수준이다. Schmid의 방법론에서 기억할 것은 세 가지다. 첫째, 스킬 실패의 절반은 내용이 아니라 description(트리거) 문제이므로 거기서부터 고친다. 둘째, eval은 JSON 케이스 10~20개와 regex 검사면 시작할 수 있고, 완벽한 프레임워크를 기다릴 이유가 없다. 셋째, ablation으로 스킬의 기여도를 계속 재고, 모델이 따라잡으면 미련 없이 은퇴시킨다.
+스킬은 에이전트 시대의 새로운 배포 단위가 되고 있지만 테스트 문화는 아직 코드의 10년 전 수준이다. Schmid의 방법론에서 기억할 것은 세 가지다. 첫째, 스킬 실패의 절반은 내용이 아니라 description(트리거) 문제이므로 거기서부터 고친다. 둘째, eval은 JSON 케이스 10~20개와 regex 검사면 시작할 수 있고 완벽한 프레임워크를 기다릴 이유가 없다. 셋째, ablation으로 스킬의 기여도를 계속 재고 모델이 따라잡으면 미련 없이 은퇴시킨다.
 
-SkillsBench 수치는 이 조언에 정량적 근거를 더한다. 잘 다듬은 스킬은 평균 16%p 이상의 통과율 개선을 만들지만, 대충 만든 스킬은 효과가 없거나 해롭다. 여기에 Hermes 같은 프레임워크가 security scanner와 drift 검사를 기본으로 깔아 주는 흐름이 겹치면, 스킬 배포에도 코드 배포와 비슷한 게이트가 생긴다. 지금 가장 많이 쓰는 스킬 하나를 골라 테스트 케이스 5개부터 작성해 보는 것이 시작점이다.
+SkillsBench 수치는 이 조언에 정량적 근거를 더한다. 잘 다듬은 스킬은 평균 16%p 이상의 통과율 개선을 만들지만 대충 만든 스킬은 효과가 없거나 해롭다. 여기에 Hermes 같은 프레임워크가 security scanner와 drift 검사를 기본으로 깔아 주는 흐름이 겹치면, 스킬 배포에도 코드 배포와 비슷한 게이트가 생긴다. 지금 가장 많이 쓰는 스킬 하나를 골라 테스트 케이스 5개부터 작성해 보는 것이 시작점이다.
 
 ## 참고 자료
 

@@ -3,7 +3,7 @@ title: "Lighter: A ZK-SNARK Orderbook DEX on Ethereum"
 meta_title: ""
 description: "Lighter is an application-specific zk-rollup on Ethereum that uses SNARK-based execution proofs to deliver a CEX-style orderbook experience without custodial risk. This post covers its architecture, MEV reduction approach, and how it compares to Hyperliquid."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:44:20+00:00
 image: "/images/posts/lighter-zk-orderbook-dex/lighter-zk-rollup-flow.png"
 categories: ["Blockchain"]
 tags: ["zk-rollup", "orderbook", "dex", "mev", "ethereum", "snark"]
@@ -32,7 +32,7 @@ Hyperliquid runs its own L1 with HyperBFT consensus. Every order, cancel, trade,
 
 Lighter stays on Ethereum. A sequencer provides fast execution and soft finality. A prover generates SNARK proofs for exchange operations. Ethereum smart contracts hold deposited assets, verify proofs, and store canonical state roots. Users can force-include transactions via Ethereum directly, and if the sequencer fails to process them within a deadline, an Escape Hatch activates.
 
-Different trust models. Lighter's bet is that Ethereum settlement and verifiable proofs provide stronger exit guarantees than a separate L1 consensus.
+The two designs use different trust models. Lighter's bet is that Ethereum settlement and verifiable proofs provide stronger exit guarantees than a separate L1 consensus.
 
 ## Core Components
 
@@ -44,7 +44,7 @@ The sequencer is the low-latency execution engine. It processes user transaction
 
 The prover takes the sequencer's execution feed, the previous state, and the current transaction batch as inputs. It then generates correctness proofs for order matching, risk checks, account updates, and liquidations.
 
-One thing worth clarifying: Lighter's use of zk-SNARKs focuses on **execution correctness**, not zero-knowledge privacy. The proofs attest that state transitions were computed according to published rules, efficiently enough to verify on Ethereum. The [Lighter whitepaper](https://assets.lighter.xyz/whitepaper.pdf) is explicit about this framing.
+Lighter's use of zk-SNARKs focuses on **execution correctness**, not zero-knowledge privacy. The proofs attest that state transitions were computed according to published rules, efficiently enough to verify on Ethereum. The [Lighter whitepaper](https://assets.lighter.xyz/whitepaper.pdf) is explicit about this framing.
 
 ### Order Book Tree
 
@@ -64,7 +64,7 @@ Users can submit priority transactions directly through the Ethereum smart contr
 
 The SNARK proves that a state transition was computed correctly according to published matching rules. It does not prove the actual network arrival order of transactions, or that the sequencer observed them in any particular sequence. The FIFO policy is documented, but verifying actual order arrival fairness requires separate mechanisms.
 
-So the accurate claim is: Lighter's architecture **structurally limits operator manipulation of matching, priority changes, and certain MEV incentives**. "Substantially reduces MEV risk" is correct. "Front-running is impossible" is not.
+Lighter's architecture **structurally limits operator manipulation of matching, priority changes, and certain MEV incentives**. "Substantially reduces MEV risk" is correct. "Front-running is impossible" is not.
 
 ## Performance Numbers
 

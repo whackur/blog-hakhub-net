@@ -3,7 +3,7 @@ title: "Glamsterdam's New Gas Model: EIP-8037 State Gas, EIP-8038 Access Costs, 
 meta_title: ""
 description: "How three Glamsterdam proposals change Solidity storage writes, deletion, fixed-gas calls and gasleft()-based failure checks. Execution and state budgets, final charges and network status after the Hoodi postponement."
 date: 2026-10-15T01:19:45+09:00
-lastmod: 2026-11-02T00:32:07Z
+lastmod: 2026-11-03T07:32:03Z
 image: "/images/posts/glamsterdam-gas-model/glamsterdam-resource-costs-20261015.webp"
 categories: ["Blockchain"]
 tags: ["ethereum", "glamsterdam", "gas", "evm", "eip-8037", "eip-8038", "eip-2780"]

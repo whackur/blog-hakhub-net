@@ -3,7 +3,7 @@ title: "Chainlink CCIP EVM 컨트랙트 구조 분석"
 meta_title: ""
 description: "Chainlink CCIP의 Router, OnRamp, OffRamp, TokenPool, FeeQuoter, RMN이 어떻게 맞물려 체인 간 메시지와 토큰을 이동시키는지 소스 코드 기준으로 정리합니다."
 date: 2026-06-30T17:30:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:17:58+00:00
 image: "/images/posts/chainlink-ccip-evm-contracts/ccip-cross-chain-architecture.png"
 categories: ["Blockchain"]
 tags: ["chainlink", "ccip", "cross-chain", "solidity", "smart-contract"]
@@ -12,19 +12,19 @@ translationKey: "chainlink-ccip-evm-contracts"
 draft: false
 ---
 
-Ethereum Mainnet에서 Arbitrum으로 USDC를 보내거나, Polygon 컨트랙트가 Base 컨트랙트를 트리거하는 작업은 EVM 자체로는 불가능합니다. 체인은 기본적으로 서로 격리되어 있습니다. 크로스체인 브릿지가 이 공백을 메워 왔지만, 브릿지는 구조적으로 공격 표면이 넓어 업계 전반에서 보안 사고가 반복됐습니다.
+Ethereum Mainnet에서 Arbitrum으로 USDC를 보내거나 Polygon 컨트랙트가 Base 컨트랙트를 트리거하는 작업은 EVM 자체로는 불가능합니다. 체인은 기본적으로 서로 격리되어 있습니다. 크로스체인 브릿지가 이 공백을 메워 왔지만 브릿지는 구조적으로 공격 표면이 넓어 업계 전반에서 보안 사고가 반복됐습니다.
 
-Chainlink CCIP(Cross-Chain Interoperability Protocol)는 이 문제에 Chainlink의 DON(탈중앙화 오라클 네트워크)과 별도 위험 관리 네트워크(RMN)를 적용한 프로토콜입니다. 단순 토큰 전송뿐 아니라 임의 데이터를 함께 보낼 수 있고, 하나의 트랜잭션에서 토큰 이동과 컨트랙트 호출을 묶는 것도 가능합니다. 이 글은 CCIP EVM 컨트랙트의 각 구성 요소가 어떤 역할을 하는지, 그리고 그것들이 어떻게 맞물려 동작하는지를 소스 코드 기준으로 설명합니다.
+Chainlink CCIP(Cross-Chain Interoperability Protocol)는 이 문제에 Chainlink의 DON(탈중앙화 오라클 네트워크)과 별도 위험 관리 네트워크(RMN)를 적용한 프로토콜입니다. 단순 토큰 전송뿐 아니라 임의 데이터를 함께 보낼 수 있고 하나의 트랜잭션에서 토큰 이동과 컨트랙트 호출을 묶는 것도 가능합니다. CCIP EVM 컨트랙트의 소스 코드를 따라가면 각 구성 요소의 역할과 서로 맞물려 동작하는 방식을 확인할 수 있습니다.
 
 ## 전체 구조 개요
 
 ![소스 체인의 Sender·Router·OnRamp에서 CCIP Network와 RMN을 거쳐 목적지 체인의 OffRamp·Router·CCIPReceiver로 이어지고 TokenPool과 FeeQuoter가 지원하는 CCIP 구조](/images/posts/chainlink-ccip-evm-contracts/ccip-cross-chain-architecture.png)
 
-메시지는 소스 체인의 Router와 OnRamp를 지나 CCIP 네트워크를 건너고, 목적지 체인의 OffRamp와 Router를 거쳐 CCIPReceiver에 도달한다.
+메시지는 소스 체인의 Router와 OnRamp를 지나 CCIP 네트워크를 건너고, 목적지 체인의 OffRamp와 Router를 거쳐 CCIPReceiver에 도달합니다.
 
 CCIP 컨트랙트는 크게 두 레이어로 나뉩니다. 사용자(또는 dApp)가 직접 접하는 **인터페이스 레이어**와 DON이 조율하는 **파이프라인 레이어**입니다.
 
-사용자는 소스 체인의 Router 컨트랙트에만 접근합니다. Router가 OnRamp로 전달하면, DON과 오프체인 실행자가 `CCIPMessageSent` 이벤트를 관찰하고 대상 체인 OffRamp의 `execute(encodedMessage, ccvs, verifierResults, gasLimitOverride)`를 호출해 실행 데이터를 제출합니다. OffRamp가 수신 컨트랙트의 `ccipReceive`를 호출하면서 사이클이 끝납니다.
+사용자는 소스 체인의 Router 컨트랙트에만 접근합니다. Router가 OnRamp로 전달하면 DON과 오프체인 실행자가 `CCIPMessageSent` 이벤트를 관찰하고 대상 체인 OffRamp의 `execute(encodedMessage, ccvs, verifierResults, gasLimitOverride)`를 호출해 실행 데이터를 제출합니다. OffRamp가 수신 컨트랙트의 `ccipReceive`를 호출하면서 사이클이 끝납니다.
 
 | 컨트랙트 | 배포 위치 | 역할 |
 |----------|-----------|------|
@@ -54,7 +54,7 @@ struct EVM2AnyMessage {
 
 `receiver`가 `address`가 아닌 `bytes`인 이유는 Solana 같은 비EVM 체인도 대상으로 지원하기 위해서입니다. EVM끼리 전송할 때는 `abi.encode(receiverAddress)`로 인코딩합니다.
 
-`extraArgs`에는 대상 체인에서 `ccipReceive`를 실행할 가스 한도와 순서 보장 여부를 담습니다. `Client.sol`에는 `EVMExtraArgsV1`(가스 한도만)과 범용 `GenericExtraArgsV2`가 정의되어 있고, v2 파이프라인 내부는 CCV·Executor 필드를 포함한 `GenericExtraArgsV3`를 사용합니다.
+`extraArgs`에는 대상 체인에서 `ccipReceive`를 실행할 가스 한도와 순서 보장 여부를 담습니다. `Client.sol`에는 `EVMExtraArgsV1`(가스 한도만)과 범용 `GenericExtraArgsV2`가 정의되어 있고 v2 파이프라인 내부는 CCV·Executor 필드를 포함한 `GenericExtraArgsV3`를 사용합니다.
 
 ```solidity
 // GenericExtraArgsV2 (태그: 0x181dcf10): 일반 EVM 전송 권장
@@ -110,13 +110,13 @@ interface IRouterClient {
 - `tokenAmounts`에 전송할 토큰이 있다면 해당 토큰도 Router에 승인해야 합니다.
 - `feeToken = address(0)`이면 `msg.value`로 수수료를 납부합니다.
 
-`getFee`는 view 함수라 트랜잭션 없이 예상 수수료를 조회할 수 있습니다. 다만 `getFee` 호출과 `ccipSend` 사이에 블록이 지나면 가격이 변할 수 있으므로, 통상 10% 정도 여유분을 더해 승인 금액이나 `msg.value`를 설정합니다.
+`getFee`는 view 함수라 트랜잭션 없이 예상 수수료를 조회할 수 있습니다. 다만 `getFee` 호출과 `ccipSend` 사이에 블록이 지나면 가격이 변할 수 있으므로 통상 10% 정도 여유분을 더해 승인 금액이나 `msg.value`를 설정합니다.
 
 내부적으로 Router는 `destinationChainSelector`에 해당하는 OnRamp를 찾아 `forwardFromRouter`를 호출합니다.
 
 ## OnRamp: 아웃바운드 파이프라인
 
-OnRamp는 소스 체인에서 메시지의 유효성을 검사하고, 토큰을 잠그거나 소각한 뒤, DON이 수신하는 이벤트를 발행합니다.
+OnRamp는 소스 체인에서 메시지의 유효성을 검사하고 토큰을 잠그거나 소각한 뒤 DON이 수신하는 이벤트를 발행합니다.
 
 `forwardFromRouter` 호출 시 OnRamp가 실행하는 단계입니다.
 
@@ -143,7 +143,7 @@ function execute(
 ) external;
 ```
 
-`execute`는 퍼미션리스 함수입니다. 누구나 호출할 수 있으며, DON의 Execute Plugin이 정상 흐름을 담당합니다.
+`execute`는 퍼미션리스 함수입니다. 누구나 호출할 수 있으며 DON의 Execute Plugin이 정상 흐름을 담당합니다.
 
 OffRamp 실행 흐름입니다.
 
@@ -172,9 +172,9 @@ function releaseOrMint(Pool.ReleaseOrMintInV1 calldata releaseOrMintIn)
     external returns (Pool.ReleaseOrMintOutV1 memory);
 ```
 
-**LockReleaseTokenPool**: 소스 체인에서 잠그고(lock), 대상 체인에서 해제(release)합니다. 토큰 총 공급량이 일정하게 유지됩니다. 다른 체인에 원래 배포되지 않은 토큰(WBTC 등)을 전송할 때 씁니다.
+**LockReleaseTokenPool**: 소스 체인에서 잠그고(lock) 대상 체인에서 해제(release)합니다. 토큰 총 공급량이 일정하게 유지됩니다. 다른 체인에 원래 배포되지 않은 토큰(WBTC 등)을 전송할 때 씁니다.
 
-**BurnMintTokenPool**: 소스 체인에서 소각(burn)하고, 대상 체인에서 발행(mint)합니다. 토큰이 여러 체인에 네이티브로 존재할 때 적합합니다. 발행 권한이 풀 컨트랙트에 있어야 합니다.
+**BurnMintTokenPool**: 소스 체인에서 소각(burn)하고 대상 체인에서 발행(mint)합니다. 토큰이 여러 체인에 네이티브로 존재할 때 적합합니다. 발행 권한이 풀 컨트랙트에 있어야 합니다.
 
 **BurnWithFromMintTokenPool**: 소각 방식이 다릅니다. 풀이 `transferFrom` + 소각 순서로 처리합니다. 토큰 컨트랙트에서 `approve` → `burnFrom` 패턴을 지원하지 않는 경우에 씁니다.
 
@@ -188,7 +188,7 @@ TokenPool은 체인별로 아웃바운드·인바운드 속도 제한을 각각 
 
 ## FeeQuoter: 수수료 산정 구조
 
-FeeQuoter는 v1.4까지 `PriceRegistry`라고 불리던 컨트랙트의 역할을 확장한 것입니다. 크로스체인 수수료를 산정하고, 체인 간 가격 데이터를 관리합니다.
+FeeQuoter는 v1.4까지 `PriceRegistry`라고 불리던 컨트랙트의 역할을 확장한 것입니다. 크로스체인 수수료를 산정하고 체인 간 가격 데이터를 관리합니다.
 
 전송 수수료는 세 부분으로 구성됩니다.
 
@@ -217,11 +217,11 @@ interface IRMNRemote {
 }
 ```
 
-`isCursed(bytes16 subject)`에서 `subject`는 소스 체인 셀렉터와 레인 식별자의 조합입니다. OffRamp는 실행 진입 시 저주 여부를 확인해, true이면 즉시 실행을 거부합니다.
+`isCursed(bytes16 subject)`에서 `subject`는 소스 체인 셀렉터와 레인 식별자의 조합입니다. OffRamp는 실행 진입 시 저주 여부를 확인해 true이면 즉시 실행을 거부합니다.
 
-`verify`는 OffRamp가 메시지 검증(`verifyMessage`) 과정에서 CCV를 통해 내부적으로 호출합니다. Router, OnRamp, OffRamp, TokenPool은 모두 `isCursed` 호출로 RMN 커스 상태를 직접 확인하며, 커스 상태이면 즉시 실행을 거부합니다. DON이 손상되더라도 RMN이 독립적으로 실행을 차단할 수 있다는 뜻입니다.
+`verify`는 OffRamp가 메시지 검증(`verifyMessage`) 과정에서 CCV를 통해 내부적으로 호출합니다. Router, OnRamp, OffRamp, TokenPool은 모두 `isCursed` 호출로 RMN 커스 상태를 직접 확인하며 커스 상태이면 즉시 실행을 거부합니다. DON이 손상되더라도 RMN이 독립적으로 실행을 차단할 수 있습니다.
 
-CCIP v2에서는 각 체인에 `RMNRemote`를 배포해 로컬에서 서명을 검증하고, 원격 `RMNHome`이 RMN 노드 집합 설정을 관리합니다.
+CCIP v2에서는 각 체인에 `RMNRemote`를 배포해 로컬에서 서명을 검증하고 원격 `RMNHome`이 RMN 노드 집합 설정을 관리합니다.
 
 ## CCIPReceiver: 수신 컨트랙트 구현 패턴
 
@@ -266,7 +266,7 @@ abstract contract CCIPReceiver is IAny2EVMMessageReceiver {
 
 `allowOutOfOrderExecution = true`로 설정하면 순서 검사를 건너뜁니다. 단순 토큰 전송이나 메시지 순서가 중요하지 않은 경우에 씁니다.
 
-순서가 중요한 워크플로우(상태 머신 전이, 순차 결제 등)는 기본값을 유지하고, 앞 메시지가 `FAILURE`일 때의 복구 경로를 명확히 설계해야 합니다.
+순서가 중요한 워크플로우(상태 머신 전이, 순차 결제 등)는 기본값을 유지하고 앞 메시지가 `FAILURE`일 때의 복구 경로를 명확히 설계해야 합니다.
 
 ## 통합 체크리스트
 
@@ -298,17 +298,17 @@ abstract contract CCIPReceiver is IAny2EVMMessageReceiver {
 
 ## 함께 보면 좋을 자료
 
-- [Chainlink CCIP 공식 문서](https://docs.chain.link/ccip) — 아키텍처 개요, API 레퍼런스, 지원 네트워크
-- [CCIP GitHub 소스 코드](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/ccip) — Router, OnRamp, OffRamp, TokenPool 구현체
-- [CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat) — 전송·수신 예제 코드
-- [CCIP Explorer](https://ccip.chain.link) — 크로스체인 메시지 추적 대시보드
-- [CCIP Best Practices](https://docs.chain.link/ccip/best-practices) — 공식 권장 패턴과 보안 주의사항
+- [Chainlink CCIP 공식 문서](https://docs.chain.link/ccip): 아키텍처 개요, API 레퍼런스, 지원 네트워크
+- [CCIP GitHub 소스 코드](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/ccip): Router, OnRamp, OffRamp, TokenPool 구현체
+- [CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat): 전송·수신 예제 코드
+- [CCIP Explorer](https://ccip.chain.link): 크로스체인 메시지 추적 대시보드
+- [CCIP Best Practices](https://docs.chain.link/ccip/best-practices): 공식 권장 패턴과 보안 주의사항
 
 ## 참고 자료
 
-- [Chainlink CCIP Architecture](https://docs.chain.link/ccip/architecture) — docs.chain.link, 조회일 2026-06-30
-- [Chainlink CCIP API Reference](https://docs.chain.link/ccip/api-reference) — docs.chain.link, 조회일 2026-06-30
-- [Chainlink CCIP Best Practices](https://docs.chain.link/ccip/best-practices) — docs.chain.link, 조회일 2026-06-30
-- [CCIP Supported Networks](https://docs.chain.link/ccip/supported-networks) — docs.chain.link, 조회일 2026-06-30
-- [CCIP Source Code (smartcontractkit/chainlink)](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/ccip) — github.com/smartcontractkit, 조회일 2026-06-30
-- [CCIP Starter Kit (Hardhat)](https://github.com/smartcontractkit/ccip-starter-kit-hardhat) — github.com/smartcontractkit, 조회일 2026-06-30
+- [Chainlink CCIP Architecture](https://docs.chain.link/ccip/architecture): docs.chain.link, 조회일 2026-06-30
+- [Chainlink CCIP API Reference](https://docs.chain.link/ccip/api-reference): docs.chain.link, 조회일 2026-06-30
+- [Chainlink CCIP Best Practices](https://docs.chain.link/ccip/best-practices): docs.chain.link, 조회일 2026-06-30
+- [CCIP Supported Networks](https://docs.chain.link/ccip/supported-networks): docs.chain.link, 조회일 2026-06-30
+- [CCIP Source Code (smartcontractkit/chainlink)](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/ccip): github.com/smartcontractkit, 조회일 2026-06-30
+- [CCIP Starter Kit (Hardhat)](https://github.com/smartcontractkit/ccip-starter-kit-hardhat): github.com/smartcontractkit, 조회일 2026-06-30

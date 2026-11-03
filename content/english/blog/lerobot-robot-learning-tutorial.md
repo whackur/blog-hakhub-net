@@ -3,7 +3,7 @@ title: "Robot Learning: A Tutorial (From Classical Robotics to Generalist Polici
 meta_title: "Robot Learning: A Tutorial (arXiv:2510.12403)"
 description: "Connect demonstration collection, ACT training, and physical evaluation with LeRobot, including control, imitation and reinforcement learning, VLAs, action chunks, data distributions, and safety conditions."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-10-16T01:03:42+09:00
+lastmod: 2026-11-03T07:45:53+00:00
 image: "/images/posts/lerobot-robot-learning-tutorial/robot-learning-editorial-20261016.webp"
 categories: ["AI"]
 tags: ["lerobot", "robot-learning", "imitation-learning", "diffusion-policy", "act", "vla", "smolvla", "physical-ai"]
@@ -14,7 +14,7 @@ draft: false
 
 A practical way to start robot learning is to teleoperate one task, train an imitation policy such as ACT, and evaluate it on the same hardware under controlled conditions. Classical control handles joints and motion; the learned policy selects actions from observations. A VLA adds language instructions and pretraining, but calibration, data collection, and physical evaluation remain necessary. LeRobot’s official documentation also recommends [ACT as a first policy](https://huggingface.co/docs/lerobot/en/act).
 
-[Robot Learning: A Tutorial](https://arxiv.org/abs/2510.12403v1), by Francesco Capuano, Caroline Pascal, Adil Zouitine, Thomas Wolf, and Michel Aractingi, connects these roles across classical robotics, reinforcement learning, imitation learning, and generalist policies. The verified paper version is v1, submitted on October 14, 2025. The practical workflow uses **official LeRobot documentation and source checked on October 16, 2026 (KST)**. The paper’s examples and today’s CLI should not be assumed to use the same version.
+[Robot Learning: A Tutorial](https://arxiv.org/abs/2510.12403v1), by Francesco Capuano, Caroline Pascal, Adil Zouitine, Thomas Wolf, and Michel Aractingi, connects these roles across classical robotics, reinforcement learning, imitation learning, and generalist policies. The paper version checked here is v1, submitted on October 14, 2025. The practical workflow uses **official LeRobot documentation and source checked on October 16, 2026 (KST)**. The paper’s examples and today’s CLI should not be assumed to use the same version.
 
 ## The roles of control, imitation, and reinforcement learning
 
@@ -150,7 +150,7 @@ lerobot-rollout \
   --task="Put the cube in the bin" --fps=30 --duration=10
 ```
 
-`--duration=10` puts a 10-second limit on the policy execution loop. The [configuration defaults](https://github.com/huggingface/lerobot/blob/297774fca4e3ad0aa34e7425fbf937111637e77b/src/lerobot/rollout/configs.py#L340) to `return_to_initial_position=True`, and [`base` teardown](https://github.com/huggingface/lerobot/blob/297774fca4e3ad0aa34e7425fbf937111637e77b/src/lerobot/rollout/strategies/base.py#L90) receives this setting, so shutdown may include additional motion back to the starting pose. This time limit is neither a physical emergency stop nor a guarantee that all motion ends exactly after 10 seconds.
+`--duration=10` puts a 10-second limit on the policy execution loop. The [configuration](https://github.com/huggingface/lerobot/blob/297774fca4e3ad0aa34e7425fbf937111637e77b/src/lerobot/rollout/configs.py#L340) sets `return_to_initial_position=True` by default, and [`base` teardown](https://github.com/huggingface/lerobot/blob/297774fca4e3ad0aa34e7425fbf937111637e77b/src/lerobot/rollout/strategies/base.py#L90) receives this setting, so shutdown may include additional motion back to the starting pose. This time limit is neither a physical emergency stop nor a guarantee that all motion ends exactly after 10 seconds.
 
 Start with soft objects and a workspace in which a person can stop execution immediately. Repeat the training starting conditions, then separately test predefined positions absent from the demonstrations. Record successes/attempts, human interventions, collisions or drops, starting positions, and the checkpoint. If failures repeat under the same conditions, checking occlusion, action representation, observation delay, and missing recovery demonstrations is more useful than simply increasing training steps.
 

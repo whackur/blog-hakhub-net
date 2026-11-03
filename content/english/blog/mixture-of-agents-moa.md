@@ -3,7 +3,7 @@ title: "Mixture of Agents: How Layering Open-Source LLMs Beat GPT-4 Omni"
 meta_title: ""
 description: "MoA stacks multiple LLMs in layers, each refining the previous layer's outputs. Here's the architecture, benchmark results, variants, and the quality-versus-diversity tradeoff."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:46:39+00:00
 image: "/images/posts/mixture-of-agents-moa/layered-aggregation-flow.png"
 categories: ["AI"]
 tags: ["moa", "llm", "multi-agent", "ensemble", "ai-architecture"]
@@ -63,7 +63,7 @@ Several papers since the original have proposed changes to the architecture.
 
 ## Quality versus diversity
 
-One finding from follow-up research goes against the obvious expectation. Self-MoA, where you combine multiple sampled outputs from a single high-quality model, often outperforms a mix of diverse heterogeneous models. The study that proposed Self-MoA models performance as `t = αq + βd + γ` (q = response quality, d = diversity), and in practice α >> β: quality dominates diversity by a wide margin.
+One finding from follow-up research goes against the obvious expectation. Self-MoA, where you combine multiple sampled outputs from a single high-quality model, often outperforms a mix of heterogeneous models. The study that proposed Self-MoA models performance as `t = αq + βd + γ` (q = response quality, d = diversity), and in practice α >> β: quality dominates diversity by a wide margin.
 
 Diversity helps when individual agents' characteristics align with the task's heterogeneity. Mixing models without considering that fit often doesn't pay off.
 
