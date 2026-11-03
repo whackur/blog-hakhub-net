@@ -3,7 +3,7 @@ title: "Understanding Canton Network: Financial Privacy, Atomic Settlement, and 
 meta_title: "Canton Network Architecture and Adoption (October 2026)"
 description: "How Daml contracts, selective disclosure, the Global Synchronizer, and Canton Coin fit together, with a stage-by-stage assessment of DTCC, Tradeweb, MUFG, and other institutional announcements."
 date: 2026-10-15T09:00:00+09:00
-lastmod: 2026-10-15T09:00:00+09:00
+lastmod: 2026-11-03T08:24:30+00:00
 image: "/images/posts/canton-network-explained/cover.png"
 categories: ["Blockchain"]
 tags: ["canton", "daml", "tokenization", "institutional-finance", "privacy", "settlement"]
@@ -136,11 +136,11 @@ Operational software versions are separate from standard generations. The dashbo
 
 ## Canton Coin and the cash leg of a trade
 
-CC connects GS traffic purchases with rewards for qualifying contributions. Purchasing traffic burns CC, while rewards mint CC under the applicable rules. These are distinct flows. A large securities notional does not establish a proportionate quantity of token burning. The [GS tokenomics documentation](https://docs.canton.network/overview/reference/tokenomics-of-gs) explains traffic, pricing, and rewards.
+CC connects GS traffic purchases with rewards for qualifying contributions. Purchasing traffic burns CC, while rewards mint CC under the applicable rules. These are distinct flows. A large securities notional does not imply a proportionate amount of token burning. The [GS tokenomics documentation](https://docs.canton.network/overview/reference/tokenomics-of-gs) explains traffic, pricing, and rewards.
 
 Infrastructure usage costs also differ from asset-transfer costs. [CIP-0078](https://github.com/canton-foundation/cips/blob/main/cip-0078/cip-0078.md) removes specified CC fees; it does not declare GS traffic, custody services, or every other token registry free. An application or operator can pay traffic costs even when the end user sees no direct fee. Rewards depend on eligibility and policy, so creating more contracts alone is not a sufficient revenue model.
 
-The cash asset exchanged for a security can be something else. Circle [announced USDCx availability on December 4, 2025](https://www.circle.com/blog/usdcx-on-canton-now-available-via-circle-xreserve). Depositing USDC into xReserve on Ethereum initiates a mint of USDCx by a decentralized protocol on Canton. USDCx is a USDC-backed protocol token. It should not be described as the identical token to Circle-issued USDC, and issuance and redemption paths deserve separate attention.
+The cash asset exchanged for a security can be something else. Circle [announced USDCx availability on December 4, 2025](https://www.circle.com/blog/usdcx-on-canton-now-available-via-circle-xreserve). Depositing USDC into xReserve on Ethereum initiates a mint of USDCx by a decentralized protocol on Canton. USDCx is a USDC-backed protocol token. It should not be described as the same token as Circle-issued USDC, and issuance and redemption paths deserve separate attention.
 
 Paying for a security in USDCx and purchasing GS traffic with CC are different transactions. Growth in institutional collateral activity, GS usage, net token burning, and market price are separate claims. Supply, reward, usage, and liquidity data are needed to connect them. The adoption evidence below concerns technology and deployment stages, rather than an automatic token-price thesis.
 
@@ -179,7 +179,7 @@ The [developer forum](https://forum.canton.network/top) includes questions about
 
 Large financial numbers need their original units and scope. DTCC's **$114 trillion in 2025** describes its depository subsidiary's custody and asset-servicing base. It is not Canton TVL or the amount already tokenized by this service. Daily or monthly repo notional is a flow that can include repeated use of the same collateral. It cannot be compared directly with a stock of assets locked at one time. Adding an institution's total customer assets or a venue's total trading volume to Canton assets would overstate the result. The [DTCC announcement](https://www.dtcc.com/press-releases/2026/dtcc-turns-tokenization-into-reality) provides the context for its figure.
 
-Useful adoption questions remain concrete: which asset and cash moved together, which parties saw the necessary information, and which Synchronizer carried the transaction? Repeated operation, redemption rights, and legal ownership need their own evidence. The official material shows progress in connecting collateral and settlement workflows, expanding custody interfaces, and participating in shared infrastructure. Understanding those developments begins with contracts and operational boundaries before token prices.
+Useful adoption questions remain concrete: which asset and cash moved together, which parties saw the necessary information, and which Synchronizer carried the transaction? Repeated operation, redemption rights, and legal ownership need their own evidence. The official material shows progress in connecting collateral and settlement workflows, expanding custody interfaces, and participating in shared infrastructure. To understand those developments, examine contracts and operational boundaries before token prices.
 
 ## Further reading
 

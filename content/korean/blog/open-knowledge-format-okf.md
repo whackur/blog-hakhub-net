@@ -3,7 +3,7 @@ title: "Open Knowledge Format(OKF): 에이전트용 지식 표현 개방형 포�
 meta_title: ""
 description: "Google Cloud가 제안한 AI 에이전트용 지식 교환 표준 OKF v0.1. YAML frontmatter + Markdown 기반 Knowledge Bundle 구조, LLM Wiki·AGENTS.md·MCP와의 관계를 정리합니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:52:23+00:00
 image: "/images/posts/open-knowledge-format-okf/knowledge-bundle-structure.png"
 categories: ["AI"]
 tags: ["ai-agent", "knowledge-management", "metadata", "open-standard", "okf", "google-cloud", "mcp"]
@@ -12,9 +12,9 @@ translationKey: "open-knowledge-format-okf"
 draft: false
 ---
 
-AI 에이전트가 실패하는 원인을 들여다보면 모델 성능보다 맥락의 부재가 먼저 나오는 경우가 많습니다. 테이블 스키마, 지표 계산법, 장애 대응 런북, 두 시스템 사이의 join path가 카탈로그 벤더, 사내 위키, 코드 주석, 개인 노트에 흩어져 있고, 에이전트 개발자마다 같은 context assembly 문제를 처음부터 다시 풉니다.
+AI 에이전트가 실패하는 원인을 들여다보면 모델 성능보다 맥락의 부재가 먼저 나오는 경우가 많습니다. 테이블 스키마, 지표 계산법, 장애 대응 런북, 두 시스템 사이의 join path가 카탈로그 벤더, 사내 위키, 코드 주석, 개인 노트에 흩어져 있고 에이전트 개발자마다 같은 context assembly 문제를 처음부터 다시 풉니다.
 
-Open Knowledge Format(OKF)은 [Google Cloud](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing/)가 2026년 6월 공개한 AI 에이전트용 지식 표현 포맷입니다. 새 서비스나 플랫폼이 아니라, YAML frontmatter가 붙은 Markdown 파일들의 디렉터리로 지식을 표현하는 최소 상호운용 규약입니다. [공식 repo](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)에서 v0.1 draft 명세를 볼 수 있습니다.
+Open Knowledge Format(OKF)은 [Google Cloud](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing/)가 2026년 6월 공개한 AI 에이전트용 지식 표현 포맷입니다. 새 서비스나 플랫폼이 아니라 YAML frontmatter가 붙은 Markdown 파일들의 디렉터리로 지식을 표현하는 최소 상호운용 규약입니다. [공식 repo](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)에서 v0.1 draft 명세를 볼 수 있습니다.
 
 ## 배경: 맥락 조립 비용
 
@@ -32,7 +32,7 @@ Open Knowledge Format(OKF)은 [Google Cloud](https://cloud.google.com/blog/produ
 
 Andrej Karpathy가 공개한 [LLM Wiki 아이디어](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)는 RAG처럼 매 질문마다 문서 조각을 다시 검색하게 하지 말고, 시간이 지날수록 정제되는 Markdown 기반 지식 라이브러리를 에이전트와 함께 유지하자는 패턴입니다.
 
-핵심 관찰은 LLM에게는 지루함이 없고, cross-reference 갱신을 잊지 않으며, 한 번에 여러 파일을 동시에 수정할 수 있다는 점입니다. 사람이 개인 위키에서 포기하기 쉬운 장부 작업(cross-reference 갱신, 중복 병합, 구조 정리)이 오히려 LLM에게 맞는다는 이야기입니다. OKF는 이 패턴을 조직·도구·에이전트 간 상호운용 가능한 명세로 정리하려는 시도입니다.
+핵심 관찰에 따르면 LLM은 지루함을 느끼지 않고 cross-reference 갱신을 잊지 않으며 한 번에 여러 파일을 동시에 수정할 수 있습니다. 사람이 개인 위키에서 포기하기 쉬운 장부 작업(cross-reference 갱신, 중복 병합, 구조 정리)이 오히려 LLM에게 맞는다는 이야기입니다. OKF는 이 패턴을 조직·도구·에이전트 간 상호운용 가능한 명세로 정리하려는 시도입니다.
 
 ## OKF v0.1 명세
 
@@ -52,22 +52,22 @@ path/to/bundle/
 
 ![OKF Knowledge Bundle 구조. index.md와 log.md, 하위 디렉터리의 concept 문서로 이뤄진 트리와 type 필드가 필수인 YAML frontmatter, Markdown 본문, concept 간 링크를 보여 준다.](/images/posts/open-knowledge-format-okf/knowledge-bundle-structure.png)
 
-번들은 사람과 에이전트가 함께 읽을 수 있고 Git으로 이력과 diff를 관리할 수 있지만, Git 사용 자체가 명세의 필수 조건은 아닙니다.
+번들은 사람과 에이전트가 함께 읽을 수 있고 Git으로 이력과 diff를 관리할 수 있지만 Git 사용 자체가 명세의 필수 조건은 아닙니다.
 
-Git 저장소로 관리하는 것이 권장됩니다. history, attribution, diff, review가 모두 가능합니다. tarball/zip도 허용하며, 큰 repo의 하위 디렉터리로도 쓸 수 있습니다.
+Git 저장소로 관리하는 것이 권장됩니다. history, attribution, diff, review가 모두 가능합니다. tarball/zip도 허용하며 큰 repo의 하위 디렉터리로도 쓸 수 있습니다.
 
 ### Concept와 Concept ID
 
-Concept는 번들 안의 지식 단위이며, Markdown 파일 하나로 표현됩니다.
+Concept는 번들 안의 지식 단위이며 Markdown 파일 하나로 표현됩니다.
 
 - tangible asset: 테이블, 데이터셋, API, 대시보드
 - abstract concept: 지표, 프로세스, 플레이북, 참고 자료
 
-**Concept ID는 파일 경로에서 `.md`를 제거한 값**입니다. `tables/users.md`의 Concept ID는 `tables/users`입니다. 파일 경로가 곧 지식의 identity이므로, 경로 설계가 taxonomy 설계입니다.
+**Concept ID는 파일 경로에서 `.md`를 제거한 값**입니다. `tables/users.md`의 Concept ID는 `tables/users`입니다. 파일 경로가 곧 지식의 identity이므로 경로 설계가 taxonomy 설계입니다.
 
 ### Frontmatter 필드
 
-모든 concept 문서는 UTF-8 Markdown이고, 맨 위에 YAML frontmatter를 둡니다.
+모든 concept 문서는 UTF-8 Markdown이고 맨 위에 YAML frontmatter를 둡니다.
 
 ```yaml
 ---
@@ -80,7 +80,7 @@ timestamp: <ISO 8601 datetime>
 ---
 ```
 
-`type`만 필수이며, 값은 중앙 등록되지 않습니다. `BigQuery Table`, `Metric`, `API Endpoint`, `Playbook`, `Reference` 등 생산자가 자유롭게 명명합니다. 소비자는 모르는 type이나 추가 key를 만나도 generic concept로 처리해야 합니다.
+`type`만 필수이며 값은 중앙 등록되지 않습니다. `BigQuery Table`, `Metric`, `API Endpoint`, `Playbook`, `Reference` 등 생산자가 자유롭게 명명합니다. 소비자는 모르는 type이나 추가 key를 만나도 generic concept로 처리해야 합니다.
 
 ### 본문과 Cross-linking
 
@@ -90,7 +90,7 @@ Concept 간 관계는 표준 Markdown 링크로 표현합니다. bundle root 기
 
 ### 예약 파일명
 
-`index.md`와 `log.md`는 어느 디렉터리 레벨에도 올 수 있는 예약 파일명이며, concept 문서로 쓰면 안 됩니다.
+`index.md`와 `log.md`는 어느 디렉터리 레벨에도 올 수 있는 예약 파일명이며 concept 문서로 쓰면 안 됩니다.
 
 - `index.md`: progressive disclosure 파일. 해당 디렉터리 내용을 먼저 훑어볼 수 있게 합니다. root `index.md`에 `okf_version: "0.1"` 선언 가능.
 - `log.md`: 변경 이력 파일. `## YYYY-MM-DD` 날짜 heading, 최신 항목 우선. `**Update**`, `**Creation**`, `**Deprecation**` 접두어 관례.

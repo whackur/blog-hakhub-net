@@ -3,7 +3,7 @@ title: "GPT-5.6 Sol, Terra, and Luna: A Model Routing Guide for Coding Agents"
 meta_title: ""
 description: "A source-grounded breakdown of GPT-5.6's Sol, Terra, and Luna tiers versus its max/high/xhigh/ultra reasoning settings, using OpenAI's launch snapshot plus the 18-model DeepSWE leaderboard and Artificial Analysis data to decide which model fits which coding agent task."
 date: 2026-07-13T09:30:00+09:00
-lastmod: 2026-08-05T10:00:00+09:00
+lastmod: 2026-11-03T07:34:50+00:00
 image: "/images/posts/gpt-5-6-coding-agent-model-routing/deepswe-routing-tradeoffs-1200.png"
 categories: ["AI"]
 tags: ["gpt-5-6", "coding-agent", "model-routing", "benchmark", "llm"]
@@ -81,11 +81,11 @@ Source: [DeepSWE official leaderboard](https://deepswe.datacurve.ai/), v1.1, upd
 
 Claude Opus 5 holds the top spot at 74% for $11.84 per task. This post is about GPT-5.6 routing, so Opus 5 appears here as comparison context only. Within GPT-5.6, Sol leads at 73%, one point behind the top score with overlapping confidence intervals (±4% and ±3%), and at $8.39 it costs 29.1% less than Opus 5.
 
-Sol has the highest pass rate of the three GPT-5.6 tiers while using the fewest mean output tokens and the fewest mean steps. That score isn't bought by spending more tokens. You can read it as Sol reaching an answer in fewer steps, but the table alone doesn't say why.
+Sol has the highest pass rate of the three GPT-5.6 tiers and the lowest mean output-token and step counts. That score isn't bought by spending more tokens. You can read it as Sol reaching an answer in fewer steps, but the table alone doesn't say why.
 
 Terra sits 3 points behind Sol while its average cost is 52.8% lower. That comes at a cost, though: mean output tokens run 20.0% higher and mean steps 24.6% higher. Terra isn't the best on every axis; it's a strong tradeoff on score versus cost specifically.
 
-Luna is the row worth staring at. It sits 3 points behind Terra at 67%, but its $0.61 per task is 15.4% of Terra's cost and 7.3% of Sol's. Its mean output tokens are nearly identical to Terra's (73k versus 72k, a 1.4% difference) and its mean steps run 34.2% higher. Luna's low cost reflects low model pricing, not fewer generated tokens or fewer tool-call loops.
+Luna's cost gap is especially large. It sits 3 points behind Terra at 67%, but its $0.61 per task is 15.4% of Terra's cost and 7.3% of Sol's. Its mean output tokens are nearly identical to Terra's (73k versus 72k, a 1.4% difference) and its mean steps run 34.2% higher. Luna's low cost reflects low model pricing, not fewer generated tokens or fewer tool-call loops.
 
 The same pattern shows up outside the GPT-5.6 family. Claude Fable 5 matches Terra's rounded 70% pass@1 but costs 5.46x as much, uses 65.3% more output tokens, and takes 15.8% more steps. Their confidence intervals overlap, and the [official DeepSWE v1.1 post](https://deepswe.datacurve.ai/blog/deepswe-v1-1) notes that 73 of Fable 5's 2,260 trials didn't complete because access was suspended by a US government directive partway through the sweep, so this comparison shouldn't be stretched too far.
 
@@ -97,7 +97,7 @@ Mean output tokens and mean steps measure different things. Tokens estimate how 
 
 The leaderboard table is a Best view: one row per model, showing its highest-scoring config. That's why all three GPT-5.6 rows above are `[max]`. Turning on the **All effort levels** button above the chart plots every scored config for every model as its own scatter point. GPT-5.6 Sol, Terra, and Luna each have all five configs scored (low, medium, high, xhigh, max, so 5/5 apiece), which makes it possible to see in one view how cost and pass@1 move as you dial effort down within a single model. Across the board, 48 configs are active over the 18 models. Coverage varies by model, and some entries such as Grok 4.5 and Gemini 3.6 Flash have only a single config.
 
-One limit worth stating: the per-effort numbers aren't published in the table. They're readable from the scatter points, so this post does not put pass@1 or cost figures on low, medium, high, or xhigh individually. If you need the actual savings from dropping effort, read the points off the leaderboard directly or measure it on your own harness.
+The per-effort numbers aren't published in the table. They're readable from the scatter points, so this post does not put pass@1 or cost figures on low, medium, high, or xhigh individually. If you need the actual savings from dropping effort, read the points off the leaderboard directly or measure it on your own harness.
 
 DeepSWE's fixed harness compares 18 models' behavior on one scaffold. It doesn't directly rank complete products like Hermes Agent, Codex, or Claude Code, each of which runs its own orchestration, tools, prompts, retry logic, and sandboxing.
 
@@ -116,7 +116,7 @@ DeepSWE's fixed harness compares 18 models' behavior on one scaffold. It doesn't
 
 Source: [artificialanalysis.ai/models/gpt-5-6-sol](https://artificialanalysis.ai/models/gpt-5-6-sol), [-terra](https://artificialanalysis.ai/models/gpt-5-6-terra), [-luna](https://artificialanalysis.ai/models/gpt-5-6-luna), accessed August 5, 2026.
 
-The part worth slowing down on is what this latency column actually measures. Artificial Analysis defines raw TTFT as the time from request to first response token, and for reasoning models that first token can itself be a reasoning token. It defines a separate concept, time to first answer token, which includes the model's thinking time, and that's the column above. So the 131, 162, and 133 second figures aren't pure network round trips; they include however long each model spent reasoning before it started producing an answer.
+The latency column needs a closer look. Artificial Analysis defines raw TTFT as the time from request to first response token, and for reasoning models that first token can itself be a reasoning token. It defines a separate concept, time to first answer token, which includes the model's thinking time, and that's the column above. So the 131, 162, and 133 second figures aren't pure network round trips; they include however long each model spent reasoning before it started producing an answer.
 
 The [Artificial Analysis methodology page](https://artificialanalysis.ai/methodology/performance-benchmarking) adds that these are P50 measurements over a recent window, taken from a primary server in Google Cloud us-central1-a, and that prompt length and network location both affect the number. Latency here is a mix of model behavior and serving conditions, not a property of model intelligence. This snapshot makes that concrete: the three tiers don't order by capability at all. Sol is fastest to a first answer at 131s, Luna is essentially tied at 133s, and Terra is slowest at 162s. Measure on a different day and the order can shift again, so pick a tier on latency only after measuring from your own region with your own prompt lengths.
 
@@ -143,7 +143,7 @@ Running Hermes Agent or Codex works better with routing by task risk and reversi
 
 ## What community reports look like
 
-Alongside the benchmarks above, it's worth looking at what actual users are posting. All three reports below are from July 2026, and all three are selection-biased, non-reproducible personal accounts.
+User reports offer another perspective alongside these benchmarks. All three reports below are from July 2026, and all three are selection-biased, non-reproducible personal accounts.
 
 In [one post](https://www.reddit.com/r/codex/comments/1us7fwv/i_gave_gpt54_gpt55_gpt56_sol_terra_and_luna_the/), a user ran the same 35-word Coca-Cola Zero landing-page prompt across GPT-5.4, GPT-5.5, GPT-5.6 Luna Max, Terra Ultra, and Sol Ultra and posted the outputs side by side. The author self-reported token usage of 94,393 for Luna, 154,574 for Terra, and 200,352 for Sol; those numbers are author-reported, not independently verified. The author said they personally preferred the Luna output. This is one person's self-run frontend showcase, not a controlled coding-agent benchmark, and it shouldn't be read as evidence for model ranking or general token efficiency.
 

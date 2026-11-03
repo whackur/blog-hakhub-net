@@ -3,7 +3,7 @@ title: "Ethereum Glamsterdam Upgrade: ePBS, BALs, Every EIP and Operational Chan
 meta_title: ""
 description: "How Glamsterdam changes block construction, parallel validation, gas and networking. The ePBS and BAL mechanisms, all 25 EIPs, activation status and implications for users, developers and validators."
 date: 2026-10-17T12:00:00+09:00
-lastmod: 2026-10-17T12:00:00+09:00
+lastmod: 2026-11-03T08:13:01+00:00
 image: "/images/posts/ethereum-glamsterdam-upgrade/glamsterdam-cover.webp"
 categories: ["Blockchain"]
 tags: ["ethereum", "glamsterdam", "epbs", "block-access-lists", "evm", "validators"]

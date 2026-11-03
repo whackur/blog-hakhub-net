@@ -3,7 +3,7 @@ title: "The Failure a Pass Rate Hides: How the YouTube Ads Team Runs Production 
 meta_title: "Running Production Agent Evals (YouTube Ads Team)"
 description: "How Google's YouTube Ads team runs evals for a production agent: starting on intuition before going strict, managing human raters, calibrating an LLM judge, and the disclaimer removal only a trace revealed."
 date: 2026-08-04T10:00:00+09:00
-lastmod: 2026-08-04T10:00:00+09:00
+lastmod: 2026-11-03T07:52:29+00:00
 image: "/images/posts/production-agent-evals-youtube-ads/eval-operations-loop-1200.png"
 categories: ["AI"]
 tags: ["evals", "llm-as-judge", "agent", "prompt-engineering"]
@@ -18,7 +18,7 @@ Preetika Bhateja and Daniel Bump of Google's YouTube Ads team walked through thi
 
 An eval, in this sense, is a fixed set of inputs you run the agent against and score against criteria the team agreed on in advance, so the result comes out as a number. It resembles a unit test, except the correct answer is rarely single-valued and the scoring itself requires judgment. The talk is clear about why an eval is needed at all. Generative output is not deterministic, so the same case succeeds on one run and fails on the next. You cannot guarantee how the agent behaves once it is live, so the only option left is to define what good output looks like and then measure against that definition at scale. Half the work of building an eval is pinning that definition down in writing.
 
-What makes this talk worth reading is not which tooling they picked. It is how they staffed and operated the scoring.
+This talk is most useful for its account of how the team staffed and operated scoring, rather than for its choice of tools.
 
 The original talk is embedded below. A Korean-English subtitled re-edit is also available on the [Tech Bridge channel](https://www.youtube.com/watch?v=hfaUTT8bLzU).
 
@@ -28,7 +28,7 @@ The original talk is embedded below. A Korean-English subtitled re-edit is also 
 
 The talk does not open on evals. Two steps come first.
 
-The first is a narrow, solid set of LLM-friendly tools. If tool descriptions are vague or the argument design is messy, the agent keeps tripping in the same place. Bolt an eval onto that and you are measuring the tool defects over and over, with prompt edits that never move the score.
+The first is a narrow, solid set of LLM-friendly tools. If tool descriptions are vague or the argument design is messy, the agent keeps failing at the same point. Bolt an eval onto that and you are measuring the tool defects over and over, with prompt edits that never move the score.
 
 The second is an independent critique agent that reviews the output, plus a remediation loop that fixes what the critique flags. It covers gaps the base tool set cannot close on its own.
 
@@ -36,7 +36,7 @@ Evals come after that foundation. Bump frames their job two ways: proving that a
 
 Those two jobs are why Bump calls a strong eval essential for climbing the quality ladder, the phrase he uses throughout for pushing quality up a rung at a time. An eval is the instrument that tells you which rung to reach for next, and that is also why he keeps repeating that the foundation has to be in place first.
 
-The line the talk lands on: agent reliability is a function of the agent's capabilities, the guardrails, and the evals. Hold onto one of those and the others slide.
+The line the talk lands on: agent reliability is a function of the agent's capabilities, the guardrails, and the evals. Focusing on only one undermines the others.
 
 ![Flow diagram starting from tool optimization and a self-correction loop, moving through vibe evals to a strict eval, then human raters, an LLM judge and trace spot checks, pattern-level failure analysis, and a launch gate, with online evals feeding the eval set back](/images/posts/production-agent-evals-youtube-ads/eval-operations-loop.svg)
 
@@ -46,7 +46,7 @@ The line the talk lands on: agent reliability is a function of the agent's capab
 
 An eval that survives scale has to be strict and measurable. The counterintuitive part of this talk is that chasing those properties on day one backfires, and that vibing helps early on. Vibing here means doing the thing that does not scale: reading outputs by hand, sorting good from bad on intuition, and fixing fast.
 
-You could build the comprehensive eval on day one instead. But early on you rewrite the architecture and overhaul prompts often, and each time you have to recalibrate the eval and the rubric with it. When scores swing hard, you cannot tell whether the model improved or the scoring shifted. A precise eval turns into a brake on the changes you most need to make.
+You could build the comprehensive eval on day one instead. But early on you rewrite the architecture and overhaul prompts often, and each time you have to recalibrate the eval and the rubric with it. When scores swing hard, you cannot tell whether the model improved or the scoring shifted. A precise eval blocks the changes you most need to make.
 
 The talk ties that risk to when you bring rating headcount in. Pull in outside raters too early and you are changing the model hard while calibrating the eval at the same time, so scores lurch up and down and nobody can name the cause.
 
@@ -94,7 +94,7 @@ Habits from traditional ML still apply. Agents generalize poorly outside the ran
 
 Bump singles out one trap: fixating on individual runs. You run the agent once, see a case fail, and want to patch the prompt for that case. In a nondeterministic system that instinct backfires. The same case may pass on the next run, and meanwhile the prompt has picked up one more poorly grounded sentence. Put several examples of the same pattern in the golden set instead, and look at how often the pattern fails overall. The unit of repair is the pattern, not the run.
 
-The talk also sketches the loop for when human eval comes in under the bar. Review the eval set first and check numbers like precision and recall. Then decide whether to fix the eval and the rating guide or the agent itself, and rerun. Once the eval is well defined, that loop becomes the main engine for climbing quality.
+The talk also sketches the loop for when human eval comes in under the bar. Review the eval set first and check numbers like precision and recall. Then decide whether to fix the eval and the rating guide or the agent itself, and rerun. Once the eval is well defined, that loop becomes the main way to improve quality.
 
 Launch readiness comes down to understanding regressions. The sequence the talk sketches: iterate on the model several times, then run an A/B diff or an ablation to identify where performance degraded and why, then sort the result into acceptable tradeoffs and critical failures. The practical piece here is to fix the gatekeeping rule in advance: whether the bar is a precision and recall target, some other metric, or something different again for a model eval. Skip that and you end up negotiating the criteria days before launch, when the judgment is already compromised.
 
@@ -106,7 +106,7 @@ This blog already has [a post on skill-level evals](/en/blog/agent-skills-evals-
 
 This talk sits one layer up. The subject is the whole agent, not one skill, and the problem is process rather than tooling. How raters get trained, how verdicts get agreed on, how often the golden set gets refreshed, what conditions permit a launch.
 
-Both layers earn their keep. Skill evals verify a change; agent evals justify a release. With only the first, the parts run well and nobody knows when the product can ship. With only the second, scores move and you cannot narrow down why.
+Both layers are needed. Skill evals verify a change; agent evals justify a release. With only the first, the parts run well and nobody knows when the product can ship. With only the second, scores move and you cannot narrow down why.
 
 ## What makes an eval system good
 
@@ -115,8 +115,8 @@ The talk hangs one caveat on its closing list: this is what worked for their app
 - **It represents what the product has to be great at.** An MVP eval and a production rollout eval look different. Either way it has to track the areas where the product must be strong.
 - **It keeps evolving.** Online evals, a test set refreshed with production data, sampling pipelines, and a golden set that widens as the use cases widen.
 - **It funds rater training.** Bhateja reckons this is closer to common practice now, while noting that six months earlier their own teams were still working out how to rate things and what they expected from raters.
-- **Its rubrics and rater templates carry enough examples.** How often raters come back asking how to score something, and how many items land as unknown, is the report card on that investment.
-- **The launch metrics get chosen up front.** Not deciding the bar after you see where the regression landed, but setting the bar and then judging the regression against it.
+- **Its rubrics and rater templates carry enough examples.** How often raters come back asking how to score something, and how many items land as unknown, show how well that investment is working.
+- **The launch metrics get chosen up front.** Set the bar before you see where the regression landed, then judge the regression against it.
 
 ## Further reading
 

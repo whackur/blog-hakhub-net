@@ -3,7 +3,7 @@ title: "Know Your Agent (KYA): AI Agent Identity, the Standards Race, and What I
 meta_title: ""
 description: "Separate agent identity, authentication, authorization and reputation, then examine ERC-8004's standards status and mainnet activity alongside the scope and limits of Visa TAP, Trulioo and Sumsub."
 date: 2026-08-27T10:00:00+09:00
-lastmod: 2026-10-15T15:36:42Z
+lastmod: 2026-11-03T07:39:54Z
 image: "/images/posts/know-your-agent-kya-ai-agent-identity-onchain/kya-identity-editorial-20261016.webp"
 categories: ["Blockchain"]
 tags: ["ai-agent", "kya", "identity", "erc-8004", "reputation", "compliance"]
@@ -12,7 +12,7 @@ translationKey: "know-your-agent-kya-ai-agent-identity-onchain"
 draft: false
 ---
 
-An identity credential or an on-chain registration number is insufficient grounds to let an AI agent spend money or access data. **Identifying the agent, authenticating the requester, checking its authority for this action, and deciding how much to trust past feedback** are separate checks. Know Your Agent (KYA) groups these concerns under one name. ERC-8004 supplies identifiers and public trust signals; Visa TAP and identity-verification vendors offer other ways to check requests, organizations or people. The service receiving the request still decides whether to grant access. The [ERC-8004 specification](https://eips.ethereum.org/EIPS/eip-8004) and [Trulioo's product description](https://www.trulioo.com/products/kya-verification) both limit what registration or verification establishes.
+An identity credential or an on-chain registration number does not provide sufficient grounds to let an AI agent spend money or access data. **Identifying the agent, authenticating the requester, checking its authority for this action, and deciding how much to trust past feedback** are separate checks. Know Your Agent (KYA) groups these concerns under one name. ERC-8004 supplies identifiers and public trust signals; Visa TAP and identity-verification vendors offer other ways to check requests, organizations or people. The service receiving the request still decides whether to grant access. The [ERC-8004 specification](https://eips.ethereum.org/EIPS/eip-8004) and [Trulioo's product description](https://www.trulioo.com/products/kya-verification) both limit what registration or verification establishes.
 
 *Standards status and product descriptions checked on October 16, 2026 KST. Historical measurements carry their own observation periods.*
 
@@ -59,7 +59,7 @@ The ERC-8004 [reference implementation repository](https://github.com/erc-8004/e
 
 These events cannot establish the number of paying customers or autonomously working agents. An ID is an identifier, and registration differs from service execution. The reference repository also warns that the Validation Registry portion remains under active update and discussion with the TEE community. A deployment list for Identity and Reputation does not establish equal operational maturity for all three registries.
 
-An empirical study illustrates the difference between registration and service availability. Xiong and colleagues' [ERC-8004 study, version 2](https://arxiv.org/html/2606.26028v2), observes Ethereum, BNB Smart Chain (BSC) and Base from deployment through **May 13, 2026**. Under the study's operational classification of a retrievable registration file with the required `type` value and at least one declared service, the shares of registrations were approximately **3%, 4% and 15%**, respectively. These results apply to that period and classification. A service declaration does not establish task performance, and those percentages are not October uptime measurements.
+An empirical study illustrates the difference between registration and service availability. Xiong and colleagues' [ERC-8004 study, version 2](https://arxiv.org/html/2606.26028v2) observes Ethereum, BNB Smart Chain (BSC) and Base from deployment through **May 13, 2026**. Under the study's operational classification of a retrievable registration file with the required `type` value and at least one declared service, the shares of registrations were approximately **3%, 4% and 15%**, respectively. These results apply to that period and classification. A service declaration does not establish task performance, and those percentages are not October uptime measurements.
 
 ## Read the reviewer and units behind a reputation score
 

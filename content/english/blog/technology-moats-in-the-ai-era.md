@@ -3,7 +3,7 @@ title: "Technology Moats in the AI Era"
 meta_title: ""
 description: "Building new software and earning a sustainable profit are separate challenges. A look at why customers pay and stay, and which technical and business advantages competitors struggle to reproduce."
 date: 2026-10-16T02:04:00+09:00
-lastmod: 2026-10-17T09:59:27+09:00
+lastmod: 2026-11-03T07:55:48+00:00
 image: "/images/posts/technology-moats-in-the-ai-era/cover.webp"
 categories: ["AI"]
 tags: ["ai-agents", "software", "competition", "data", "platforms"]
@@ -101,9 +101,9 @@ Think of a company's transaction records, customer support conversations, and ca
 
 The same applies to blockchain anti-money laundering (AML). Reading public transaction records is different from identifying which addresses are connected to exchanges or criminal activity. Analytics companies such as Chainalysis combine transaction records with separately researched and verified information to connect addresses to real entities. [Chainalysis](https://www.chainalysis.com/glossary/wallet-attribution/?utm_source=chatgpt.com)
 
-If a company can also establish what transactions it had flagged as risky actually were, and feed those findings into subsequent analysis, its competitive position can become stronger. Competitors have to reproduce the process of acquiring and verifying information as well as the program itself.
+If a company can also determine the actual nature of transactions it had flagged as risky, and feed those findings into subsequent analysis, its competitive position can become stronger. Competitors have to reproduce the process of acquiring and verifying information as well as the program itself.
 
-**The moat lies in a process through which information others struggle to obtain keeps accumulating and improving the product, as well as in the amount of data.**
+**The moat lies in both the amount of data and the process that keeps adding information others struggle to obtain and improving the product.**
 
 ### 5. The qualifications to operate a business and the rights to use data
 
@@ -123,7 +123,7 @@ Even a single business travel expense claim may connect departmental approval ch
 
 The person responsible has to ask more than “How good are the new features?” They also need to check “Could this delay month-end expense processing?” and “Will we still be able to retrieve existing approval documents?” There are replacement costs and operational risks that don't appear in a product's price.
 
-A competing product may therefore need to offer more than slightly better features or a slightly lower price. It has to be better by enough to justify the effort and risk of switching.
+A competing product may therefore need to offer more than slightly better features or a slightly lower price. It has to offer enough of an improvement to justify the effort and risk of switching.
 
 **Here, the moat lies in the way the company already works around the product, beyond the familiarity of its interface.**
 

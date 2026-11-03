@@ -3,7 +3,7 @@ title: "The AI Agent Trust Stack: ERC-8004, ERC-8126, and ERC-8196"
 meta_title: ""
 description: "How three Ethereum standards work together to handle AI agent identity, security verification, and policy-bound wallet execution."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-07-17T17:50:08+09:00
+lastmod: 2026-11-03T07:03:56+00:00
 image: "/images/posts/ai-agent-wallet-trust-stack-erc-8004-8126-8196/trust-stack-layers-1200.png"
 categories: ["Blockchain"]
 tags: ["ai-agent", "wallet", "erc-8004", "erc-8126", "erc-8196"]
@@ -38,7 +38,7 @@ Three registries form the core:
 eip155:1:0x742...   (namespace:chainId:registryAddress)
 ```
 
-The registration file contains the agent's name, description, service endpoints, and supported trust models (`reputation`, `crypto-economic`, `tee-attestation`, etc.). Importantly, registration only provides discoverability. It doesn't guarantee the agent is safe.
+The registration file contains the agent's name, description, service endpoints, and supported trust models (`reputation`, `crypto-economic`, `tee-attestation`, etc.). Registration only provides discoverability. It doesn't guarantee the agent is safe.
 
 **Reputation Registry.** Clients post feedback on agents using tags like `starred`, `reachable`, `uptime`, `responseTime`. The registry is a generic bulletin board. Filtering to a trusted set of `clientAddresses` is the application's responsibility. Without that, Sybil attacks are trivial. As of May 2026, a large share of registered agents are placeholders with little real activity, so the reputation data itself is still thin.
 
@@ -94,7 +94,7 @@ minVerificationScore → max allowable ERC-8126 risk score
 
 The `minVerificationScore` name is confusing. In ERC-8126, lower score means safer. So this field is actually a ceiling on acceptable risk: execution is rejected once the retrieved score exceeds it. Set it to 20, and only Low Risk agents (score 0-20) can execute automatically.
 
-**Interface.** Four core functions: `registerPolicy` registers the agent address and `agentId` along with action/contract allowlists, limits, a validity window, and `minVerificationScore`. `executeAction` takes `policyHash`, a target address, value, calldata, a nonce, an entropy commitment, and a signature, and returns `(bool success, bytes32 auditEntryId)`. `revokePolicy` and `getPolicy` round out the interface. Events: `PolicyRegistered`, `ActionExecuted`, `PolicyRevoked`, `AuditEntryLogged`. Errors: `PolicyExpired`, `ValueExceedsLimit`, `InvalidSignature`, `EntropyVerificationFailed`, `PolicyViolation`.
+**Interface.** Four core functions: `registerPolicy` registers the agent address and `agentId` along with action/contract allowlists, limits, a validity window, and `minVerificationScore`. `executeAction` takes `policyHash`, a target address, value, calldata, a nonce, an entropy commitment, and a signature, and returns `(bool success, bytes32 auditEntryId)`. `revokePolicy` and `getPolicy` are the other two functions. Events: `PolicyRegistered`, `ActionExecuted`, `PolicyRevoked`, `AuditEntryLogged`. Errors: `PolicyExpired`, `ValueExceedsLimit`, `InvalidSignature`, `EntropyVerificationFailed`, `PolicyViolation`.
 
 **Audit trail.** Each audit entry includes `previousHash`, forming a hash chain. Entries can live on IPFS with periodic Merkle roots posted to ERC-8004's Validation Registry. The chain detects tampering: delete or alter any entry and the subsequent hashes break.
 

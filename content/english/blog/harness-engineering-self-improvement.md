@@ -3,7 +3,7 @@ title: "AI Self-Improvement Starts Outside the Model"
 meta_title: ""
 description: "How agents improve prompts, memory, tools, and code without changing model weights, with GEPA, Reflexion, DGM benchmark conditions, held-out evaluation, costs, and permission boundaries."
 date: 2026-07-08T10:20:00+09:00
-lastmod: 2026-10-16T00:59:14+09:00
+lastmod: 2026-11-03T07:37:34+00:00
 image: "/images/posts/harness-engineering-self-improvement/harness-self-improvement-cover-20261016.webp"
 categories: ["AI"]
 tags: ["ai-agent", "coding-agent", "harness", "self-improvement", "context-engineering", "swe-bench"]
@@ -45,7 +45,7 @@ To make “learning from experience” precise, identify what survives into the 
 
 **GEPA uses failure trajectories to revise prompts.** It reads reasoning, tool calls, and tool outputs, diagnoses problems, and evaluates candidate instructions. In the paper's HotpotQA example, the target is the second query-generation module of a multi-document question-answering system. The optimized instructions use a summary of the first retrieved document to seek missing evidence. They discourage queries that merely repeat information already available. GEPA also samples candidates that perform well on individual problems, rather than always extending only the prompt with the highest overall average. ([GEPA, Figure 2 and §3](https://arxiv.org/html/2507.19457v2))
 
-**Reflexion turns feedback into memory for later attempts.** It converts environmental success or failure signals into textual reflections and places them in an episodic memory buffer. Later trials receive that memory as context; the model's weights do not change. Retaining memory across attempts on the same problem, however, needs a different evaluation from improvement on unseen problems. Saving logs without using them in subsequent decisions does not implement this mechanism. ([Reflexion, §3](https://arxiv.org/html/2303.11366v4))
+**Reflexion turns feedback into memory for later attempts.** It converts environmental success or failure signals into textual reflections and places them in an episodic memory buffer. Later trials receive that memory as context; the model's weights do not change. Retaining memory across attempts on the same problem and improving on unseen problems, however, require separate evaluations. Saving logs without using them in subsequent decisions does not implement this mechanism. ([Reflexion, §3](https://arxiv.org/html/2303.11366v4))
 
 Revising a patch after a failed test belongs to a task-solving loop. Evidence for lasting harness improvement requires retaining a procedure or code change derived from the experience and evaluating its effect on later runs. Prompt optimization and memory updates can meet that condition, but they do not require the same permissions as code self-modification.
 
@@ -77,7 +77,7 @@ For separate evidence of generalization, the researchers tested agents evolved o
 
 ## From an execution trace to acceptance or rollback
 
-A practical deployment should separate the execution proposing a change from the execution judging it. The following is an **operational design example** informed by GEPA's trace-based diagnosis and DGM's version search. It does not reproduce either paper's algorithm.
+A practical deployment should separate the run proposing a change from the run evaluating it. The following is an **operational design example** informed by GEPA's trace-based diagnosis and DGM's version search. It does not reproduce either paper's algorithm.
 
 ```text
 baseline = deployed_version

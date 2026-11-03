@@ -3,7 +3,7 @@ title: "에이전트 결제 2026년 6월 동향: x402, UCP, MPP 구현 진전"
 meta_title: ""
 description: "2026년 6월 x402 auth-capture와 builder-code attribution, UCP idempotency 강화, MPP 구독형 결제 실험, ERC-8126 Final 이동 등 에이전트 결제 스택의 주요 변화를 정리합니다."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:04:19+00:00
 image: "/images/posts/agentic-payments-june-2026-x402-ucp-mpp/agent-payment-layer-stack.png"
 categories: ["Blockchain"]
 tags: ["agentic-payments", "x402", "ucp", "mpp", "stablecoin"]
@@ -16,7 +16,7 @@ draft: false
 
 ## 에이전트 결제 개념과 배경
 
-에이전트 결제(agentic payments)는 AI 에이전트가 사람의 실시간 개입 없이 유료 서비스에 자동으로 대금을 지불하는 흐름이다. 기본 시나리오를 보면 이해가 빠르다. 에이전트가 이미지 생성 API를 호출한다. 서버는 HTTP 402 응답으로 payment challenge를 보낸다. "이 주소에, 이 토큰으로, 이 금액을 보내면 콘텐츠를 주겠다"는 명세다. 에이전트는 스테이블코인 결제를 완료하고 결제 증거를 첨부해 재요청한다. 서버가 확인하면 콘텐츠를 돌려준다.
+에이전트 결제(agentic payments)는 AI 에이전트가 사람의 실시간 개입 없이 유료 서비스에 자동으로 대금을 지불하는 흐름이다. 예를 들어 에이전트가 이미지 생성 API를 호출한다. 서버는 HTTP 402 응답으로 payment challenge를 보낸다. "이 주소에, 이 토큰으로, 이 금액을 보내면 콘텐츠를 주겠다"는 명세다. 에이전트는 스테이블코인 결제를 완료하고 결제 증거를 첨부해 재요청한다. 서버가 확인하면 콘텐츠를 돌려준다.
 
 카드 결제를 그대로 쓰면 안 되는 이유가 있다. 카드 결제는 사람이 화면에서 직접 승인하는 구조다. 에이전트가 분당 수십 개의 API를 자동으로 호출할 때마다 사람이 개입할 수 없다. 또한 LLM 추론처럼 실행이 끝나야 금액이 확정되는 종량제 서비스는 거래 전 금액이 고정된다는 카드 결제의 전제와 맞지 않는다.
 
@@ -43,11 +43,11 @@ draft: false
 
 ## x402: auth-capture, attribution, 사용량 기반 정산
 
-`x402-foundation/x402` 저장소는 6월 한 달간 수십 개의 커밋이 누적됐다. `coinbase/x402`는 같은 기간 거의 활동이 없었고 실질 개발 표면은 Foundation 저장소에 집중되어 있다.
+`x402-foundation/x402` 저장소는 6월 한 달간 수십 개의 커밋이 누적됐다. `coinbase/x402`는 같은 기간 거의 활동이 없었고 실제 개발은 Foundation 저장소에 집중되어 있다.
 
 **auth-capture 흐름**
 
-TypeScript `@x402/evm` 클라이언트에 auth-capture payment requirement를 감지하고 ERC-3009(메타트랜잭션 방식 토큰 전송 위임 표준)를 기본값으로, Permit2(Uniswap이 개발한 일회성 서명 위임 방식)를 대안으로 사용해 payer-agnostic `PaymentInfo` hash에 서명하는 흐름이 추가됐다. 승인 시점과 청구(capture) 시점이 분리되는 구조는 전자상거래에서 표준적인 방식이다. 재고 확인 후 청구, 배송 시점 청구 같은 흐름을 x402 위에서 표현할 수 있게 되는 확장이며, 기존의 즉시 정산 한 가지였던 결제 모델이 둘로 늘어난다. 서버와 facilitator 지원은 후속 단계다.
+TypeScript `@x402/evm` 클라이언트에 auth-capture payment requirement를 감지하고 ERC-3009(메타트랜잭션 방식 토큰 전송 위임 표준)를 기본값으로, Permit2(Uniswap이 개발한 일회성 서명 위임 방식)를 대안으로 사용해 payer-agnostic `PaymentInfo` hash에 서명하는 흐름이 추가됐다. 승인 시점과 청구(capture) 시점이 분리되는 구조는 전자상거래에서 표준적인 방식이다. 재고 확인 후 청구, 배송 시점 청구 같은 흐름을 x402 위에서 표현할 수 있게 된다. 기존의 즉시 정산 한 가지였던 결제 모델이 둘로 늘어난다. 서버와 facilitator 지원은 후속 단계다.
 
 **builder-code attribution**
 
@@ -71,7 +71,7 @@ EOA를 asset 주소로 거부하는 패치(잘못된 자산 주소로 결제 검
 
 ## UCP: idempotency 강화, 동의, 주문 증거
 
-Universal Commerce Protocol(UCP) 저장소에도 의미 있는 변화가 있었다.
+Universal Commerce Protocol(UCP) 저장소에서는 결제 처리와 증거를 다루는 부분이 바뀌었다.
 
 **idempotency 409 명시**
 
@@ -79,7 +79,7 @@ Universal Commerce Protocol(UCP) 저장소에도 의미 있는 변화가 있었�
 
 **buyer consent 확장**
 
-cart와 checkout 양쪽에 걸친 purpose별 buyer consent 구조가 추가됐다. 각 purpose에 `granted`, `source`, `description`을 두고, `source`는 현재 동의 상태가 business default인지 platform이 실제 buyer preference로 포착한 값인지 구분한다. 에이전트가 장바구니 탐색 단계부터 analytics·marketing·계정 연결 동의를 다룰 수 있게 되는 기반이다.
+cart와 checkout 양쪽에 걸친 purpose별 buyer consent 구조가 추가됐다. 각 purpose에 `granted`, `source`, `description`을 두고 `source`는 현재 동의 상태가 business default인지 platform이 실제 buyer preference로 포착한 값인지 구분한다. 에이전트가 장바구니 탐색 단계부터 analytics·marketing·계정 연결 동의를 다룰 수 있게 되는 기반이다.
 
 **delegated identity providers**
 
@@ -105,7 +105,7 @@ npm `@solana/pay 1.0.18`이 6월 9일 배포됐다.
 
 ## ACP: product feed provenance
 
-OpenAI/Stripe 축의 Agentic Commerce Protocol(ACP) 저장소에는 `feed_update_id`와 `last_update_id` 두 필드가 추가됐다. 상품 feed upsert마다 version identifier가 붙고, 각 상품이 마지막으로 어떤 update에서 갱신됐는지 표시된다. 에이전트가 본 상품·가격 데이터가 어느 feed update에서 왔는지 추적할 수 있게 해 환불·분쟁·감사에서 증거 연결을 돕는 변화다.
+OpenAI/Stripe 축의 Agentic Commerce Protocol(ACP) 저장소에는 `feed_update_id`와 `last_update_id` 두 필드가 추가됐다. 상품 feed upsert마다 version identifier가 붙고 각 상품이 마지막으로 어떤 update에서 갱신됐는지 표시된다. 에이전트가 본 상품·가격 데이터가 어느 feed update에서 왔는지 추적할 수 있게 해 환불·분쟁·감사에서 증거 연결을 돕는 변화다.
 
 ## ERC-8126 Final, ERC-8273 Draft
 
@@ -113,7 +113,7 @@ Ethereum ERC 쪽에서는 두 신호가 있었다.
 
 [ERC-8126](https://eips.ethereum.org/EIPS/eip-8126) (AI Agent Verification)이 2026년 6월 2일 `Final` 상태로 이동했다. ERC-8004에 등록된 에이전트의 지갑·코드·web endpoint·컨트랙트·미디어를 검증하고 0~100 위험 점수와 ZKP proof를 제공하는 표준이다. Final 이동은 Draft 실험에서 구현 가능한 기준으로 올라섰다는 신호다.
 
-[ERC-8273](https://github.com/ethereum/ercs/blob/master/ERCS/erc-8273.md) (Attestation-Gated Agentic Actions) 초안이 추가됐다. 장기 신원 registry만으로는 "이번 특정 action이 허용됐는가"를 답하기 어렵다는 문제를 겨냥한다. `attestAndCall()` 패턴으로 authorization-and-action을 같은 transaction에서 atomic하게 실행하고, EIP-1153 transient storage(트랜잭션 종료 시 자동 삭제되는 임시 저장소)에 일회성 권한을 써서 transaction이 끝나면 자동 소멸시킨다. Draft이므로 interface와 보안 모델이 변경될 가능성이 높다.
+[ERC-8273](https://github.com/ethereum/ercs/blob/master/ERCS/erc-8273.md) (Attestation-Gated Agentic Actions) 초안이 추가됐다. 장기 신원 registry만으로는 "이번 특정 action이 허용됐는가"를 답하기 어렵다는 문제를 겨냥한다. `attestAndCall()` 패턴으로 authorization-and-action을 같은 transaction에서 atomic하게 실행하고 EIP-1153 transient storage(트랜잭션 종료 시 자동 삭제되는 임시 저장소)에 일회성 권한을 써서 transaction이 끝나면 자동 소멸시킨다. Draft이므로 interface와 보안 모델이 변경될 가능성이 높다.
 
 ERC-8004 자체는 6월 한 달간 ethereum/ercs 표준 프로세스 상태 변경이 없었다. 다만 이는 배포 여부와는 다른 이야기다. ERC-8004 레지스트리는 2026년 1월 29일 이더리움 메인넷에 배포된 상태에서 6월을 맞았다.
 
@@ -123,11 +123,11 @@ ERC-8004 자체는 6월 한 달간 ethereum/ercs 표준 프로세스 상태 변�
 
 각 표준은 하나를 대체하기보다 상거래, HTTP 결제, 실행 도구, 신원·권한, 출처 추적이라는 서로 다른 계층을 맡는다.
 
-6월 한 달간 에이전트 결제 스택의 경쟁이 수렴하는 단일 프로토콜로 가는 게 아니라는 점이 분명해졌다. x402는 HTTP 402 payment challenge와 facilitator settlement를 담당한다. UCP는 cart/checkout의 동의·신원·주문 증거를 정리한다. ERC-8004/8126/8273 계열은 에이전트 신원과 action별 권한 증명을 다룬다. pay.sh/MPP는 실행 환경에서 결제 시작 표면을 다듬는다.
+6월 한 달간의 변화에서 에이전트 결제 스택의 경쟁은 단일 프로토콜로 수렴하지 않고 계층별로 나뉘는 양상이 분명해졌다. x402는 HTTP 402 payment challenge와 facilitator settlement를 담당한다. UCP는 cart/checkout의 동의·신원·주문 증거를 정리한다. ERC-8004/8126/8273 계열은 에이전트 신원과 action별 권한 증명을 다룬다. pay.sh/MPP는 실행 환경에서 결제를 시작하는 도구를 다듬는다.
 
-각 레이어가 분리되어 있다는 것은 구현자가 어떤 레이어를 먼저 채택할지 선택할 수 있다는 뜻이기도 하고, 상호운용성이 아직 완성되지 않았다는 뜻이기도 하다. 완전한 에이전트 결제 흐름을 지금 만들려면 네 레이어 각각에서 선택을 내려야 하고, 그 선택들이 표준화된 방식으로 서로 연결되지는 않는다.
+각 레이어가 분리되어 있어 구현자는 어떤 레이어를 먼저 채택할지 선택할 수 있다. 다만 상호운용성은 아직 완성되지 않았다. 완전한 에이전트 결제 흐름을 지금 만들려면 네 레이어 각각에서 선택을 내려야 하고 그 선택들이 표준화된 방식으로 서로 연결되지는 않는다.
 
-지금 연동을 검토한다면 미완성 지점을 짚어둘 필요가 있다. x402 auth-capture는 클라이언트 서명까지만 들어갔고 서버·facilitator 지원이 남아 있다. MPP subscription은 server-side activation 검증과 `create_plan` 온체인 broadcast가 TODO다. ERC-8273은 Draft라 interface가 바뀔 수 있다. 이번 달 기준으로 프로덕션에 바로 얹을 수 있는 변화는 UCP idempotency contract와 x402 보안 패치 정도이고, 나머지는 방향 신호에 가깝다.
+지금 연동을 검토한다면 미완성 지점을 짚어둘 필요가 있다. x402 auth-capture는 클라이언트 서명까지만 들어갔고 서버·facilitator 지원이 남아 있다. MPP subscription은 server-side activation 검증과 `create_plan` 온체인 broadcast가 TODO다. ERC-8273은 Draft라 interface가 바뀔 수 있다. 이번 달 기준으로 프로덕션에 바로 얹을 수 있는 변화는 UCP idempotency contract와 x402 보안 패치 정도이고 나머지는 방향 신호에 가깝다.
 
 ## 함께 보면 좋을 자료
 

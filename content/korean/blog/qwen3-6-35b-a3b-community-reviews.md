@@ -3,7 +3,7 @@ title: "Qwen3.6-35B-A3B 커뮤니티 리뷰: uncensored 변종, MTP 가속, Herm
 meta_title: ""
 description: "1.2M 다운로드의 uncensored 변종부터 12GB/16GB VRAM 실측치까지. Qwen3.6-35B-A3B를 실제로 써본 커뮤니티 후기와 권장 설정을 정리했습니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T18:00:00+09:00
+lastmod: 2026-11-03T07:52:11+00:00
 image: "/images/posts/qwen3-6-35b-a3b-community-reviews/mtp-vram-speed-tradeoff.png"
 categories: ["AI"]
 tags: ["qwen", "local-llm", "moe", "mtp", "uncensored", "llama-cpp"]
@@ -14,7 +14,7 @@ draft: false
 
 Alibaba가 2026년 4월 출시한 Qwen3.6-35B-A3B는 총 파라미터 35B에 토큰당 활성 파라미터 약 3B인 MoE 모델이다. 기본 컨텍스트 262K, 공식 SWE-bench 점수 73.4%. 출시 두 달 만에 로컬 LLM 커뮤니티에서 가장 많이 테스트된 35B급 모델이 됐다.
 
-이 글은 Reddit, Hacker News, 개인 블로그에서 공유된 커뮤니티 경험을 모은 것이다. 개인 사례가 많으므로 독립 재현이 필요하고, 환경(하드웨어, 드라이버, 설정)에 따라 결과가 달라진다.
+이 글은 Reddit, Hacker News, 개인 블로그에서 공유된 커뮤니티 경험을 모은 것이다. 개인 사례가 많으므로 독립 재현이 필요하고 환경(하드웨어, 드라이버, 설정)에 따라 결과가 달라진다.
 
 ## 기본 스펙
 
@@ -30,13 +30,13 @@ Alibaba가 2026년 4월 출시한 Qwen3.6-35B-A3B는 총 파라미터 35B에 토
 
 ## uncensored 변종 비교
 
-베이스 모델은 특정 주제에서 거절 응답이 많다. 커뮤니티에서는 refusal을 제거하거나 줄인 변종을 여럿 만들었다. 여기서 자주 쓰이는 abliteration은 모델 내부 활성값에서 거절을 매개하는 방향(refusal direction)을 찾아 제거하는 기법이다. 파인튜닝 없이 가중치 수정만으로 거절을 줄이는 대신, 다른 능력이 함께 손상될 위험이 있어 변종마다 품질 편차가 크다.
+베이스 모델은 특정 주제에서 거절 응답이 많다. 커뮤니티에서는 refusal을 제거하거나 줄인 변종을 여럿 만들었다. 여기서 자주 쓰이는 abliteration은 모델 내부 활성값에서 거절을 매개하는 방향(refusal direction)을 찾아 제거하는 기법이다. 파인튜닝 없이 가중치 수정만으로 거절을 줄이는 대신 다른 능력이 함께 손상될 위험이 있어 변종마다 품질 편차가 크다.
 
 ### HauhauCS Aggressive
 
 [r/hermesagent 커뮤니티 변종 종합 가이드](https://www.reddit.com/r/hermesagent/comments/1tmp2qy/qwen3635ba3b_community_variants_the_definitive/)에 따르면 2026년 6월 기준 다운로드 122만 건, 좋아요 761개로 uncensored 변종 중 가장 많이 검증됐다. 제작자는 465회 테스트에서 refusal 0회, 베이스 모델과 동일한 품질을 주장했다. VRAM은 Q4_K_P 기준 약 22GB, IQ4_XS 기준 약 20GB다. 긴 agentic loop에서 topic drift가 간헐적으로 발생한다고 제작자 본인도 인정했다.
 
-커뮤니티 평가를 한 마디로 요약하면, 질문한 것만 답하고 사용자가 이상한 질문을 해야만 이상한 답이 나온다는 평이 많다([r/hermesagent 가이드](https://www.reddit.com/r/hermesagent/comments/1tmp2qy/qwen3635ba3b_community_variants_the_definitive/) 참고).
+질문한 것만 답하고 사용자가 이상한 질문을 해야만 이상한 답이 나온다는 커뮤니티 평이 많다([r/hermesagent 가이드](https://www.reddit.com/r/hermesagent/comments/1tmp2qy/qwen3635ba3b_community_variants_the_definitive/) 참고).
 
 ### 다른 uncensored 변종
 
@@ -56,7 +56,7 @@ Alibaba가 2026년 4월 출시한 Qwen3.6-35B-A3B는 총 파라미터 35B에 토
 
 - **Tool calling**: Qwen3.5 대비 안정성 개선. MCPMark 점수 37.0 (개인 측정).
 - **코딩**: 코드베이스 전체 분석, 수정 능력이 좋다는 평이 많음.
-- **추론**: 추론 깊이가 길고 복잡한 문제에 강하다.
+- **추론**: 깊이 있는 추론으로 복잡한 문제에 강하다.
 - **가성비**: 약 21GB VRAM에서 frontier급 성능을 기대할 수 있다는 평가.
 
 Simon Willison은 자신의 블로그에서 ["노트북에서 Qwen3.6이 Claude Opus 4.7보다 나은 펠리컨을 그렸다"](https://simonwillison.net/2026/Apr/16/qwen-beats-opus/)고 적었다. [HN 코멘트](https://news.ycombinator.com/item?id=47798382)에는 "Power Ranking 태스크 98개 중 11개 해결"이라는 사례도 올라왔다. 두 사례 모두 개별 데이터 포인트다.
@@ -68,7 +68,7 @@ Simon Willison은 자신의 블로그에서 ["노트북에서 Qwen3.6이 Claude 
 - **Tool call loop**: 같은 tool을 반복 호출하는 버그가 가장 흔하다.
 - **Topic drift**: 긴 agentic loop에서 주제 이탈이 발생한다.
 - **Temperature 민감도**: temp=1.0이 repetition과 looping을 줄이는 데 효과적이다. 기본값 0.6~0.8에서는 루프가 더 잦다.
-- **코드 재현**: distilled 변종은 CodeNeedle 점수가 낮게 나오는 편이라, 긴 코드를 그대로 재현할 때 실수할 가능성이 있다.
+- **코드 재현**: distilled 변종은 CodeNeedle 점수가 낮게 나오는 편이라 긴 코드를 그대로 재현할 때 실수할 가능성이 있다.
 
 ### 권장 설정
 
@@ -80,7 +80,7 @@ enable_thinking: false  # tool call parsing 방해 시
 
 ## MTP 가속 실측치
 
-MTP(Multi-Token Prediction)는 여러 토큰을 한 번에 예측해 생성 속도를 높이는 기법이다. draft로 미리 낸 토큰을 본 모델이 받아들이는 비율이 acceptance rate이고, 이 값이 높을수록 가속 폭이 커진다. llama.cpp에서 `--spec-type draft-mtp`로 활성화한다. VRAM 용량별 결과가 크게 다르다.
+MTP(Multi-Token Prediction)는 여러 토큰을 한 번에 예측해 생성 속도를 높이는 기법이다. draft로 미리 낸 토큰을 본 모델이 받아들이는 비율이 acceptance rate이고 이 값이 높을수록 가속 폭이 커진다. llama.cpp에서 `--spec-type draft-mtp`로 활성화한다. VRAM 용량별 결과가 크게 다르다.
 
 ### 12GB VRAM (RTX 4070 Super)
 
@@ -102,7 +102,7 @@ MTP(Multi-Token Prediction)는 여러 토큰을 한 번에 예측해 생성 속�
 
 *본문의 16GB RTX 5080 실측값과 MTP가 VRAM 여유에 따라 일으킬 수 있는 병목을 재구성한 도표입니다.*
 
-128K 컨텍스트에서 prompt processing은 약 1,584 tok/s (처리 시간 약 81초). MTP가 효과를 내려면 모델 전체가 VRAM에 올라가야 한다. MTP compute buffer 때문에 VRAM 여유가 줄어들면, MoE expert layer가 CPU로 밀리고 그 병목 때문에 MTP 없을 때보다 느려질 수 있다.
+128K 컨텍스트에서 prompt processing은 약 1,584 tok/s (처리 시간 약 81초). MTP가 효과를 내려면 모델 전체가 VRAM에 올라가야 한다. MTP compute buffer 때문에 VRAM 여유가 줄어들면 MoE expert layer가 CPU로 밀리고 그 병목 때문에 MTP 없을 때보다 느려질 수 있다.
 
 이 수치들은 모두 개인 실측이라 하드웨어, 드라이버, 설정에 따라 결과가 달라진다.
 

@@ -3,7 +3,7 @@ title: "DeepSWE: A Benchmark for Long-Horizon Coding Agents"
 meta_title: ""
 description: "DeepSWE from DataCurve AI evaluates coding agents on 113 original long-horizon tasks using behavior-based verification, not patch matching. Here is what it measures and how the leaderboard should be read."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:23:49+00:00
 image: "/images/posts/deepswe-coding-agent-benchmark/deepswe-verification-flow.png"
 categories: ["AI"]
 tags: ["benchmark", "coding-agent", "swe-bench", "llm", "evaluation"]
@@ -130,7 +130,7 @@ pier run -p deep-swe/tasks --agent mini-swe-agent --model <provider/model> --env
 
 ## Takeaways
 
-Three things to keep in mind when reading DeepSWE scores. First, every score comes from the same mini-swe-agent scaffold, so the leaderboard is a model comparison, not a prediction of how finished products like Claude Code or Codex perform end to end. Second, because grading is behavior-based, having memorized the reference solution barely helps; the agent still has to implement the behavior the held-out tests demand. Third, 106 of the 113 tasks are feature requests, so DeepSWE measures a different capability than the bug-fix-heavy SWE-bench Verified. The two scores do not belong on the same axis.
+Keep three things in mind when reading DeepSWE scores. First, every score comes from the same mini-swe-agent scaffold, so the leaderboard is a model comparison, not a prediction of how finished products like Claude Code or Codex perform end to end. Second, because grading is behavior-based, having memorized the reference solution barely helps; the agent still has to implement the behavior the held-out tests demand. Third, 106 of the 113 tasks are feature requests, so DeepSWE measures a different capability than the bug-fix-heavy SWE-bench Verified. The two scores do not belong on the same axis.
 
 ## Further reading
 

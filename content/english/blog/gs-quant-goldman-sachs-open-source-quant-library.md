@@ -3,7 +3,7 @@ title: "gs-quant: How Goldman Sachs Open-Sourced Its Quant Code, and Where the L
 meta_title: "gs-quant Review: Goldman Sachs Open-Source Quant Library"
 description: "What GS Quant runs locally, what needs authenticated Marquee services, and how code licensing differs from data entitlements, with source-checked Python examples."
 date: 2026-08-26T10:00:00+09:00
-lastmod: 2026-10-15T15:51:21Z
+lastmod: 2026-11-03T07:33:35Z
 image: "/images/posts/gs-quant-goldman-sachs-open-source-quant-library/quant-local-marquee-editorial-20261016.webp"
 categories: ["Finance"]
 tags: ["quant-finance", "open-source", "python", "goldman-sachs"]
@@ -70,7 +70,7 @@ print(swap.termination_date, swap.notional_amount)
 
 The inputs specify a five-year maturity, a 3% fixed rate, and a $1 million notional. Notional is the basis for calculating cash flows, not the present value. Constructing the object does not establish a complete payment schedule and market conventions or calculate a price. The official [Instruments guide](https://developer.gs.com/docs/gsquant/pricing-and-risk/instruments/) describes `resolve()` as a separate step that makes relative terms and default conventions concrete. That step also uses the service path in the default implementation. Local construction does not establish that `price()` or `calc()` runs locally.
 
-Directory-level classifications are also unreliable. Although `GsCalendar` looks like a date utility, specifying an exchange or currency leads it to query coverage and holiday data from the `HOLIDAY` and `HOLIDAY_CURRENCY` datasets. The [code](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/datetime/gscalendar.py#L87) returns early when the query targets are empty. Calling the whole datetime module offline would hide this dependency.
+Directory-level classifications are also unreliable. Although `GsCalendar` looks like a date utility, specifying an exchange or currency leads it to query coverage and holiday data from the `HOLIDAY` and `HOLIDAY_CURRENCY` datasets. The [code](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/datetime/gscalendar.py#L87) returns early when the query targets are empty. Describing the whole datetime module as offline would hide this dependency.
 
 ## Authentication and data entitlements are separate
 
