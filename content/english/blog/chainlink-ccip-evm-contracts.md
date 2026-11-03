@@ -3,7 +3,7 @@ title: "Chainlink CCIP EVM Contracts: Architecture from Source Code"
 meta_title: ""
 description: "A source-code walkthrough of Chainlink CCIP: how Router, OnRamp, OffRamp, TokenPool, FeeQuoter, and RMN fit together to move messages and tokens across EVM chains."
 date: 2026-06-30T17:30:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:17:58+00:00
 image: "/images/posts/chainlink-ccip-evm-contracts/ccip-cross-chain-architecture.png"
 categories: ["Blockchain"]
 tags: ["chainlink", "ccip", "cross-chain", "solidity", "smart-contract"]
@@ -14,7 +14,7 @@ draft: false
 
 EVM chains are isolated by design. A contract on Arbitrum has no native way to call a contract on Base, and sending USDC from Ethereum Mainnet to Polygon is not a built-in operation. Cross-chain bridges filled that gap for years, but the category has seen repeated security incidents that highlight how wide the attack surface is.
 
-Chainlink CCIP (Cross-Chain Interoperability Protocol) applies Chainlink's DON infrastructure and an independent Risk Management Network to the problem. It supports arbitrary data payloads alongside token transfers and lets you combine both in a single transaction. This post walks through the EVM contracts: what each one does, how they connect, and what matters when you are building on top of them.
+Chainlink CCIP (Cross-Chain Interoperability Protocol) applies Chainlink's DON infrastructure and an independent Risk Management Network to the problem. It supports arbitrary data payloads alongside token transfers and lets you combine both in a single transaction. For developers building on CCIP, the EVM contracts show what each component does and how the components connect.
 
 ## Overall architecture
 
@@ -24,7 +24,7 @@ A message moves through the source Router and OnRamp, crosses the CCIP network, 
 
 CCIP contracts split into two layers. The **interface layer** is what users and dApps touch directly. The **pipeline layer** is what the DON operates behind the scenes.
 
-Users only ever call the Router. Router hands off to OnRamp on the source chain. The DON and offchain executors observe the `CCIPMessageSent` event and submit execution data to `OffRamp.execute(encodedMessage, ccvs, verifierResults, gasLimitOverride)` on the destination chain. OffRamp calls `ccipReceive` on the receiver contract, and the cycle is done.
+Users only ever call the Router. Router hands off to OnRamp on the source chain. The DON and offchain executors observe the `CCIPMessageSent` event and submit execution data to `OffRamp.execute(encodedMessage, ccvs, verifierResults, gasLimitOverride)` on the destination chain. OffRamp calls `ccipReceive` on the receiver contract, completing the message flow.
 
 | Contract | Chain | Role |
 |----------|-------|------|
@@ -225,7 +225,7 @@ In v2, each chain has a deployed `RMNRemote` that verifies signatures locally, w
 
 ## CCIPReceiver: the receiver contract pattern
 
-Any contract that receives CCIP messages must implement `IAny2EVMMessageReceiver`. Extending Chainlink's `CCIPReceiver` abstract contract takes care of the plumbing:
+Any contract that receives CCIP messages must implement `IAny2EVMMessageReceiver`. Extending Chainlink's `CCIPReceiver` abstract contract provides the shared receiver logic:
 
 ```solidity
 abstract contract CCIPReceiver is IAny2EVMMessageReceiver {
@@ -246,7 +246,7 @@ abstract contract CCIPReceiver is IAny2EVMMessageReceiver {
 }
 ```
 
-The `onlyRouter` modifier is what actually matters here. `ccipReceive` must only accept calls from the Router. Skip this check and anyone can call your contract with an arbitrary message.
+The `onlyRouter` modifier enforces this requirement: `ccipReceive` must only accept calls from the Router. Skip this check and anyone can call your contract with an arbitrary message.
 
 Beyond that, a few patterns are worth enforcing:
 
@@ -264,9 +264,9 @@ Message ordering in v2 is managed through `DestChainConfig.messageNumber` in OnR
 
 The `allowOutOfOrderExecution` flag and finality/ordering policy are encoded in `extraArgs` and lane configuration. Check the Chainlink documentation and CCIP Directory for the actual behavior on specific lanes. When `allowOutOfOrderExecution` is false, messages from the same sender to the same destination chain execute in order. If message N fails, message N+1 stays in `UNTOUCHED` state until N is resolved.
 
-Setting `allowOutOfOrderExecution` to true skips the ordering check. This is fine for standalone token transfers or any case where order genuinely does not matter.
+Setting `allowOutOfOrderExecution` to true skips the ordering check. This is fine for standalone token transfers or any case where order does not matter.
 
-For workflows where order is load-bearing (sequential payments, state machine transitions), keep the default and design an explicit recovery path for the case where an earlier message stays `FAILURE`.
+For workflows where order matters (sequential payments, state machine transitions), keep the default and design an explicit recovery path for the case where an earlier message stays `FAILURE`.
 
 ## Integration checklist
 
@@ -298,17 +298,17 @@ Items to verify before going to production.
 
 ## Further reading
 
-- [Chainlink CCIP Documentation](https://docs.chain.link/ccip) — architecture, API reference, supported networks
-- [CCIP Source Code (smartcontractkit/chainlink)](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/ccip) — Router, OnRamp, OffRamp, TokenPool implementations
-- [CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat) — send and receive example contracts
-- [CCIP Explorer](https://ccip.chain.link) — cross-chain message tracker
-- [CCIP Best Practices](https://docs.chain.link/ccip/best-practices) — official guidance on security and integration patterns
+- [Chainlink CCIP Documentation](https://docs.chain.link/ccip): architecture, API reference, supported networks
+- [CCIP Source Code (smartcontractkit/chainlink)](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/ccip): Router, OnRamp, OffRamp, TokenPool implementations
+- [CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat): send and receive example contracts
+- [CCIP Explorer](https://ccip.chain.link): cross-chain message tracker
+- [CCIP Best Practices](https://docs.chain.link/ccip/best-practices): official guidance on security and integration patterns
 
 ## References
 
-- [Chainlink CCIP Architecture](https://docs.chain.link/ccip/architecture) — docs.chain.link, accessed 2026-06-30
-- [Chainlink CCIP API Reference](https://docs.chain.link/ccip/api-reference) — docs.chain.link, accessed 2026-06-30
-- [Chainlink CCIP Best Practices](https://docs.chain.link/ccip/best-practices) — docs.chain.link, accessed 2026-06-30
-- [CCIP Supported Networks](https://docs.chain.link/ccip/supported-networks) — docs.chain.link, accessed 2026-06-30
-- [CCIP Source Code (smartcontractkit/chainlink)](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/ccip) — github.com/smartcontractkit, accessed 2026-06-30
-- [CCIP Starter Kit (Hardhat)](https://github.com/smartcontractkit/ccip-starter-kit-hardhat) — github.com/smartcontractkit, accessed 2026-06-30
+- [Chainlink CCIP Architecture](https://docs.chain.link/ccip/architecture): docs.chain.link, accessed 2026-06-30
+- [Chainlink CCIP API Reference](https://docs.chain.link/ccip/api-reference): docs.chain.link, accessed 2026-06-30
+- [Chainlink CCIP Best Practices](https://docs.chain.link/ccip/best-practices): docs.chain.link, accessed 2026-06-30
+- [CCIP Supported Networks](https://docs.chain.link/ccip/supported-networks): docs.chain.link, accessed 2026-06-30
+- [CCIP Source Code (smartcontractkit/chainlink)](https://github.com/smartcontractkit/chainlink/tree/develop/contracts/src/v0.8/ccip): github.com/smartcontractkit, accessed 2026-06-30
+- [CCIP Starter Kit (Hardhat)](https://github.com/smartcontractkit/ccip-starter-kit-hardhat): github.com/smartcontractkit, accessed 2026-06-30

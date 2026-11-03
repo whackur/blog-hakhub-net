@@ -3,7 +3,7 @@ title: "ERC-8004 에이전트 평판: 온체인 등록과 조회"
 meta_title: ""
 description: "ERC-8004는 단일 컨트랙트가 아닌 레지스트리 세트다. giveFeedback()으로 Reputation Registry에 피드백을 등록하고, getSummary()로 신뢰 집합 기준 집계 조회하는 방법. 배포된 컨트랙트 주소와 생태계 서비스 현황."
 date: 2026-06-30T15:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:26:45+00:00
 image: "/images/posts/erc8004-agent-reputation-registry-lookup/reputation-write-read-flow.png"
 categories: ["Blockchain"]
 tags: ["ai-agent", "erc-8004", "reputation", "smart-contract", "onchain"]
@@ -12,17 +12,17 @@ translationKey: "erc8004-agent-reputation-registry-lookup"
 draft: false
 ---
 
-[지난 글](../ai-agent-wallet-trust-stack-erc-8004-8126-8196)에서 ERC-8004/8126/8196 신뢰 스택 개요를 살펴봤다. ERC-8004는 AI 에이전트 신원 등록(Identity Registry), 평판 기록(Reputation Registry), 작업 검증(Validation Registry) 세 레지스트리를 정의하는 Ethereum Draft 표준이다. 개념 설명은 그 글에 정리돼 있으니, 여기서는 중복하지 않는다.
+[지난 글](../ai-agent-wallet-trust-stack-erc-8004-8126-8196)에서 ERC-8004/8126/8196 신뢰 스택 개요를 살펴봤다. ERC-8004는 AI 에이전트 신원 등록(Identity Registry), 평판 기록(Reputation Registry), 작업 검증(Validation Registry) 세 레지스트리를 정의하는 Ethereum Draft 표준이다. 개념 설명은 그 글에서 다뤘다.
 
-이 글의 초점은 두 가지다. Reputation Registry에 피드백을 어떻게 온체인에 등록하고 조회하는지, 그리고 현재 이 레지스트리 데이터를 인덱싱하는 서비스들이 무엇인지.
+여기서는 Reputation Registry에 피드백을 온체인으로 등록하고 조회하는 방법과 현재 이 레지스트리 데이터를 인덱싱하는 서비스를 다룬다.
 
-배경을 한 줄로 요약하면, ERC-8004의 저자는 Marco De Rossi, Davide Crapis, Jordan Ellis, Erik Reppel이고, 결제는 명시적으로 스펙 범위 밖이다. A2A나 MCP가 다루지 않는 에이전트 발견(discovery)과 신뢰 계층을 채우는 표준이다.
+ERC-8004의 저자는 Marco De Rossi, Davide Crapis, Jordan Ellis, Erik Reppel이고 결제는 명시적으로 스펙 범위 밖이다. A2A나 MCP가 다루지 않는 에이전트 발견(discovery)과 신뢰 계층을 채우는 표준이다.
 
 ## 레지스트리 세트 구조
 
-ERC-8004는 단일 라우터 컨트랙트가 아니다. Identity Registry, Reputation Registry, Validation Registry 세 컨트랙트로 이뤄진 레지스트리 세트다. 각 컨트랙트는 독립적인 주소를 갖고, 호출도 각 컨트랙트에 직접 보낸다.
+ERC-8004는 단일 라우터 컨트랙트가 아니다. Identity Registry, Reputation Registry, Validation Registry 세 컨트랙트로 이뤄진 레지스트리 세트다. 각 컨트랙트는 독립적인 주소를 갖고 호출도 각 컨트랙트에 직접 보낸다.
 
-Reputation Registry는 초기화 시 Identity Registry 주소를 `initialize(address identityRegistry_)`로 받아 내부 `_identityRegistry`에 저장한다. `getIdentityRegistry()`로 연결된 Identity Registry 주소를 확인할 수 있다. 이 연결로 `giveFeedback()` 호출 시 Identity Registry에서 에이전트 존재 여부를 확인하고, 에이전트 소유자·운영자의 자작 피드백을 거부한다.
+Reputation Registry는 초기화 시 Identity Registry 주소를 `initialize(address identityRegistry_)`로 받아 내부 `_identityRegistry`에 저장한다. `getIdentityRegistry()`로 연결된 Identity Registry 주소를 확인할 수 있다. 이 연결로 `giveFeedback()` 호출 시 Identity Registry에서 에이전트 존재 여부를 확인하고 에이전트 소유자·운영자의 자작 피드백을 거부한다.
 
 `giveFeedback()`에는 레지스트리 주소 파라미터가 없다. 트랜잭션 자체를 원하는 Reputation Registry 컨트랙트 주소(`tx.to`)로 보내면 된다. 어느 Reputation Registry 주소를 신뢰하고 쓸지는 애플리케이션이 결정한다. 피드백은 Identity Registry를 거치지 않고 Reputation Registry 스토리지에 직접 저장된다.
 
@@ -30,11 +30,11 @@ Reputation Registry는 초기화 시 Identity Registry 주소를 `initialize(add
 
 ![클라이언트가 giveFeedback으로 평판 필드를 기록하고 애플리케이션이 신뢰하는 clientAddresses 집합을 getSummary에 넘겨 집계값을 읽는 ERC-8004 평판 등록·조회 흐름](/images/posts/erc8004-agent-reputation-registry-lookup/reputation-write-read-flow.png)
 
-쓰기는 누구에게나 열려 있지만, 조회 결과는 애플리케이션이 `getSummary()`에 넘긴 신뢰 클라이언트 집합으로 필터링된다.
+쓰기는 누구에게나 열려 있지만 조회 결과는 애플리케이션이 `getSummary()`에 넘긴 신뢰 클라이언트 집합으로 필터링된다.
 
-Reputation Registry는 퍼미션리스 온체인 게시판이다. 에이전트 소유자·운영자를 제외한 어떤 주소든 어느 에이전트에나 피드백을 올릴 수 있고, 레지스트리는 피드백의 진위를 판단하지 않는다.
+Reputation Registry는 퍼미션리스 온체인 게시판이다. 에이전트 소유자·운영자를 제외한 어떤 주소든 어느 에이전트에나 피드백을 올릴 수 있고 레지스트리는 피드백의 진위를 판단하지 않는다.
 
-레지스트리는 스팸이나 자작 리뷰를 막지 않는다. **피드백 신뢰성 판단은 조회 측의 책임이다.** 피드백을 읽을 때 신뢰하는 클라이언트 주소 집합을 직접 넘겨야만 집계된 요약을 얻을 수 있다. 레지스트리가 점수 하나를 내려주는 구조가 아니라, 필터링 기준을 호출자가 정하는 구조다.
+레지스트리는 스팸이나 자작 리뷰를 막지 않는다. **피드백 신뢰성 판단은 조회 측의 책임이다.** 피드백을 읽을 때 신뢰하는 클라이언트 주소 집합을 직접 넘겨야만 집계된 요약을 얻을 수 있다. 레지스트리가 점수 하나를 내려주는 구조가 아니라 필터링 기준을 호출자가 정하는 구조다.
 
 ## 저장 구조
 
@@ -57,7 +57,7 @@ struct Feedback {
 
 `giveFeedback()` 호출 시 `value`/`valueDecimals`를 0~100 정수로 정규화하지 않는다. 입력한 값 그대로 저장된다.
 
-`feedbackURI`(오프체인 URL)와 `feedbackHash`(URI 내용의 keccak256)는 struct에 넣지 않고 이벤트로 emit한다. 온체인 저장 비용을 줄이면서, 오프체인 인덱서로 복원 가능하게 설계한 것이다.
+`feedbackURI`(오프체인 URL)와 `feedbackHash`(URI 내용의 keccak256)는 struct에 넣지 않고 이벤트로 emit한다. 온체인 저장 비용은 줄이되 오프체인 인덱서로 복원할 수 있도록 설계했다.
 
 인덱싱은 3차원: `agentId → clientAddress → feedbackIndex`. 인덱스는 1부터 시작한다. `_lastIndex[agentId][client] == 0`이면 해당 클라이언트가 남긴 피드백이 없다는 뜻이다.
 
@@ -80,9 +80,9 @@ function giveFeedback(
 
 - **agentId**: Identity Registry에 등록된 에이전트의 ERC-721 토큰 ID.
 - **value, valueDecimals**: 고정소수점 점수. `valueDecimals <= 18`. 품질 점수 85를 주려면 `value=85, valueDecimals=0`. 업타임 99.5%라면 `value=9950, valueDecimals=2` (소비자가 99.50으로 해석).
-- **tag1, tag2**: 피드백 분류 문자열. 자유 문자열이며, 빈 문자열도 유효하다.
+- **tag1, tag2**: 피드백 분류 문자열. 자유 문자열이며 빈 문자열도 유효하다.
 - **endpoint**: 피드백 대상 에이전트 엔드포인트. 에이전트 전체 대상이면 빈 문자열.
-- **feedbackURI**: 상세 피드백을 담은 오프체인 URI. IPFS가 권장 방식이고, HTTPS도 가능하다.
+- **feedbackURI**: 상세 피드백을 담은 오프체인 URI. IPFS가 권장 방식이고 HTTPS도 가능하다.
 - **feedbackHash**: feedbackURI 내용의 keccak256 해시. 오프체인 데이터 위변조 감지용.
 
 트랜잭션을 보내는 지갑 주소(msg.sender)가 `clientAddress`로 이벤트에 기록된다. 피드백 1건 = 트랜잭션 1건이다. 호출자가 `agentId`의 소유자 또는 운영자이면 컨트랙트가 거부한다.
@@ -128,7 +128,7 @@ function getSummary(
 ERC-8004 Reputation Registry를 활용할 때 실제로는 두 가지 신뢰 결정이 있다.
 
 1. **어느 Reputation Registry 컨트랙트 주소를 신뢰할 것인가.** 네트워크마다 어느 Reputation Registry에 쓰고 읽을지 정해야 한다. 현재 mainnet에서 널리 쓰이는 주소는 `0x8004BAa17C55a88189AE136b182e5fdA19dE9b63`이다.
-2. **getSummary()에 어느 클라이언트 주소를 포함할 것인가.** 레지스트리 주소를 정했다 해도, 그 레지스트리 안에서 어떤 피드백 제출자를 신뢰할지는 별개로 결정해야 한다. 이 선택이 집계 결과 품질을 결정한다. 서비스 내에서 활동한 클라이언트 주소, 제3자 attestation 서비스가 검증한 주소, 자체 사용자 기반에서 도출한 주소가 선택지다.
+2. **getSummary()에 어느 클라이언트 주소를 포함할 것인가.** 레지스트리 주소를 정했다 해도 그 레지스트리 안에서 어떤 피드백 제출자를 신뢰할지는 별개로 결정해야 한다. 이 선택이 집계 결과 품질을 결정한다. 서비스 내에서 활동한 클라이언트 주소, 제3자 attestation 서비스가 검증한 주소, 자체 사용자 기반에서 도출한 주소가 선택지다.
 
 ## 추가 조회 함수
 
@@ -141,7 +141,7 @@ function readFeedback(uint256 agentId, address clientAddress, uint64 feedbackInd
 function readAllFeedback(uint256 agentId, address[] calldata clientAddresses, string calldata tag1, string calldata tag2, bool includeRevoked) external view returns (...)
 ```
 
-특정 클라이언트의 피드백을 순서대로 읽으려면, 먼저 `getLastIndex(agentId, clientAddress)`로 마지막 인덱스를 확인하고, `readFeedback(agentId, clientAddress, i)`를 `i=1..lastIndex` 범위로 반복 호출한다.
+특정 클라이언트의 피드백을 순서대로 읽으려면 먼저 `getLastIndex(agentId, clientAddress)`로 마지막 인덱스를 확인하고 `readFeedback(agentId, clientAddress, i)`를 `i=1..lastIndex` 범위로 반복 호출한다.
 
 ## 배포된 컨트랙트 주소
 
@@ -174,7 +174,7 @@ ERC-8004 레지스트리 데이터를 인덱싱하거나 탐색하는 서비스�
 
 스펙의 예시 태그는 `starred`, `reachable`, `uptime`, `responseTime`이다. QuickNode ERC-8004 Explorer가 집계하는 관습 태그는 `quality`, `safety`, `cost`, `speed`, `accuracy`다.
 
-태그는 자유 문자열이므로 어떤 값도 쓸 수 있지만, 정확히 같은 문자열끼리만 함께 집계된다. `"quality"`와 `"Quality"`는 서로 다른 태그다. 각 explorer와 애플리케이션이 자체 관습 태그 집합을 정의하고 그 기준으로 집계한다. 레지스트리는 게시판 구조만 정의하고 점수 해석은 애플리케이션에 남긴다는 설계가 그대로 드러나는 부분이다.
+태그는 자유 문자열이므로 어떤 값도 쓸 수 있지만 정확히 같은 문자열끼리만 함께 집계된다. `"quality"`와 `"Quality"`는 서로 다른 태그다. 각 explorer와 애플리케이션이 자체 관습 태그 집합을 정의하고 그 기준으로 집계한다. 레지스트리는 게시판 구조만 정의하고 점수 해석은 애플리케이션에 맡긴다.
 
 커스텀 태그를 정의할 때는 생태계 내에서 합의된 레이블을 쓰지 않으면 다른 서비스의 집계에 포함되지 않는다는 점을 고려해야 한다.
 
@@ -186,31 +186,31 @@ ERC-8004 레지스트리 데이터를 인덱싱하거나 탐색하는 서비스�
 
 **Sybil 공격 노출.** `getSummary()` 호출 시 `clientAddresses`를 잘못 설정하면 자작 리뷰에 오염된 점수를 받는다. 신뢰 집합 구성이 서비스 품질을 결정한다.
 
-**오프체인 URI 무결성.** `feedbackHash`로 위변조를 감지할 수 있지만, HTTPS 서버처럼 오프체인 스토리지가 사라지면 상세 피드백 내용을 복원할 수 없다. IPFS 같은 콘텐츠 주소 체계를 권장한다.
+**오프체인 URI 무결성.** `feedbackHash`로 위변조를 감지할 수 있지만 HTTPS 서버처럼 오프체인 스토리지가 사라지면 상세 피드백 내용을 복원할 수 없다. IPFS 같은 콘텐츠 주소 체계를 권장한다.
 
 **Validation Registry 미출시.** TEE attestation flow 확정 중으로 현재 testnet 한정 운영이다. 작업 검증 기능은 mainnet 출시를 기다려야 한다.
 
 ## 정리
 
-ERC-8004 Reputation Registry는 퍼미션리스 게시판으로 설계됐다. Identity Registry, Reputation Registry, Validation Registry 세 컨트랙트로 이뤄진 레지스트리 세트이며, 각 컨트랙트에 직접 트랜잭션을 보낸다. 피드백은 `value`/`valueDecimals` 고정소수점 값 그대로 저장되고, `getSummary()`가 신뢰 집합 기준으로 집계한다. 어느 레지스트리 주소를 신뢰할지, 어느 클라이언트를 신뢰 집합에 넣을지는 별개의 두 결정이다.
+ERC-8004 Reputation Registry는 퍼미션리스 게시판으로 설계됐다. Identity Registry, Reputation Registry, Validation Registry 세 컨트랙트로 이뤄진 레지스트리 세트이며 각 컨트랙트에 직접 트랜잭션을 보낸다. 피드백은 `value`/`valueDecimals` 고정소수점 값 그대로 저장되고 `getSummary()`가 신뢰 집합 기준으로 집계한다. 어느 레지스트리 주소를 신뢰할지, 어느 클라이언트를 신뢰 집합에 넣을지는 별개의 두 결정이다.
 
-CREATE2 결정적 주소 덕분에 10개 이상 mainnet에서 같은 주소로 동작한다. Agentscan, QuickNode ERC-8004 Explorer 등이 이미 데이터를 인덱싱하고 있다. 다만 Draft 스펙이라 인터페이스 변경 가능성이 있고, 실제 평판 데이터의 신뢰성은 아직 낮다.
+CREATE2 결정적 주소 덕분에 10개 이상 mainnet에서 같은 주소로 동작한다. Agentscan, QuickNode ERC-8004 Explorer 등이 이미 데이터를 인덱싱하고 있다. 다만 Draft 스펙이라 인터페이스 변경 가능성이 있고 실제 평판 데이터의 신뢰성은 아직 낮다.
 
 ## 함께 보면 좋을 자료
 
-- [AI 에이전트 신원·검증·정책: ERC-8004/8126/8196 신뢰 스택](../ai-agent-wallet-trust-stack-erc-8004-8126-8196) — ERC-8004 개념 스택 개요 (이 블로그)
-- [QuickNode ERC-8004 Explorer](https://erc-8004.quicknode.com) — 에이전트 탐색 + 피드백 제출 개발자 튜토리얼
-- [Agentscan](https://agentscan.info) — 멀티체인 에이전트 검색 서비스
-- [erc-8004-contracts 레퍼런스 구현](https://github.com/erc-8004/erc-8004-contracts) — ABI, 저장 구조 소스
+- [AI 에이전트 신원·검증·정책: ERC-8004/8126/8196 신뢰 스택](../ai-agent-wallet-trust-stack-erc-8004-8126-8196): ERC-8004 개념 스택 개요 (이 블로그)
+- [QuickNode ERC-8004 Explorer](https://erc-8004.quicknode.com): 에이전트 탐색 + 피드백 제출 개발자 튜토리얼
+- [Agentscan](https://agentscan.info): 멀티체인 에이전트 검색 서비스
+- [erc-8004-contracts 레퍼런스 구현](https://github.com/erc-8004/erc-8004-contracts): ABI, 저장 구조 소스
 
 ## 참고 자료
 
-- [EIP-8004 (Draft)](https://eips.ethereum.org/EIPS/eip-8004) — Ethereum Improvement Proposals, 조회일 2026-06-30
-- [ethereum/ERCs: ERC-8004](https://github.com/ethereum/ERCs/blob/master/ERCS/erc-8004.md) — EIP 원문, 조회일 2026-06-30
-- [erc-8004/erc-8004-contracts](https://github.com/erc-8004/erc-8004-contracts) — 레퍼런스 컨트랙트 구현, 조회일 2026-06-30
-- [QuickNode ERC-8004 Explorer](https://erc-8004.quicknode.com) — 컨트랙트 주소·ABI 문서·피드백 제출 튜토리얼, 조회일 2026-06-30
-- [Agentscan](https://agentscan.info) — AI 에이전트 explorer, 조회일 2026-06-30
-- [8004.org](https://www.8004.org) — ERC-8004 공식 사이트, 조회일 2026-06-30
-- [DeepWiki: erc-8004-contracts](https://deepwiki.com/erc-8004/erc-8004-contracts) — 레퍼런스 컨트랙트 API 문서, 조회일 2026-06-30
-- [Allium](https://www.allium.so) — ERC-8004 온체인 데이터 분석, 조회일 2026-06-30
-- [arXiv 2606.26028: Can Trustless Agents Be Trusted?](https://arxiv.org/abs/2606.26028) — Ethereum/BSC/Base 배포 실증 연구, 조회일 2026-06-30
+- [EIP-8004 (Draft)](https://eips.ethereum.org/EIPS/eip-8004): Ethereum Improvement Proposals, 조회일 2026-06-30
+- [ethereum/ERCs: ERC-8004](https://github.com/ethereum/ERCs/blob/master/ERCS/erc-8004.md): EIP 원문, 조회일 2026-06-30
+- [erc-8004/erc-8004-contracts](https://github.com/erc-8004/erc-8004-contracts): 레퍼런스 컨트랙트 구현, 조회일 2026-06-30
+- [QuickNode ERC-8004 Explorer](https://erc-8004.quicknode.com): 컨트랙트 주소·ABI 문서·피드백 제출 튜토리얼, 조회일 2026-06-30
+- [Agentscan](https://agentscan.info): AI 에이전트 explorer, 조회일 2026-06-30
+- [8004.org](https://www.8004.org): ERC-8004 공식 사이트, 조회일 2026-06-30
+- [DeepWiki: erc-8004-contracts](https://deepwiki.com/erc-8004/erc-8004-contracts): 레퍼런스 컨트랙트 API 문서, 조회일 2026-06-30
+- [Allium](https://www.allium.so): ERC-8004 온체인 데이터 분석, 조회일 2026-06-30
+- [arXiv 2606.26028: Can Trustless Agents Be Trusted?](https://arxiv.org/abs/2606.26028): Ethereum/BSC/Base 배포 실증 연구, 조회일 2026-06-30

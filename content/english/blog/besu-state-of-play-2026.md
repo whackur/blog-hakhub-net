@@ -3,7 +3,7 @@ title: "Understanding Besu: From Ethereum Execution to Bank Token Payments"
 meta_title: "Besu Explained: EVM, Execution Clients, Permissioned Networks and Project Hangang"
 description: "Learn how the Java Ethereum execution client Besu processes transactions and state, how mainnet differs from permissioned networks, and what Korea’s Project Hangang and recent development show."
 date: 2026-10-15T11:37:00+09:00
-lastmod: 2026-10-15T12:03:15+00:00
+lastmod: 2026-11-03T07:12:01+00:00
 image: "/images/posts/besu-state-of-play-2026/execution-settlement-cover-20261015.webp"
 categories: ["Blockchain"]
 tags: ["besu", "ethereum", "execution-client", "qbft", "enterprise-blockchain"]

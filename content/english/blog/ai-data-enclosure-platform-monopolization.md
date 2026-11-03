@@ -3,7 +3,7 @@ title: "Data Enclosure and Platform Concentration in the AI Era"
 meta_title: ""
 description: "Naver, Reddit, X and Cloudflare show how API termination, purpose restrictions, selective agreements and usage pricing can shape AI competition."
 date: 2026-10-15T16:00:00+09:00
-lastmod: 2026-10-15T20:23:51+09:00
+lastmod: 2026-11-03T07:10:24+00:00
 image: "/images/posts/ai-data-enclosure-platform-monopolization/platform-archives-selective-access-editorial.webp"
 categories: ["AI"]
 tags: ["data-enclosure", "platforms", "competition", "data-licensing", "ai-search", "commerce"]
@@ -61,7 +61,7 @@ Cloudflare [announced Pay Per Crawl in private beta on July 1, 2025](https://blo
 
 [Pay Per Use, announced September 30, 2026](https://blog.cloudflare.com/pay-per-use/), is a beta that charges for downstream use. An AI company proposes a paid-use definition and price; publishers choose whether to participate. The buyer reports uses, and Cloudflare handles billing and payment. Program terms may include training restrictions.
 
-This could reduce transaction work for publishers unable to negotiate individual deals. Usage, however, is self-reported by the buyer. A beta announcement does not demonstrate adequate compensation or commercial adoption. Charging for access and paying for actual content use still leave different outcomes to verify.
+This could reduce the work involved in transactions for publishers unable to negotiate individual deals. Usage, however, is self-reported by the buyer. A beta announcement does not demonstrate adequate compensation or commercial adoption. Charging for access and paying for actual content use still leave different outcomes to verify.
 
 ## Four forms of access change
 
@@ -84,7 +84,7 @@ The risk can grow when hard-to-replace data is combined with a service that attr
 
 ## Effects and outlook depend on the terms of participation
 
-Independent developers and researchers may face contract negotiations and supplier-switching work alongside retrieval costs. Users may gain convenient integrated AI services while facing fewer comparison or recommendation alternatives. Publishers could gain revenue, but a platform's contract income does not automatically compensate individual contributors.
+Independent developers and researchers may face contract negotiations and the work of switching suppliers alongside retrieval costs. Users may gain convenient integrated AI services while facing fewer comparison or recommendation alternatives. Publishers could gain revenue, but a platform's contract income does not automatically compensate individual contributors.
 
 Regulators have also introduced measures to support choice. On [June 3, 2026, the UK's Competition and Markets Authority (CMA) imposed a publisher conduct requirement on Google search](https://www.gov.uk/government/news/cma-secures-fairer-deal-for-publishers-and-improves-google-search-services-in-uk/). It requires controls to opt out of content use in search AI features and clear attribution links, among other measures, with nine months to implement all changes. This does not mean worldwide implementation is complete. The CMA also says strategic market status designation does not itself imply anticompetitive conduct.
 

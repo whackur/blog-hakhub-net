@@ -3,7 +3,7 @@ title: "The A2A (Agent-to-Agent) Protocol: How Agents Delegate to Each Other, an
 meta_title: ""
 description: "How A2A 1.0 handles Agent Card discovery, delegation, task state, streaming and authentication. Separating MCP tool access, AP2 purchase authorization, UCP commerce and x402 settlement, with the conditions each integration needs."
 date: 2026-08-27T10:00:00+09:00
-lastmod: 2026-10-15T15:41:34Z
+lastmod: 2026-11-03T08:11:13Z
 image: "/images/posts/a2a-agent-to-agent-protocol/a2a-editorial-20261016.webp"
 categories: ["Blockchain"]
 tags: ["a2a", "ai-agent", "agentic-payments", "x402", "mcp"]

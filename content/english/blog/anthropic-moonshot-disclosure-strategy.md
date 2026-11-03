@@ -3,7 +3,7 @@ title: "Why did Anthropic publish its report on alleged Kimi-to-Claude routing?"
 meta_title: ""
 description: "Why disclosing alleged Kimi-to-Claude routing can serve Anthropic despite incoming sensitive data, and how reasoning replay and privacy scrutiny change the tradeoff."
 date: 2026-09-15T13:30:00+09:00
-lastmod: 2026-10-15T11:40:30+00:00
+lastmod: 2026-11-03T07:11:07+00:00
 image: "/images/posts/anthropic-moonshot-disclosure-strategy/disclosure-cover-20261015.webp"
 categories: ["AI"]
 tags: ["llm", "distillation", "ai-security", "anthropic", "kimi"]
@@ -14,7 +14,7 @@ draft: false
 
 If sensitive information was reaching Claude, why would Anthropic reveal the route? **A model provider may gain more from limiting unauthorized use and alerting customers to a data-handling problem than from continuing to observe the inputs.** Answering a competitor’s users consumes compute and may produce training material for that competitor. Publication also reaches users and enterprise buyers whom account bans alone cannot inform. These incentives explain why disclosure can make sense; they do not establish how Anthropic made its internal decision.
 
-In its [September 2026 report](https://www.anthropic.com/threat-intelligence-report-september-2026), Anthropic gives a stated reason: responsibility to disclose malicious misuse of its services. It also says the findings should help other developers detect abuse and help society respond. The allegation that Moonshot sent Kimi requests to Claude is one case in that report. Treating the arrival of sensitive inputs as an intelligence success overlooks both the provider’s interest in protecting its service and the rights of the people whose data arrived.
+In its [September 2026 report](https://www.anthropic.com/threat-intelligence-report-september-2026), Anthropic says it has a responsibility to disclose malicious misuse of its services. It also says the findings should help other developers detect abuse and help society respond. The allegation that Moonshot sent Kimi requests to Claude is one case in that report. Treating the arrival of sensitive inputs as an intelligence success overlooks both the provider’s interest in protecting its service and the rights of the people whose data arrived.
 
 ## Serving customer requests while collecting training material
 
@@ -58,7 +58,7 @@ Blocking and publishing have overlapping purposes but different effects. An acco
 
 ## Disclosure exposes Anthropic to scrutiny as well
 
-For customers, the immediate issue is which company processed an input, beyond which model answered it best. An enterprise buyer learning about rerouting can check the actual processors and retention conditions against contractual commitments. More such questions would create an explanation and response burden for Moonshot. Publication also showcases Anthropic’s detection work and its case for protecting model capabilities. That may help it in customer and policy discussions, but neither actual revenue effects nor the relative weight of these motives in the publication decision is established.
+For customers, the immediate issue is which company processed an input, beyond which model answered it best. An enterprise buyer learning about rerouting can check the actual processors and retention conditions against contractual commitments. More such questions would require Moonshot to explain and respond. Publication also publicizes Anthropic’s detection work and its case for protecting model capabilities. That may help it in customer and policy discussions, but neither actual revenue effects nor the relative weight of these motives in the publication decision is established.
 
 Those effects do not all favor Anthropic. Detailed case studies also invite questions about how much request content it retains and who can read it. In the [Hacker News Moonshot discussion](https://news.ycombinator.com/item?id=49656698), wongarsu distinguished a service that discloses possible routing to another model from one that offers Kimi while forwarding to Claude. In the same discussion, AlanYx worried that retention for abuse investigations could be broader than customers expect. One concern is routing transparency; the other is the investigator’s authority to process data. Neither comment independently verifies the incident.
 

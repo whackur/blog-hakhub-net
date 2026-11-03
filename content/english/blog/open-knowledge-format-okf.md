@@ -3,7 +3,7 @@ title: "Open Knowledge Format: A Shared Vocabulary for Agent Knowledge"
 meta_title: ""
 description: "OKF v0.1 is Google Cloud's proposed open format for AI agent knowledge sharing: YAML-frontmattered Markdown files in a directory tree, no central registry or required runtime."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:52:23+00:00
 image: "/images/posts/open-knowledge-format-okf/knowledge-bundle-structure.png"
 categories: ["AI"]
 tags: ["ai-agent", "knowledge-management", "metadata", "open-standard", "okf", "google-cloud", "mcp"]
@@ -120,7 +120,7 @@ The repo README notes that "format itself is the contribution." The enrichment a
 - AGENTS.md: setup, test, and style rules for a coding agent in a specific repo
 - OKF: a format for representing an entire organizational knowledge corpus that agents and humans can share
 
-OKF's starting point is the observation that AGENTS.md, CLAUDE.md, index.md, and log.md are already used as LLM Wiki-style files, but their fields, structure, and link semantics vary too much for interoperability. OKF tries to define a minimal common floor.
+OKF's starting point is the observation that AGENTS.md, CLAUDE.md, index.md, and log.md are already used as LLM Wiki-style files, but their fields, structure, and link semantics vary too much for interoperability. OKF tries to define a minimal set of common rules.
 
 ### Avro, Protobuf, and OpenAPI
 
@@ -135,7 +135,7 @@ The OKF SPEC explicitly lists Avro, Protobuf, and OpenAPI as out of scope. OKF r
 [MCP](https://modelcontextprotocol.io/introduction) is the open protocol for connecting AI applications to external systems, data sources, and tools. OKF and MCP are complementary, not competing.
 
 - MCP: how an agent connects to and calls external tools and data sources
-- OKF: what file format the knowledge that agent reads and shares takes
+- OKF: the file format an agent uses to read and share knowledge
 
 An MCP server could expose an OKF bundle as a resource. An agent could query a data catalog via MCP and organize the results as an OKF bundle.
 
@@ -146,7 +146,7 @@ OKF fits when:
 - multiple agents or tools need to read the same organizational knowledge
 - data catalogs, metric definitions, playbooks, and API documentation are scattered across different systems
 - knowledge changes should be managed as git diffs and reviewed like code
-- sharing a knowledge corpus across teams without binding to a specific vendor API
+- teams need to share a knowledge corpus without depending on a specific vendor API
 
 OKF is overkill for:
 

@@ -3,7 +3,7 @@ title: "Figure: From HELOC Lender to Blockchain-Native Capital Markets"
 meta_title: ""
 description: "Figure Technology Solutions started as a consumer HELOC lender and has since built a blockchain-native capital markets platform on Provenance Blockchain, integrating loan origination, the DART ownership registry, tokenized lending markets, and the YLDS yield-bearing security."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:27:39+00:00
 image: "/images/posts/figure-blockchain-capital-markets/closed-loop-capital-markets.png"
 categories: ["Blockchain"]
 tags: ["rwa", "provenance", "capital-markets", "tokenization", "heloc", "ylds"]
@@ -20,7 +20,7 @@ Figure Technology Solutions started as a consumer home equity lender. Founded in
 
 A quick definition: real-world assets (RWA) in blockchain finance refers to financial instruments that originate outside the chain, such as mortgages, government bonds, and private credit, and are represented as on-chain tokens. "Putting RWA on a blockchain" undersells what Figure is building. The actual thesis, as stated in its [Investor Relations materials](https://investors.figure.com/investor-relations), is a "blockchain-native capital marketplace for the origination, funding, sale and trading of on-chain loan products and tokenized assets."
 
-The important detail: Figure is not tokenizing assets that were created somewhere else. It originates loans directly onto Provenance Blockchain, then connects those loans to an ownership registry, a trading marketplace, and a yield-bearing cash instrument. The pipeline is closed-loop from the start.
+Figure is not tokenizing assets that were created somewhere else. It originates loans directly onto Provenance Blockchain, then connects those loans to an ownership registry, a trading marketplace, and a yield-bearing cash instrument. The pipeline is closed-loop from the start.
 
 ![Figure capital-markets architecture. A HELOC is originated through the LOS and registered in DART, while DART, Figure Connect, Democratized Prime, and YLDS each connect to Provenance as the shared record, settlement, and tokenization rail.](/images/posts/figure-blockchain-capital-markets/closed-loop-capital-markets.png)
 
@@ -79,17 +79,17 @@ Some commonly cited claims require independent verification: "#1 non-bank HELOC 
 
 ## Further Reading
 
-- [Provenance Blockchain](https://provenance.io/) — Figure's record, settlement, and tokenization rail
-- [DART](https://dartinc.io/) — on-chain loan ownership and lien registry
-- [YLDS](https://www.ylds.com/) — SEC-registered yield-bearing security
-- [Figure Markets](https://www.figuremarkets.com/) — exchange, Democratized Prime, HASH
+- [Provenance Blockchain](https://provenance.io/): Figure's record, settlement, and tokenization rail
+- [DART](https://dartinc.io/): on-chain loan ownership and lien registry
+- [YLDS](https://www.ylds.com/): SEC-registered yield-bearing security
+- [Figure Markets](https://www.figuremarkets.com/): exchange, Democratized Prime, HASH
 
 ## References
 
-- [Figure Official Site](https://www.figure.com/) — figure.com, accessed 2026-06-30
-- [Figure Investor Relations](https://investors.figure.com/investor-relations) — accessed 2026-06-30
-- [SEC Prospectus](https://www.sec.gov/Archives/edgar/data/2064124/000206412425000013/figuretechnologysolutionsi.htm) — 2025 IPO filing, accessed 2026-06-30
-- [Figure Markets](https://www.figuremarkets.com/) — accessed 2026-06-30
-- [Provenance Blockchain](https://provenance.io/) — accessed 2026-06-30
-- [DART](https://dartinc.io/) — accessed 2026-06-30
-- [YLDS](https://www.ylds.com/) — accessed 2026-06-30
+- [Figure Official Site](https://www.figure.com/): figure.com, accessed 2026-06-30
+- [Figure Investor Relations](https://investors.figure.com/investor-relations): accessed 2026-06-30
+- [SEC Prospectus](https://www.sec.gov/Archives/edgar/data/2064124/000206412425000013/figuretechnologysolutionsi.htm): 2025 IPO filing, accessed 2026-06-30
+- [Figure Markets](https://www.figuremarkets.com/): accessed 2026-06-30
+- [Provenance Blockchain](https://provenance.io/): accessed 2026-06-30
+- [DART](https://dartinc.io/): accessed 2026-06-30
+- [YLDS](https://www.ylds.com/): accessed 2026-06-30

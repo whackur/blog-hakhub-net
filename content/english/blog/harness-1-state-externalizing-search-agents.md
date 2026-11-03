@@ -3,7 +3,7 @@ title: "Harness-1: Teaching Search Agents to Offload State"
 meta_title: ""
 description: "How the 20B Harness-1 search subagent externalizes working memory to a stateful harness, stabilizes RL training, and achieves 0.730 average curated recall across eight benchmarks."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:37:53+00:00
 image: "/images/posts/harness-1-state-externalizing-search-agents/state-externalizing-harness.png"
 categories: ["AI"]
 tags: ["search-agent", "retrieval", "rl", "rag", "agent-harness"]
@@ -51,7 +51,7 @@ The model chooses semantic actions; the harness maintains seven kinds of working
 
 ## Tools
 
-The policy issues one structured action per turn. The notable entries:
+The policy issues one structured action per turn. The main tools:
 
 - `fan_out_search(queries)`: parallel hybrid search across up to 5 queries (RRF + rerank)
 - `search_corpus(query)`: single hybrid search
@@ -85,11 +85,11 @@ Transfer matters here. Compared to Context-1, Harness-1 gains +7.9pt on source-f
 
 Ablations on BrowseComp+: disabling all harness mechanisms drops Recall from 0.584 to 0.513 (FA Recall -12.2% relative). Importance tags removal alone costs FA Recall -7.9%.
 
-One caveat worth noting: Opus-4.6 still leads on average curated recall, and there's a remaining gap on BrowseComp+ final-answer recall.
+Opus-4.6 still leads on average curated recall, and there's a remaining gap on BrowseComp+ final-answer recall.
 
 ## Limitations
 
-The paper is transparent about what Harness-1 doesn't do:
+The paper lists Harness-1's limitations:
 
 - Experiments focus on evidence-seeking retrieval. Open-ended report generation, abstention when evidence is missing, and adversarial web environments are out of scope.
 - The evidence graph uses regex-based entity/date extraction, so quality varies across domains.

@@ -3,7 +3,7 @@ title: "Circle CCTP V2 EVM Contracts: A Source-Code Walkthrough"
 meta_title: ""
 description: "How TokenMessengerV2, MessageTransmitterV2, and TokenMinterV2 divide responsibility in Circle's CCTP V2. Covers the burn-and-mint lifecycle, message layout, fast transfer fee model, hookData, destinationCaller, and the trust assumptions every integrator should know."
 date: 2026-06-30T17:30:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:23:28+00:00
 image: "/images/posts/circle-cctp-v2-evm-contracts/cctp-v2-burn-mint-lifecycle.png"
 categories: ["Blockchain"]
 tags: ["cctp", "circle", "usdc", "cross-chain", "solidity"]
@@ -40,9 +40,9 @@ The V2 EVM implementation splits work across three contracts.
 | `MessageTransmitterV2` | Cross-chain message routing, attestation verification | TokenMessengerV2, relayers |
 | `TokenMinterV2` | Execute token burns and mints, enforce per-token limits | TokenMessengerV2 only |
 
-In one line each: TokenMessengerV2 is the entry point users touch, MessageTransmitterV2 is the communication layer that handles messages and attestations, and TokenMinterV2 is the vault keeper holding the actual burn and mint authority.
+TokenMessengerV2 is the entry point users call. MessageTransmitterV2 handles messages and attestations, and TokenMinterV2 holds the actual burn and mint authority.
 
-The value of the split is that each concern gets a narrow trust perimeter. MessageTransmitterV2 is a generic message-passing contract that knows nothing about tokens. USDC mint authority, on the other hand, lives in exactly one place, TokenMinterV2, and only TokenMessengerV2 can call it. The path to a mint is a single corridor in the code, so there is correspondingly less attack surface to audit.
+This split narrows the trust perimeter for each responsibility. MessageTransmitterV2 is a generic message-passing contract that knows nothing about tokens. USDC mint authority, on the other hand, lives in exactly one place, TokenMinterV2, and only TokenMessengerV2 can call it. The code allows only one path to a mint, reducing the attack surface to audit.
 
 ## TokenMessengerV2: the user-facing entry point
 
@@ -91,7 +91,7 @@ When a burn request comes in, TokenMessengerV2 does two things in order. It call
 
 ## MessageTransmitterV2: routing and attestation verification
 
-MessageTransmitterV2 is CCTP's communication layer. It has no idea what a token is. It sends raw byte messages, receives them, and verifies signatures. Nothing more.
+MessageTransmitterV2 is CCTP's communication layer. It sends and receives raw byte messages and verifies signatures without interpreting them as tokens.
 
 **sendMessage** is called by TokenMessengerV2 after a burn. It takes the destination domain, recipient contract address, destinationCaller, minFinalityThreshold, and message body, then emits a `MessageSent` event. The `message` bytes in that event are what a relayer needs to collect.
 
@@ -164,7 +164,7 @@ Domain IDs are assigned centrally by Circle. Current major EVM chains:
 
 `feeExecuted` and `expirationBlock` are also sent as `0` from the source chain; Circle's attesters fill in the real values before signing. Without hookData the body is 228 bytes fixed.
 
-The trust structure of CCTP is visible right here in the layout. Four fields, nonce, finalityThresholdExecuted, feeExecuted, and expirationBlock, are never produced on-chain. Circle's off-chain service fills them in and signs the result, and that signed result is accepted as fact on the destination chain. The attesters witness the burn and, at the same time, complete the message.
+The layout reflects CCTP's trust structure. Four fields, nonce, finalityThresholdExecuted, feeExecuted, and expirationBlock, are never produced on-chain. Circle's off-chain service fills them in and signs the result, and that signed result is accepted as fact on the destination chain. The attesters witness the burn and, at the same time, complete the message.
 
 ## Burn lifecycle
 
@@ -215,7 +215,7 @@ The V2 change with the biggest practical impact is fast transfers.
 
 The fee is deducted from the burned amount. With `amount = 100 USDC` and `fee = 1 USDC`, the mintRecipient receives `99 USDC`. Check the current fee structure and values in [Circle's developer documentation](https://developers.circle.com/stablecoins/cctp-getting-started).
 
-What the fee actually prices is reorg risk. If Circle authorizes a mint before finality and the source chain then reorganizes away the burn transaction, minted USDC is left standing on the destination. Circle absorbs that loss. The fee is effectively the insurance premium on the risk Circle takes.
+The fee reflects reorg risk. If Circle authorizes a mint before finality and the source chain then reorganizes away the burn transaction, the minted USDC remains on the destination. Circle absorbs that loss. The fee compensates Circle for taking that risk.
 
 Two things follow for integrators. Settlement logic must not assume "amount sent = amount received"; on the fast path the mintRecipient gets `amount - feeExecuted`. And a maxFee below the actual fee makes fast processing impossible, so if you intend the fast path, check the current fee and set maxFee with headroom.
 
@@ -226,7 +226,7 @@ Two things follow for integrators. Settlement logic must not assume "amount sent
 - `0x000...000`: no restriction. Anyone holding the message and attestation can complete the mint.
 - A specific address: only that address can call `receiveMessage()`. Used to pin the transfer to a relayer contract for MEV protection or controlled execution ordering.
 
-The power comes with an operational burden. The moment you set a destinationCaller, there is no way to complete the mint unless that address makes the call. If the designated relayer goes down or loses its keys, the burn is done but the mint cannot happen, and the funds sit stuck. When pointing this at your own relayer, count its availability and key management as part of your users' fund availability.
+Restricting the caller adds an operational burden. The moment you set a destinationCaller, there is no way to complete the mint unless that address makes the call. If the designated relayer goes down or loses its keys, the burn is done but the mint cannot happen, and the funds sit stuck. When pointing this at your own relayer, count its availability and key management as part of your users' fund availability.
 
 **hookData** is the variable-length bytes field added in V2. Using `depositForBurnWithHook()` appends it to the end of the BurnMessage body. It is the channel for chaining follow-up actions on the destination after the mint. Typical patterns:
 
@@ -234,13 +234,13 @@ The power comes with an operational burden. The moment you set a destinationCall
 - Deposit into a lending protocol after bridging
 - Downstream steps in cross-chain payroll or payment flows
 
-The catch: the core contracts do not execute hookData. TokenMessengerV2 stores and parses hookData in BurnMessageV2 but never performs a hook call itself. Execution belongs to a relayer wrapper. Circle's reference implementation, CCTPHookWrapper, completes `receiveMessage()` first and then runs the hook separately. If the hook fails, the USDC mint has already happened.
+The core contracts do not execute hookData. TokenMessengerV2 stores and parses hookData in BurnMessageV2 but never performs a hook call itself. Execution belongs to a relayer wrapper. Circle's reference implementation, CCTPHookWrapper, completes `receiveMessage()` first and then runs the hook separately. If the hook fails, the USDC mint has already happened.
 
 This non-atomicity is deliberate. If the mint and the hook were bound atomically in one transaction, an attacker could call with just barely enough gas to consume the nonce while forcing the hook to fail, killing the message permanently. Separating the hook from the mint removes that attack. In exchange, anyone building on hooks must design for "mint succeeded, hook never ran" as a state that can legitimately occur. The USDC is already at the mintRecipient, so the application layer has to decide whether a failed hook gets retried or recovered manually.
 
 ## Attestation as the trust boundary
 
-Using CCTP ultimately means trusting Circle's attestation, the signature Circle's attesters issue after confirming a burn. It is worth drawing the boundary of that trust precisely.
+Using CCTP means trusting Circle's attestation, the signature Circle's attesters issue after confirming a burn. That trust has a specific boundary.
 
 The on-chain contracts verify signatures and nothing else. MessageTransmitterV2 checks that registered attesters signed this message; it has no way to confirm on its own that a burn ever happened. A message signed with attester keys is valid on the destination whether or not the burn is real. This is why CCTP's effective security depends more on Circle's key management and off-chain operations than on smart contract audits.
 
@@ -248,7 +248,7 @@ The on-chain contracts verify signatures and nothing else. MessageTransmitterV2 
 
 **Replay protection**: the `usedNonces[nonce]` mapping on each destination chain prevents message reuse. The V2 nonce is not a sequential counter; it is a bytes32 value Circle's attesters fill in at signing time.
 
-**Burn limits**: `burnLimitsPerMessage[token]` caps how much a single transaction can burn. It is not a device that prevents an incident, only one that shrinks it.
+**Burn limits**: `burnLimitsPerMessage[token]` caps how much a single transaction can burn. It limits the scale of an incident rather than preventing it.
 
 **Upgradeable proxies**: TokenMessengerV2 and MessageTransmitterV2 are deployed behind upgradeable proxies, meaning Circle can swap the logic. It is worth checking whether a timelock guards the proxy admin, starting from the [deployed addresses](https://developers.circle.com/stablecoins/evm-smart-contract-addresses) page.
 
@@ -276,20 +276,20 @@ Items to work through, in order, when integrating CCTP V2 directly:
 
 ## Takeaways
 
-CCTP V2 from the contracts' point of view, in one paragraph: TokenMessengerV2 accepts the burn request and destroys USDC through TokenMinterV2, then MessageTransmitterV2 emits the message. Circle's attesters fill in the nonce and fee fields and sign. The destination chain's MessageTransmitterV2 verifies that signature, and through TokenMessengerV2, TokenMinterV2 issues native USDC.
+In CCTP V2, TokenMessengerV2 accepts the burn request and destroys USDC through TokenMinterV2, then MessageTransmitterV2 emits the message. Circle's attesters fill in the nonce and fee fields and sign. The destination chain's MessageTransmitterV2 verifies that signature, and through TokenMessengerV2, TokenMinterV2 issues native USDC.
 
 Three tradeoffs are worth keeping in mind. There is no wrapped token and no lockbox honeypot, but you trust a single party, Circle. Fast transfers buy speed by paying the price of reorg risk as a fee. hookData opens up composability but gives up atomicity between the mint and the hook. All three are plainly visible in the code, so before integrating, verify the points in this post against the source and the official docs yourself.
 
 ## Further reading
 
-- [circlefin/evm-cctp-contracts](https://github.com/circlefin/evm-cctp-contracts) — source code for all CCTP V2 EVM contracts (MIT license)
-- [Circle CCTP developer docs](https://developers.circle.com/stablecoins/cctp-getting-started) — official integration guide
-- [CCTP V2 overview](https://developers.circle.com/stablecoins/cctp-v2-overview) — what changed from V1 to V2
-- [CCTP smart contract addresses](https://developers.circle.com/stablecoins/evm-smart-contract-addresses) — chain-by-chain deployed addresses
+- [circlefin/evm-cctp-contracts](https://github.com/circlefin/evm-cctp-contracts): source code for all CCTP V2 EVM contracts (MIT license)
+- [Circle CCTP developer docs](https://developers.circle.com/stablecoins/cctp-getting-started): official integration guide
+- [CCTP V2 overview](https://developers.circle.com/stablecoins/cctp-v2-overview): what changed from V1 to V2
+- [CCTP smart contract addresses](https://developers.circle.com/stablecoins/evm-smart-contract-addresses): chain-by-chain deployed addresses
 
 ## References
 
-- [circlefin/evm-cctp-contracts](https://github.com/circlefin/evm-cctp-contracts) — Circle, accessed 2026-06-30
-- [CCTP developer docs: getting started](https://developers.circle.com/stablecoins/cctp-getting-started) — Circle Developer Docs, accessed 2026-06-30
-- [CCTP EVM smart contract addresses](https://developers.circle.com/stablecoins/evm-smart-contract-addresses) — Circle Developer Docs, accessed 2026-06-30
-- [CCTP V2 overview](https://developers.circle.com/stablecoins/cctp-v2-overview) — Circle Developer Docs, accessed 2026-06-30
+- [circlefin/evm-cctp-contracts](https://github.com/circlefin/evm-cctp-contracts): Circle, accessed 2026-06-30
+- [CCTP developer docs: getting started](https://developers.circle.com/stablecoins/cctp-getting-started): Circle Developer Docs, accessed 2026-06-30
+- [CCTP EVM smart contract addresses](https://developers.circle.com/stablecoins/evm-smart-contract-addresses): Circle Developer Docs, accessed 2026-06-30
+- [CCTP V2 overview](https://developers.circle.com/stablecoins/cctp-v2-overview): Circle Developer Docs, accessed 2026-06-30

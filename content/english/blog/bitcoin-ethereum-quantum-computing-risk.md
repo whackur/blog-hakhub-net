@@ -3,7 +3,7 @@ title: "Bitcoin, Ethereum, and the Quantum Computing Question"
 meta_title: ""
 description: "Quantum risk depends on signatures, public-key exposure, and runtime. A source-grounded look at 2026 resource estimates and Bitcoin and Ethereum migration plans."
 date: 2026-07-05T23:37:01+09:00
-lastmod: 2026-10-16T01:03:28+09:00
+lastmod: 2026-11-03T07:18:47+00:00
 image: "/images/posts/bitcoin-ethereum-quantum-computing-risk/quantum-ledgers-cover-20261016.webp"
 categories: ["Blockchain"]
 tags: ["bitcoin", "ethereum", "quantum-computing", "post-quantum-cryptography", "cryptography"]
@@ -65,7 +65,7 @@ A Toffoli gate reversibly flips a target bit conditional on two control bits; it
 
 The March paper assumes a 10μs control reaction time and 50% extra cost per gate to estimate 18 to 23 minutes. Precomputing the public-key-independent first half and waiting in that state cuts the time after learning a key to roughly 9 to 12 minutes. It assumes 1μs error-correction rounds. These are single-key resource estimates, not device measurements. Circuit details were withheld, with a zero-knowledge proof supporting resource and test results. [Sections II.1 to II.2 and appendix](https://arxiv.org/html/2603.28846v2)
 
-The September trapped-ion design trades a smaller footprint for a long runtime. Assumptions include physical noise of `10^-4`, a 200μs physical operation cycle, and approximately 0.02950 seconds per logical measurement layer. Its low memory logical-error rates are extrapolated from simulations at higher noise. End-to-end success is not certain: the paper distinguishes an estimate of about 40.7%, starting from a rigorous algorithmic lower bound, from about 63.3%, starting from a heuristic. **It did not demonstrate an attack on an existing 19,397-qubit device.** Its relevance is to keys exposed for days or longer, rather than an ordinary mempool race. [Section II.3, Part V, and appendix E](https://arxiv.org/html/2609.05625v1)
+The September trapped-ion design trades a smaller footprint for a long runtime. Assumptions include physical noise of `10^-4`, a 200μs physical operation cycle, and approximately 0.02950 seconds per logical measurement layer. The low logical-error rates for its memory are extrapolated from simulations at higher noise. End-to-end success is not certain: the paper distinguishes an estimate of about 40.7%, starting from a rigorous algorithmic lower bound, from about 63.3%, starting from a heuristic. **It did not demonstrate an attack on an existing 19,397-qubit device.** Its relevance is to keys exposed for days or longer, rather than an ordinary mempool race. [Section II.3, Part V, and appendix E](https://arxiv.org/html/2609.05625v1)
 
 A separate September paper, [ECDSA.Fail](https://arxiv.org/html/2609.09582v2), reports a point-addition circuit with 1,151 logical qubits and an average 1,299,453 executed Toffolis at its July 26 data cutoff. This benchmarks an internal Shor operation. The authors identify full-algorithm integration and validation as remaining work, and caution that different interfaces and accounting conventions prevent a simple claim of superiority over complete circuits. It does not mean that “1,151 qubits broke Bitcoin.”
 
@@ -112,7 +112,7 @@ Engineering checks can be more concrete than predicting a quantum computer’s r
 - **Map keys to authority.** Include administrators, recovery agents, bridges, and upgrade keys alongside user balances. Identify onchain and offchain public-key disclosures.
 - **Reduce key reuse and record exposure.** A fresh hashed Bitcoin output still reveals its key when first spent; it is not permanent post-quantum protection.
 - **Test the new signature and old bypasses together.** Exercise PQ verification, recovery, backups, rotation, and retirement of legacy ECDSA authority in one scenario. Multisig alone does not give quantum resistance when every key relies on the same vulnerable mathematics.
-- **Track estimates, demonstrations, and activation separately.** An estimate needs errors, connectivity, runtime, and failure probability. An upgrade needs client implementation, testing, activation, and actual user migration.
+- **Track estimates, demonstrations, and activation separately.** An estimate needs error rates, connectivity, runtime, and failure probability. An upgrade needs client implementation, testing, activation, and actual user migration.
 
 These checks apply [BIP-360’s exposure analysis](https://github.com/bitcoin/bips/blob/master/bip-0360.mediawiki), [EIP-8151’s authority problem](https://eips.ethereum.org/EIPS/eip-8151), and [EF’s migration plan](https://blog.ethereum.org/2026/09/07/protocol-priorities) to a working system. Progress in error correction or circuit optimization does not establish a year when all coins become vulnerable. Declaring migration complete likewise requires examining remaining keys and authority paths, rather than the name of a new algorithm.
 

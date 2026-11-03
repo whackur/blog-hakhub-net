@@ -3,7 +3,7 @@ title: "Figure: HELOC 대출에서 블록체인 자본시장 플랫폼으로"
 meta_title: ""
 description: "Figure Technology Solutions는 미국 HELOC 비은행 대출 1위에서 출발해 Provenance Blockchain 기반 자본시장 플랫폼으로 진화했습니다. DART 소유권 레지스트리, YLDS 이자부 증권, Democratized Prime 대출 마켓 구조를 정리합니다."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:27:39+00:00
 image: "/images/posts/figure-blockchain-capital-markets/closed-loop-capital-markets.png"
 categories: ["Blockchain"]
 tags: ["rwa", "provenance", "capital-markets", "tokenization", "heloc", "ylds"]
@@ -12,33 +12,33 @@ translationKey: "figure-blockchain-capital-markets"
 draft: false
 ---
 
-Figure라는 이름은 두 개의 회사를 가리킨다. 하나는 휴머노이드 로봇으로 알려진 Figure AI이고, 다른 하나는 이 글의 주제인 [Figure Technology Solutions](https://www.figure.com/)다. 두 회사는 무관하다.
+Figure라는 이름은 두 개의 회사를 가리킨다. 하나는 휴머노이드 로봇으로 알려진 Figure AI이고 다른 하나는 이 글의 주제인 [Figure Technology Solutions](https://www.figure.com/)다. 두 회사는 무관하다.
 
-Figure Technology Solutions는 미국 주택담보대출 시장에서 출발한 금융 회사다. 2018년 SoFi 공동창업자 Mike Cagney와 June Ou가 설립했고, 2025년 9월 Nasdaq에 FIGR 티커로 상장했다. 현재는 Provenance Blockchain 위에서 대출 생성, 소유권 등록, 토큰화 마켓, 이자부 정산 자산을 수직으로 통합하는 구조를 만들고 있다.
+Figure Technology Solutions는 미국 주택담보대출 시장에서 출발한 금융 회사다. 2018년 SoFi 공동창업자 Mike Cagney와 June Ou가 설립했고 2025년 9월 Nasdaq에 FIGR 티커로 상장했다. 현재는 Provenance Blockchain 위에서 대출 생성, 소유권 등록, 토큰화 마켓, 이자부 정산 자산을 수직으로 통합하는 구조를 만들고 있다.
 
 ## Figure 모델의 차별점
 
-RWA(Real World Assets)란 주택담보대출, 국채, 회사채처럼 블록체인 바깥에서 발행·유통되는 금융 자산을 온체인 토큰으로 표현하는 방식이다. Figure의 접근 방식을 단순히 "RWA를 블록체인에 올린다"로 요약하면 핵심을 놓친다. 회사가 하려는 일은 대출 생성 단계부터 블록체인 기록을 쓰고, 거기서 만들어진 자산을 법적 소유권 등록, 거래 마켓, 이자부 현금성 자산까지 하나의 rail로 연결하는 것이다.
+RWA(Real World Assets)란 주택담보대출, 국채, 회사채처럼 블록체인 바깥에서 발행·유통되는 금융 자산을 온체인 토큰으로 표현하는 방식이다. Figure의 접근 방식을 단순히 "RWA를 블록체인에 올린다"로 요약하면 핵심을 놓친다. 회사가 하려는 일은 대출 생성 단계부터 블록체인 기록을 쓰고 거기서 만들어진 자산을 법적 소유권 등록, 거래 마켓, 이자부 현금성 자산까지 하나의 rail로 연결하는 것이다.
 
 [Figure의 Investor Relations 페이지](https://investors.figure.com/investor-relations)는 회사를 "blockchain-native capital marketplace for the origination, funding, sale and trading of on-chain loan products and tokenized assets"로 설명한다.
 
 ![Figure 자본시장 플랫폼 구조. HELOC이 LOS를 거쳐 생성되고 DART에 소유권이 등록되며, DART·Figure Connect·Democratized Prime·YLDS가 Provenance의 기록·정산·토큰화 레일에 각각 연결되는 구조를 보여 준다.](/images/posts/figure-blockchain-capital-markets/closed-loop-capital-markets.png)
 
-Provenance는 순서상 하나의 후속 단계가 아니라, 대출 등록과 거래·대출·정산 구성 요소가 함께 쓰는 공통 레일입니다.
+Provenance는 순서상 하나의 후속 단계가 아니라 대출 등록과 거래·대출·정산 구성 요소가 함께 쓰는 공통 레일이다.
 
 ## 핵심 시스템
 
 ### HELOC과 대출 생성
 
-HELOC(Home Equity Line of Credit)은 자택의 주택 담보 가치를 활용해 한도를 설정하는 변동형 신용 대출이다. 일반 모기지처럼 일시에 전액을 수령하지 않고, 설정된 한도 안에서 필요할 때 인출하고 상환하면 한도가 다시 회복되는 구조다. 신용카드와 유사하지만 자택을 담보로 삼는다. 미국에서는 주택 개보수, 교육, 투자 등 다양한 목적으로 활용된다.
+HELOC(Home Equity Line of Credit)은 자택의 주택 담보 가치를 활용해 한도를 설정하는 변동형 신용 대출이다. 일반 모기지처럼 일시에 전액을 수령하지 않고 설정된 한도 안에서 필요할 때 인출하고 상환하면 한도가 다시 회복되는 구조다. 신용카드와 유사하지만 자택을 담보로 삼는다. 미국에서는 주택 개보수, 교육, 투자 등 다양한 목적으로 활용된다.
 
 Figure의 소비자 핵심 상품이 이 HELOC이다. 공식 사이트는 5분 심사, 최대 $750,000 한도, 빠르면 5일 funding을 내세운다. 이 대출이 이후 DART 등록, 마켓 거래, 담보화로 이어지는 토큰화 파이프라인의 원천 자산이다.
 
-LOS(Loan Origination System)가 대출 신청, 심사, 감정, 담보권 확인, 소득 검증, 원격 클로징을 자동화한다. Figure는 AI 협업으로 문서 처리와 파트너 온보딩 비용을 줄였다고 밝혔지만, 회사 발표 기반이라 독립 검증이 필요하다.
+LOS(Loan Origination System)가 대출 신청, 심사, 감정, 담보권 확인, 소득 검증, 원격 클로징을 자동화한다. Figure는 AI 협업으로 문서 처리와 파트너 온보딩 비용을 줄였다고 밝혔지만 회사 발표 기반이라 독립 검증이 필요하다.
 
 ### DART: 온체인 소유권 레지스트리
 
-미국 주택담보대출 시장에서는 대출 소유권 변경을 전통적으로 MERS(Mortgage Electronic Registration Systems)나 각 주의 공증·등기 절차로 처리한다. DART(Digital Asset Registry Technology)는 이 역할을 Provenance 블록체인 위에서 수행하는 온체인 소유권 레지스트리다. [Provenance 공식 사이트](https://provenance.io/)는 DART를 "first blockchain-based system for real-time loan ownership updates"라고 설명하며, ESIGN/UETA 준수를 명시한다.
+미국 주택담보대출 시장에서는 대출 소유권 변경을 전통적으로 MERS(Mortgage Electronic Registration Systems)나 각 주의 공증·등기 절차로 처리한다. DART(Digital Asset Registry Technology)는 이 역할을 Provenance 블록체인 위에서 수행하는 온체인 소유권 레지스트리다. [Provenance 공식 사이트](https://provenance.io/)는 DART를 "first blockchain-based system for real-time loan ownership updates"라고 설명하며 ESIGN/UETA 준수를 명시한다.
 
 DART가 담당하는 역할은 대출 소유권 업데이트, 담보권(lien) 정보 연결, eNote와 servicer 정보 관리, 토큰화 대출과 법적 소유권의 연결이다.
 
@@ -46,7 +46,7 @@ DART가 담당하는 역할은 대출 소유권 업데이트, 담보권(lien) �
 
 ### Provenance Blockchain
 
-Provenance는 금융 상품 기록과 정산을 위해 설계된 지분증명(PoS) 블록체인으로, Cosmos SDK 기반으로 구축됐다. KYC/AML 연계 계정 메타데이터 구조와 금융 거래 특화 모듈을 지원하며, Figure가 초기 개발에 참여했다. 네이티브 토큰 HASH는 트랜잭션 수수료와 스테이킹에 쓰인다. Figure의 주요 시스템이 기록·정산·토큰화 레이어로 Provenance를 사용하고, 차용인의 개인정보(PII) 같은 민감 데이터는 그대로 온체인에 올라가지 않는 구조다.
+Provenance는 금융 상품 기록과 정산을 위해 설계된 지분증명(PoS) 블록체인으로, Cosmos SDK 기반으로 구축됐다. KYC/AML 연계 계정 메타데이터 구조와 금융 거래 특화 모듈을 지원하며 Figure가 초기 개발에 참여했다. 네이티브 토큰 HASH는 트랜잭션 수수료와 스테이킹에 쓰인다. Figure의 주요 시스템이 기록·정산·토큰화 레이어로 Provenance를 사용하고 차용인의 개인정보(PII) 같은 민감 데이터는 그대로 온체인에 올라가지 않는 구조다.
 
 ### Figure Connect: 소비자 대출 마켓플레이스
 
@@ -54,17 +54,17 @@ Figure Connect는 대출 originator와 자본 공급자를 연결하는 소비�
 
 ### YLDS: SEC 등록 이자부 증권
 
-YLDS는 전송과 정산이 스테이블코인처럼 작동하지만, 공식 사이트는 "registered fixed-income security, not a stablecoin"이라고 명시한다.
+YLDS는 전송과 정산이 스테이블코인처럼 작동하지만 공식 사이트는 "registered fixed-income security, not a stablecoin"이라고 명시한다.
 
-주요 특징은 다음과 같다. Figure Certificate Company가 발행하고, Investment Company Act에 따라 SEC에 등록된 fixed-income security다. 1 YLDS = 1 Certificate = $0.01 NAV 구조이고, SOFR(미국 단기 기준금리로 LIBOR를 대체한 지표) minus 35bps 기반 변동 수익이 매일 accrual된다. Provenance, Solana, Stellar 등 복수 체인에서 24/7 peer-to-peer 전송과 정산을 지원한다. 공식 사이트는 Big 4 회계법인 감사를 언급한다.
+Figure Certificate Company가 발행하고 Investment Company Act에 따라 SEC에 등록된 fixed-income security다. 1 YLDS = 1 Certificate = $0.01 NAV 구조이고 SOFR(미국 단기 기준금리로 LIBOR를 대체한 지표) minus 35bps 기반 변동 수익이 매일 accrual된다. Provenance, Solana, Stellar 등 복수 체인에서 24/7 peer-to-peer 전송과 정산을 지원한다. 공식 사이트는 Big 4 회계법인 감사를 언급한다.
 
 2026년 5월 IR 기준 유통 중인 $YLDS는 $557M이다.
 
-해석하면, YLDS는 Figure 마켓 안에서 idle cash, 대출 공급, 정산 자산, 현금성 treasury 자산 역할을 하는 규제된 yield-bearing primitive다. 스테이블코인이 아니라 증권이라는 법적 위치가 핵심이다.
+YLDS는 Figure 마켓 안에서 idle cash, 대출 공급, 정산 자산, 현금성 treasury 자산 역할을 하는 규제된 yield-bearing primitive다. 스테이블코인이 아니라 증권이라는 법적 위치가 핵심이다.
 
 ### Democratized Prime: 온체인 대출·차입 마켓
 
-Democratized Prime은 Figure Markets의 온체인 lending 마켓플레이스다. 대출자는 현금이나 암호화폐를 공급하고, 차입자는 RWA 담보 풀, 암호화폐 담보 대출, HELOC 기반 구조로 자금에 접근한다. 2026년 5월 IR 기준 Matched Offers Balance $385M, 차입자 수요 $412M, 대출자 공급 가능 규모 $500M이다.
+Democratized Prime은 Figure Markets의 온체인 lending 마켓플레이스다. 대출자는 현금이나 암호화폐를 공급하고 차입자는 RWA 담보 풀, 암호화폐 담보 대출, HELOC 기반 구조로 자금에 접근한다. 2026년 5월 IR 기준 Matched Offers Balance $385M, 차입자 수요 $412M, 대출자 공급 가능 규모 $500M이다.
 
 ## 공개 지표 요약
 
@@ -81,7 +81,7 @@ Democratized Prime은 Figure Markets의 온체인 lending 마켓플레이스다.
 
 수직 통합 구조는 효율적이지만 리스크도 따른다.
 
-**규제.** YLDS는 스테이블코인이 아니라 등록 증권이라는 법적 포지션이 핵심이며, 미국 디지털 자산 입법 변화에 따라 제약이 달라질 수 있다.
+**규제.** YLDS는 스테이블코인이 아니라 등록 증권이라는 법적 포지션이 핵심이며 미국 디지털 자산 입법 변화에 따라 제약이 달라질 수 있다.
 
 **법적 효력.** DART 레지스트리의 lien perfection 효과는 주별로 별도 법적 검토가 필요하다.
 
@@ -89,7 +89,7 @@ Democratized Prime은 Figure Markets의 온체인 lending 마켓플레이스다.
 
 **수직 통합.** origination, 레지스트리, 마켓플레이스, 대출 풀, 정산 자산이 같은 생태계에 묶이면 이해상충과 거버넌스 리스크가 커진다.
 
-**온체인 검증 범위.** Figure는 블록체인을 전 과정에 쓰지만, 공개적으로 온체인에서 검증 가능한 부분과 오프체인 법적 절차 신뢰에 기대는 부분의 경계가 공개 자료만으로는 뚜렷하지 않다.
+**온체인 검증 범위.** Figure는 블록체인을 전 과정에 쓰지만 공개적으로 온체인에서 검증 가능한 부분과 오프체인 법적 절차 신뢰에 기대는 부분의 경계가 공개 자료만으로는 뚜렷하지 않다.
 
 ## 함께 보면 좋을 자료
 

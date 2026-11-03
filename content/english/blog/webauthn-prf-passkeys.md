@@ -3,7 +3,7 @@ title: "Pulling Encryption Keys Out of Passkeys with the WebAuthn PRF Extension"
 meta_title: ""
 description: "How the WebAuthn PRF extension relates to CTAP2 hmac-secret, the encryption design decisions it leaves to your app, and current device and platform support."
 date: 2026-07-03T14:52:00+09:00
-lastmod: 2026-08-31T10:05:00+09:00
+lastmod: 2026-11-03T08:00:31+00:00
 image: "/images/posts/webauthn-prf-passkeys/prf-key-derivation-flow.png"
 categories: ["Security"]
 tags: ["passkey", "webauthn", "fido2", "security", "cryptography"]
@@ -26,7 +26,7 @@ The WebAuthn `prf` extension returns one or two pseudo-random outputs tied to a 
 
 The same credential and the same salt always produce the same output. Without the secret held by the authenticator, that output looks random. The practical mental model is HMAC with a random key and a strong hash function: different credentials or different salts produce unrelated outputs. [Corbado describes](https://www.corbado.com/blog/passkeys-prf-webauthn) this output as a deterministic 32-byte value bound to a specific passkey credential, usable as symmetric key material for WebCrypto once you add proper KDF and encryption design on top.
 
-There's an important boundary here. PRF does not encrypt anything by itself. It hands back credential-scoped key material after a WebAuthn ceremony completes. To turn that into actual encryption, the application still needs a separate crypto layer, typically WebCrypto.
+PRF does not encrypt anything by itself. It hands back credential-scoped key material after a WebAuthn ceremony completes. To turn that into actual encryption, the application still needs a separate crypto layer, typically WebCrypto.
 
 ![Conceptual flow of PRF key derivation. A caller-supplied salt and the credential enter the CTAP2 hmac-secret computation inside the authenticator, and the credential-and-salt-bound 32-byte PRF output returns to feed the application-side encryption layer (wrapping a data key in envelope encryption).](/images/posts/webauthn-prf-passkeys/prf-key-derivation-flow.png)
 
@@ -42,9 +42,9 @@ The browser doesn't pass the app's salt straight through to the authenticator. P
 
 Per MDN, callers pass salts through `eval.first` (required) and an optional `eval.second`, and results come back as `prf.results.first` with an optional `prf.results.second`. Supporting two outputs in one call has a practical use: it lets an app request a "current key" and a "next key" in a single round trip, which fits key rotation patterns.
 
-One caveat worth flagging: getting a PRF output at credential creation time (`create()`) is less widely supported than getting one at assertion time (`get()`). A `create()` call can report `prf: { enabled: false }`, meaning PRF is available on the authenticator but no output came back yet. An environment that doesn't support PRF at all on `get()` can simply return an empty `prf: {}`. Application code needs to branch on both cases explicitly.
+Getting a PRF output at credential creation time (`create()`) is less widely supported than getting one at assertion time (`get()`). A `create()` call can report `prf: { enabled: false }`, meaning PRF is available on the authenticator but no output came back yet. An environment that doesn't support PRF at all on `get()` can simply return an empty `prf: {}`. Application code needs to branch on both cases explicitly.
 
-It's also worth being direct about this: PRF evaluation goes through normal WebAuthn UI and authenticator activation. It is not something you can call silently in the background. Biometric confirmation or a PIN entry happens on each call, subject to whatever session policy the platform applies.
+PRF evaluation goes through normal WebAuthn UI and authenticator activation. It is not something you can call silently in the background. Biometric confirmation or a PIN entry happens on each call, subject to whatever session policy the platform applies.
 
 ## What has to line up for PRF to work
 
@@ -66,7 +66,7 @@ Using PRF output in a real system means your application, not the extension, own
 
 ## How it compares to credBlob, largeBlob, and password-derived keys
 
-If your goal is key derivation, it's worth not confusing PRF with mechanisms that look similar on the surface.
+For key derivation, distinguish PRF from mechanisms that look similar on the surface.
 
 - **credBlob**: a CTAP2 extension that stores a small, static blob alongside a credential. It's built for storage, not secret derivation, so it isn't a substitute for PRF.
 - **largeBlob**: stores roughly 1KB with a discoverable credential, but it's not a key derivation mechanism, and support is narrower than PRF's.

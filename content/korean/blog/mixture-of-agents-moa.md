@@ -3,7 +3,7 @@ title: "Mixture of Agents(MoA): 여러 LLM을 쌓아 GPT-4 Omni를 넘은 방법
 meta_title: ""
 description: "여러 LLM을 계층으로 배치해 집합적 강점을 끌어내는 MoA 아키텍처. 벤치마크, 변형 구조, 품질 대 다양성 트레이드오프를 정리했습니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:46:39+00:00
 image: "/images/posts/mixture-of-agents-moa/layered-aggregation-flow.png"
 categories: ["AI"]
 tags: ["moa", "llm", "multi-agent", "ensemble", "ai-architecture"]
@@ -14,15 +14,15 @@ draft: false
 
 모델 한 개를 더 크게 만드는 대신, 여러 모델을 계층으로 쌓아 서로의 출력을 다듬게 하는 방법이 있습니다. Together AI 연구진이 2024년 6월 발표한 논문 [arXiv:2406.04692](https://arxiv.org/abs/2406.04692)가 이 접근을 MoA(Mixture of Agents)라는 이름으로 정리했습니다. 오픈소스 모델만 조합한 MoA가 AlpacaEval 2.0에서 GPT-4 Omni를 7.6%p 앞섰습니다.
 
-출발점이 된 관찰이 있습니다. 논문이 collaborativeness라고 부르는 현상인데, LLM은 다른 모델의 답변을 참고 자료로 받으면 더 나은 답을 내놓는 경향이 있습니다. 참고로 주어진 답변의 품질이 자기 혼자 낸 답보다 낮아도 그렇습니다. MoA는 이 성질을 아키텍처로 만든 것입니다.
+출발점이 된 관찰이 있습니다. 논문이 collaborativeness라고 부르는 현상인데 LLM은 다른 모델의 답변을 참고 자료로 받으면 더 나은 답을 내놓는 경향이 있습니다. 참고로 주어진 답변의 품질이 자기 혼자 낸 답보다 낮아도 그렇습니다. MoA는 이 성질을 아키텍처로 만든 것입니다.
 
 ## 계층적 구조
 
-MoA는 각 층마다 복수의 LLM이 병렬로 실행됩니다. 각 에이전트는 이전 층의 출력 전체를 컨텍스트로 받아 자신의 답변을 생성하고, aggregator가 그 결과를 합쳐 다음 층의 입력으로 넘깁니다. 같은 패턴이 층을 따라 반복되고, 마지막 층의 aggregator가 최종 답변을 작성합니다.
+MoA는 각 층마다 복수의 LLM이 병렬로 실행됩니다. 각 에이전트는 이전 층의 출력 전체를 컨텍스트로 받아 자신의 답변을 생성하고 aggregator가 그 결과를 합쳐 다음 층의 입력으로 넘깁니다. 같은 패턴이 층을 따라 반복되고 마지막 층의 aggregator가 최종 답변을 작성합니다.
 
 ![MoA 계층형 집계 구조. 첫 번째 층의 여러 에이전트 출력이 aggregator에 모이고, 그 결과를 받은 두 번째 층의 에이전트들이 다시 병렬로 답한 뒤 final aggregator가 최종 답변을 만드는 흐름.](/images/posts/mixture-of-agents-moa/layered-aggregation-flow.png)
 
-각 층 안에서는 에이전트가 병렬로 실행되지만, 다음 층은 이전 층의 모든 출력과 집계가 끝난 뒤 시작합니다.
+각 층 안에서는 에이전트가 병렬로 실행되지만 다음 층은 이전 층의 모든 출력과 집계가 끝난 뒤 시작합니다.
 
 | 구성 요소 | 역할 |
 |---|---|
@@ -31,9 +31,9 @@ MoA는 각 층마다 복수의 LLM이 병렬로 실행됩니다. 각 에이전�
 | Judge agent | 역할 분화 시 상위 k개 응답 선택 |
 | Moderator | 합의 기반 early stopping 담당 |
 
-구조상 비용과 지연이 함께 늘어납니다. 층 하나를 통과할 때마다 에이전트 수만큼 추론 호출이 추가되고, 각 층은 이전 층의 모든 출력이 나와야 시작할 수 있어 지연도 층수만큼 쌓입니다. 논문이 층수를 줄인 경량 구성인 MoA-Lite를 함께 제시한 이유이기도 합니다.
+구조상 비용과 지연이 함께 늘어납니다. 층 하나를 통과할 때마다 에이전트 수만큼 추론 호출이 추가되고 각 층은 이전 층의 모든 출력이 나와야 시작할 수 있어 지연도 층수만큼 쌓입니다. 논문이 층수를 줄인 경량 구성인 MoA-Lite를 함께 제시한 이유이기도 합니다.
 
-Together Computer의 참조 구현은 [togethercomputer/moa](https://github.com/togethercomputer/moa)(Apache 2.0)에 공개되어 있습니다. 기본 `moa.py`는 50줄이고, 3층 이상 구성은 `advanced-moa.py`, 대화형 CLI는 `bot.py`입니다.
+Together Computer의 참조 구현은 [togethercomputer/moa](https://github.com/togethercomputer/moa)(Apache 2.0)에 공개되어 있습니다. 기본 `moa.py`는 50줄이고 3층 이상 구성은 `advanced-moa.py`, 대화형 CLI는 `bot.py`입니다.
 
 ## 벤치마크
 
@@ -48,7 +48,7 @@ Together Computer의 참조 구현은 [togethercomputer/moa](https://github.com/
 
 **FLASK 다차원 평가**
 
-FLASK는 정확성, 사실성, 통찰, 완결성, 메타인지 등을 차원별로 평가합니다. MoA는 Qwen1.5-110B-Chat 대비 전 차원에서 앞섰고, GPT-4 Omni 대비로는 정확성, 사실성, 통찰, 완결성, 메타인지에서 우위를 보였습니다. 다만 논문 기준 벤치마크이며 모든 실제 환경을 대표하지는 않습니다.
+FLASK는 정확성, 사실성, 통찰, 완결성, 메타인지 등을 차원별로 평가합니다. MoA는 Qwen1.5-110B-Chat 대비 전 차원에서 앞섰고 GPT-4 Omni 대비로는 정확성, 사실성, 통찰, 완결성, 메타인지에서 우위를 보였습니다. 다만 논문 기준 벤치마크이며 모든 실제 환경을 대표하지는 않습니다.
 
 ## 변형 구조
 
@@ -63,13 +63,13 @@ FLASK는 정확성, 사실성, 통찰, 완결성, 메타인지 등을 차원별�
 
 ## 품질 대 다양성 트레이드오프
 
-후속 연구에서 반직관적인 결론이 나왔습니다. 단일 고품질 모델의 출력만 여러 번 샘플링해 합치는 Self-MoA가, 이질적인 모델을 섞은 MoA보다 성능이 좋은 경우가 많다는 것입니다. Self-MoA를 제안한 연구팀은 성능을 `t = αq + βd + γ`(q는 응답 품질, d는 다양성)로 모델링했는데, 실제 설정에서 α가 β를 크게 앞섰습니다. 다양한 모델을 섞어서 얻는 이득보다, 참여하는 응답의 품질이 성능을 훨씬 크게 좌우한다는 뜻입니다.
+후속 연구에서 반직관적인 결론이 나왔습니다. 단일 고품질 모델의 출력만 여러 번 샘플링해 합치는 Self-MoA가 이질적인 모델을 섞은 MoA보다 성능이 좋은 경우가 많다는 것입니다. Self-MoA를 제안한 연구팀은 성능을 `t = αq + βd + γ`(q는 응답 품질, d는 다양성)로 모델링했는데 실제 설정에서 α가 β를 크게 앞섰습니다. 다양한 모델을 섞어서 얻는 이득보다 참여하는 응답의 품질이 성능을 훨씬 크게 좌우한다는 뜻입니다.
 
 이질적 MoA가 Self-MoA를 앞서는 것은 개별 에이전트의 강점이 작업의 이질성과 맞아떨어질 때입니다. 모델을 무작정 섞기보다 작업에 맞는 조합을 고르는 것이 중요합니다.
 
 ## Hermes Agent가 제품화한 MoA
 
-MoA는 연구 패턴에 머물지 않고 실제 제품에도 들어갔습니다. Nous Research의 오픈소스 에이전트 Hermes Agent는 MoA를 별도 파이프라인이 아니라 `moa`라는 가상 모델 제공자로 만들어, 기존 에이전트 루프의 tool 호출과 메모리, prompt cache를 그대로 유지한 채 여러 모델의 관점을 끼워 넣습니다.
+MoA는 연구 패턴에 머물지 않고 실제 제품에도 들어갔습니다. Nous Research의 오픈소스 에이전트 Hermes Agent는 MoA를 별도 파이프라인이 아니라 `moa`라는 가상 모델 제공자로 만들어 기존 에이전트 루프의 tool 호출과 메모리, prompt cache를 그대로 유지한 채 여러 모델의 관점을 끼워 넣습니다.
 
 Hermes Agent 자체는 메모리·스킬·세션 회상을 갖춘 자기개선형 에이전트이기도 합니다. reference/aggregator 구성, `/moa` 명령, 설정 방법, HermesBench 수치, 커뮤니티 반응까지 제품 관점의 자세한 내용은 [Hermes Agent v0.18: 스스로 배우는 에이전트와 MoA가 만났을 때](/blog/hermes-agent-self-improving-agent-moa/)에서 다룹니다.
 

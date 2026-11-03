@@ -3,7 +3,7 @@ title: "Transferring Tokens with Canton Daml: State and Authorization Compared w
 meta_title: ""
 description: "Compare a Daml holding-contract transfer with Solidity balance updates, including authorization, visibility and local verification."
 date: 2026-10-15T15:45:00+09:00
-lastmod: 2026-10-15T20:49:42+09:00
+lastmod: 2026-11-03T08:23:04+00:00
 image: "/images/posts/canton-daml-token-transfer-solidity/cover-rewrite-20261015.png"
 categories: ["Blockchain"]
 tags: ["canton", "daml", "solidity", "smart-contracts", "tutorial"]

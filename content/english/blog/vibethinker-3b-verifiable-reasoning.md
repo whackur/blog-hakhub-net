@@ -3,7 +3,7 @@ title: "VibeThinker-3B: Packing Verifiable Reasoning into 3 Billion Parameters"
 meta_title: ""
 description: "WeiboAI's VibeThinker-3B applies multi-stage RL and self-distillation to a 3B base model, claiming frontier-level results on math and coding benchmarks. A look at what it achieves and where it falls short."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T18:00:00+09:00
+lastmod: 2026-11-03T07:59:45+00:00
 image: "/images/posts/vibethinker-3b-verifiable-reasoning/training-pipeline.png"
 categories: ["AI"]
 tags: ["small-language-model", "reasoning", "reinforcement-learning", "math", "coding"]
@@ -48,7 +48,7 @@ Rather than learning one correct solution path, the distillation preserves multi
 
 ### 2. Multi-domain reasoning RL
 
-Reuses **MGPO (MaxEnt-Guided Policy Optimization)** from VibeThinker-1.5B. Samples where rollouts include both correct and incorrect answers get higher training weight than samples at the extremes (always right or always wrong). The intuition is that problems the model always solves or always fails carry almost no learning signal; the boundary problems carry the most. Training runs Math RL, then Code RL, then STEM RL. A single 64K context window preserves long reasoning trajectories without truncation.
+This stage reuses **MGPO (MaxEnt-Guided Policy Optimization)** from VibeThinker-1.5B. Samples where rollouts include both correct and incorrect answers get higher training weight than samples at the extremes (always right or always wrong). The intuition is that problems the model always solves or always fails carry almost no learning signal; the boundary problems carry the most. Training runs Math RL, then Code RL, then STEM RL. A single 64K context window preserves long reasoning trajectories without truncation.
 
 ### 3. Long2Short Math RL
 
@@ -56,7 +56,7 @@ After accuracy-focused RL has expanded the model's reasoning ability, a second R
 
 ### 4. Offline self-distillation
 
-Selects verified-correct trajectories from the Math/Code/STEM RL checkpoints and applies SFT back to a unified student model. A length-normalized negative log-likelihood score (learning-potential score) prioritizes traces the student currently handles poorly, so distillation adds the most value where the model is weakest.
+This stage selects verified-correct trajectories from the Math/Code/STEM RL checkpoints and applies SFT back to a unified student model. A length-normalized negative log-likelihood score (learning-potential score) prioritizes traces the student currently handles poorly, so distillation adds the most value where the model is weakest.
 
 ### 5. Instruct RL
 

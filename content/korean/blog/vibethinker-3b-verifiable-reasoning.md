@@ -3,7 +3,7 @@ title: "VibeThinker-3B: 검증 가능한 추론을 3B 모델에 압축한 실험
 meta_title: ""
 description: "Sina Weibo의 WeiboAI가 발표한 VibeThinker-3B. Qwen2.5-Coder-3B 기반 3B 모델에 다단계 RL과 자기증류를 집중 적용해 수학·코딩 벤치마크에서 frontier급 결과를 주장하는 기술 보고서입니다."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T18:00:00+09:00
+lastmod: 2026-11-03T07:59:45+00:00
 image: "/images/posts/vibethinker-3b-verifiable-reasoning/training-pipeline.png"
 categories: ["AI"]
 tags: ["small-language-model", "reasoning", "reinforcement-learning", "math", "coding"]
@@ -12,7 +12,7 @@ translationKey: "vibethinker-3b-verifiable-reasoning"
 draft: false
 ---
 
-"작은 모델이 큰 모델을 이겼다"는 주장은 논문마다 나옵니다. 보통은 특정 벤치마크 하나에서의 결과를 두고 하는 말입니다. Sina Weibo의 WeiboAI팀이 2026년 6월 15일 공개한 [VibeThinker-3B](https://arxiv.org/abs/2606.16140) 역시 비슷한 구조의 주장을 합니다. 다만 논문이 조심스럽게 선을 긋는 부분이 있습니다. "작은 모델이 모든 걸 대체한다"가 아니라, **검증 가능한 추론(verifiable reasoning) 영역만큼은 작은 모델로 압축될 수 있다**는 겁니다.
+"작은 모델이 큰 모델을 이겼다"는 주장은 논문마다 나옵니다. 보통은 특정 벤치마크 하나에서 나온 결과를 두고 하는 말입니다. Sina Weibo의 WeiboAI팀이 2026년 6월 15일 공개한 [VibeThinker-3B](https://arxiv.org/abs/2606.16140) 역시 비슷한 구조의 주장을 합니다. 다만 논문이 조심스럽게 선을 긋는 부분이 있습니다. "작은 모델이 모든 걸 대체한다"가 아니라 **검증 가능한 추론(verifiable reasoning) 영역만큼은 작은 모델로 압축될 수 있다**는 겁니다.
 
 ## 모델 기본 정보
 
@@ -44,11 +44,11 @@ draft: false
 
 1단계에서는 수학, 코드, STEM 추론, 일반 대화, 명령 따르기를 폭넓게 커버합니다. 2단계에서는 어렵고 긴 추론 샘플로 전환합니다. seed query는 명확한 정답, 풀이, unit test, 실행 가능한 평가 규칙이 있는 데이터 위주로 선택합니다.
 
-여러 candidate reasoning trace를 보존하는 **Diversity-Exploring Distillation**을 씁니다. 단일 정답 풀이를 암기하는 게 아니라, 다양한 유효 풀이 경로의 스펙트럼을 만드는 것이 목표입니다.
+여러 candidate reasoning trace를 보존하는 **Diversity-Exploring Distillation**을 씁니다. 단일 정답 풀이를 암기하는 게 아니라 다양한 유효 풀이 경로의 스펙트럼을 만드는 것이 목표입니다.
 
 ### 2. 다중 도메인 추론 RL
 
-VibeThinker-1.5B에서 쓰인 **MGPO(MaxEnt-Guided Policy Optimization)**를 재사용합니다. 프롬프트별 그룹 정확도가 0이나 1에 가까운 샘플보다, 정답/오답 rollout이 공존하는 경계 샘플에 더 큰 학습 가중치를 줍니다. 항상 맞히거나 항상 틀리는 문제에는 학습 신호가 거의 없고, 맞기도 틀리기도 하는 경계 문제에 신호가 가장 많이 담겨 있다는 발상입니다. Math RL → Code RL → STEM RL 순서로 진행하며, 64K long-context window를 단일 컨텍스트로 사용해 긴 추론 trajectory를 보존합니다.
+VibeThinker-1.5B에서 쓰인 **MGPO(MaxEnt-Guided Policy Optimization)**를 재사용합니다. 프롬프트별 그룹 정확도가 0이나 1에 가까운 샘플보다, 정답/오답 rollout이 공존하는 경계 샘플에 더 큰 학습 가중치를 줍니다. 항상 맞히거나 항상 틀리는 문제에는 학습 신호가 거의 없고 맞기도 틀리기도 하는 경계 문제에 신호가 가장 많이 담겨 있다는 발상입니다. Math RL → Code RL → STEM RL 순서로 진행하며 64K long-context window를 단일 컨텍스트로 사용해 긴 추론 trajectory를 보존합니다.
 
 ### 3. Long2Short Math RL
 
@@ -56,7 +56,7 @@ accuracy 중심 RL로 충분히 추론을 펼친 뒤, 올바른 trajectory 중 �
 
 ### 4. 오프라인 자기증류
 
-Math/Code/STEM RL 체크포인트에서 verifier로 맞는 trajectory를 골라 통합 student 모델에 다시 SFT합니다. 아직 잘 모델링하지 못하는 correct trace를 우선 선택하기 위해, length-normalized negative log-likelihood 기반 learning-potential score를 씁니다.
+Math/Code/STEM RL 체크포인트에서 verifier로 맞는 trajectory를 골라 통합 student 모델에 다시 SFT합니다. 아직 잘 모델링하지 못하는 correct trace를 우선 선택하기 위해 length-normalized negative log-likelihood 기반 learning-potential score를 씁니다.
 
 ### 5. Instruct RL
 

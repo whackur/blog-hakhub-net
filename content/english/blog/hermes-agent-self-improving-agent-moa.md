@@ -3,7 +3,7 @@ title: "Hermes Agent v0.18: When a Self-Improving Agent Gets MoA"
 meta_title: ""
 description: "Hermes Agent v0.18.0, from Nous Research, refines a self-improvement loop of memory, skills, /learn, and /journey, and turns Mixture of Agents into a virtual model provider inside that same loop."
 date: 2026-07-03T17:45:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:40:41+00:00
 image: "/images/posts/hermes-agent-self-improving-agent-moa/hermes-moa-learning-loop.png"
 categories: ["AI"]
 tags: ["hermes-agent", "multi-agent", "moa", "ai-agent", "skills", "memory"]
@@ -69,7 +69,7 @@ Configuration lives in the dashboard under Models, Model Settings, Mixture of Ag
 
 `reference_temperature` and `aggregator_temperature` are optional. Leave them out and temperature isn't sent at all, so the provider's default applies. `reference_max_tokens` caps output length, but only for reference models; aggregator output isn't capped. CLI management runs through `hermes moa list`, `hermes moa configure`, `hermes moa configure review`, and `hermes moa delete review`.
 
-A few behaviors are worth noting at the v0.18.0 documentation level. MoA doesn't appear under `hermes tools` and isn't a toggleable toolset. Setting `enabled: false` on a preset disables reference fanout only, so the aggregator answers alone. Recursive MoA (an aggregator pointing at another MoA preset) is blocked. If one reference model's credentials fail, the turn doesn't abort. The failure gets folded into context and the remaining reference models continue. After the v0.18.0 release, work continued on main to refine MoA's fanout cadence and how provider-default temperatures are handled, so some of these specifics may shift.
+The v0.18.0 documentation describes a few other behaviors. MoA doesn't appear under `hermes tools` and isn't a toggleable toolset. Setting `enabled: false` on a preset disables reference fanout only, so the aggregator answers alone. Recursive MoA (an aggregator pointing at another MoA preset) is blocked. If one reference model's credentials fail, the turn doesn't abort. The failure gets folded into context and the remaining reference models continue. After the v0.18.0 release, work continued on main to refine MoA's fanout cadence and how provider-default temperatures are handled, so some of these specifics may shift.
 
 On Nous Research's own HermesBench, the MoA configuration (Claude Opus 4.8 as aggregator, GPT-5.5 as reference) scored 0.8202, against 0.7607 for Claude Opus 4.8 alone and 0.7412 for GPT-5.5 alone, about 6 points above the stronger single model. This is Nous's own internal benchmark, not a third-party result.
 
@@ -91,7 +91,7 @@ External coverage of MoA lands in a few different places. [Tony Reviews Things](
 
 [Crypto Briefing](https://cryptobriefing.com/hermes-agent-moa-beats-claude-opus-gpt-benchmarks/) leads with the benchmark result, while also noting Hermes Agent's persistent memory, built-in learning loop, and external tool and API integration. It references SWE-bench Pro context without a published full leaderboard, so that part is worth reading cautiously rather than as a settled result.
 
-[Noqta](https://noqta.tn/en/news/nous-hermes-mixture-of-agents-2-virtual-models-2026) frames MoA as "virtual model" packaging and translates the numbers into relative terms: about 8% above Opus, 11% above GPT-5.5. It also points out that HermesBench's methodology and any third-party reproduction weren't available at launch, and it spends real attention on the cost, latency, and failure-mode tradeoff of calling several providers at once. The [AgentOS guide](https://agentos.guide/moa-2-system-beats-model) leans more promotional and is best read as a signal of community interest in "a system beating a single model" rather than as an independent evaluation.
+[Noqta](https://noqta.tn/en/news/nous-hermes-mixture-of-agents-2-virtual-models-2026) frames MoA as "virtual model" packaging and translates the numbers into relative terms: about 8% above Opus, 11% above GPT-5.5. It also points out that HermesBench's methodology and any third-party reproduction weren't available at launch, and examines the cost, latency, and failure-mode tradeoff of calling several providers at once. The [AgentOS guide](https://agentos.guide/moa-2-system-beats-model) leans more promotional and is best read as a signal of community interest in "a system beating a single model" rather than as an independent evaluation.
 
 Taken together, outside coverage mostly treats MoA as a notable way to get multi-model behavior without building a custom pipeline, and the benchmark numbers everyone cites trace back to Nous. No independent reproduction has surfaced yet.
 
@@ -101,7 +101,7 @@ The MoA concept itself is covered in this blog's [earlier post](/en/blog/mixture
 
 ## Summary
 
-Hermes Agent v0.18.0 is the release that made the self-improvement loop verifiable. `/goal` and `pre_verify` add checks on top of the memory-and-skills structure the agent already had, and `/learn` and `/journey` let users see that learning process directly. MoA, now a first-class model choice in the same release, shows one way to fold multiple models' perspectives into that loop without a separate pipeline. It costs more, the benchmark numbers are still Nous's own, and the details keep changing after release. All of that is worth keeping in mind.
+Hermes Agent v0.18.0 is the release that made the self-improvement loop verifiable. `/goal` and `pre_verify` add checks on top of the memory-and-skills structure the agent already had, and `/learn` and `/journey` let users see that learning process directly. MoA, now a first-class model choice in the same release, shows one way to fold multiple models' perspectives into that loop without a separate pipeline. It costs more, the benchmark numbers are still Nous's own, and the details keep changing after release.
 
 ## Further reading
 
