@@ -3,7 +3,7 @@ title: "TradingAgents: Reading the Paper and Code Behind an LLM Trading Desk"
 meta_title: ""
 description: "Who makes the final call in TradingAgents, what its reports actually mean, and how data availability, evaluation design, and costs limit the paper’s backtest claims."
 date: 2026-07-03T14:30:00+09:00
-lastmod: 2026-10-16T00:47:22+09:00
+lastmod: 2026-11-03T08:01:23+00:00
 image: "/images/posts/tradingagents-multi-agent-llm-trading/cover-20261016.webp"
 categories: ["AI"]
 tags: ["multi-agent", "llm-agents", "trading", "langgraph", "fintech", "agent-debate"]
@@ -106,9 +106,9 @@ print(state["final_trade_decision"])
 ta.save_reports(state, "AAPL")
 ```
 
-Choosing the same date does not fix the experiment. A useful comparison should preserve the code SHA, exact model IDs and providers, reasoning and sampling settings, selected analysts, debate and tool limits, original data and publication times, and initial memory state. The report's `run_settings` captures some of these conditions, but it does not archive every source feed. The evaluator also states that it uses one model sample per cell. Repeated-run variation and missing or failed cells belong alongside any reported average. [Recorded settings](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/trading_graph.py), [evaluation limitations](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/backtest.py)
+Choosing the same date does not fix all experimental conditions. A useful comparison should preserve the code SHA, exact model IDs and providers, reasoning and sampling settings, selected analysts, debate and tool limits, original data and publication times, and initial memory state. The report's `run_settings` captures some of these conditions, but it does not archive every source feed. The evaluator also states that it uses one model sample per cell. Repeated-run variation and missing or failed cells belong alongside any reported average. [Recorded settings](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/graph/trading_graph.py), [evaluation limitations](https://github.com/TauricResearch/TradingAgents/blob/1394a3f72aa4393e1a98f51b382434c4b4c2d972/tradingagents/backtest.py)
 
-Costs depend on models, tool loops, debate length, retries, and reflections on previous decisions. Parallel analysts can reduce elapsed time while every call still incurs its own cost. The paper's call count cannot be converted into a current dollar bill without measuring a run using the selected models. Productive research questions are whether the system improves on a single agent given the same evidence and budget, and which objections actually change its final judgment. Answering them requires controlled evaluation as well as readable reports.
+Costs depend on models, tool loops, debate length, retries, and reflections on previous decisions. Parallel analysts can reduce elapsed time while every call still incurs its own cost. The paper's call count cannot be converted into a current dollar cost without measuring a run using the selected models. Productive research questions are whether the system improves on a single agent given the same evidence and budget, and which objections actually change its final judgment. Answering them requires controlled evaluation as well as readable reports.
 
 ## Further reading
 

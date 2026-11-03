@@ -3,7 +3,7 @@ title: "SwarmWorld: LLM Agents That Cooperate Without Talking, and Technology Th
 meta_title: ""
 description: "How SwarmWorld agents coordinate through persistent artifacts, what the communication and inheritance ablations measure, where portfolio gains differ from single-device performance, and what public code and data establish."
 date: 2026-08-30T20:00:00+09:00
-lastmod: 2026-10-15T15:47:04+00:00
+lastmod: 2026-11-03T07:54:51+00:00
 image: "/images/posts/swarmworld-stigmergic-technological-evolution/swarmworld-editorial-20261016.webp"
 categories: ["AI"]
 tags: ["llm-agents", "multi-agent", "emergent-behavior", "stigmergy", "ai-research"]

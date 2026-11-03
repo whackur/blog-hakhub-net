@@ -3,7 +3,7 @@ title: "Binance Ethereum Wallet Incident and EIP-7702 Nonce-Range Spray"
 meta_title: ""
 description: "A detailed account of 50 valid Binance 14 delegation signatures, seven key transactions, later swaps, and the unresolved boundary of signing-authority compromise."
 date: 2026-10-30T14:00:00+09:00
-lastmod: 2026-10-30T15:16:16+09:00
+lastmod: 2026-11-03T07:15:15+00:00
 image: "/images/posts/binance-eip-7702-nonce-spray-incident/cover.webp"
 categories: ["Blockchain", "Security"]
 tags: ["ethereum", "eip-7702", "binance", "custody", "incident-analysis"]
@@ -23,7 +23,7 @@ draft: false
 .content:has(#binance-7702-mobile) table code::after { content: none; }
 </style>
 
-Early on October 30, 2026 in Korea, the Ethereum account labeled **Binance 14** by Etherscan acquired an EIP-7702 delegation. Three minutes and 24 seconds later, an external executor called the account, and ETH plus multiple ERC-20 tokens moved to the attacker recipient. The raw delegation transaction contains 50 valid signatures that recover to the victim account. The observed path is consistent with **account authority takeover using valid delegation signatures**. The available evidence does not establish a signature-verification bypass or a break of ECDSA. [Delegation transaction](https://etherscan.io/tx/0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b), [main sweep](https://etherscan.io/tx/0x53bd38b816c23e74134786c29a8c18d792777998a3b9326047b583100e88e2f3)
+Early on October 30, 2026 in Korea, the Ethereum account labeled **Binance 14** by Etherscan was configured with an EIP-7702 delegation. Three minutes and 24 seconds later, an external executor called the account, and ETH plus multiple ERC-20 tokens moved to the attacker's recipient address. The raw delegation transaction contains 50 valid signatures that recover to the victim account. The observed path is consistent with **account authority takeover using valid delegation signatures**. The available evidence does not establish a signature-verification bypass or a break of ECDSA. [Delegation transaction](https://etherscan.io/tx/0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b), [main sweep](https://etherscan.io/tx/0x53bd38b816c23e74134786c29a8c18d792777998a3b9326047b583100e88e2f3)
 
 The central unresolved question is how those valid signatures were obtained. Theft of the private key itself, abuse of signing infrastructure, an approval-policy failure, and stolen pre-signed authorizations cannot be distinguished from the on-chain result alone. The signatures covering multiple nonces provide a clue, but do not settle that question.
 
@@ -125,7 +125,7 @@ RLP decoding and re-encoding of the [delegation transaction's Raw Tx Hex](https:
 
 The OpenSSL verification received the already computed 32-byte Keccak digest through a Prehashed API. Its hash-algorithm parameter did not cause a second SHA-256 hashing pass. A separate ECDSA verification implementation accepted the same digest and signatures as the public-key recovery calculation. The outer transaction sender and the authorization authority also recover to different accounts.
 
-These checks establish signature mathematics and the corresponding account. They do not establish approval by a legitimate operator, or prove that the attacker possessed the private key itself. The raw transaction does not identify the device that signed, the signing time, the requester, or the approval process.
+These checks establish the signatures' mathematical validity and the account they correspond to. They do not establish approval by a legitimate operator, or prove that the attacker possessed the private key itself. The raw transaction does not identify the device that signed, the signing time, the requester, or the approval process.
 
 Each account nonce changes the digest. Changing the nonce number in one valid signature cannot produce this set of 50. The bundle is a **nonce-range spray using valid delegation signatures**. It is not brute force against a private key using random signatures. It is compatible with accommodating a busy hot wallet's changing nonce before inclusion, but the pattern does not prove whether the attacker lacked an exact nonce or when the signatures were generated. [Raw transaction](https://etherscan.io/getRawTx?tx=0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b), [Blockaid analysis](https://x.com/blockaid_/status/2115924317888495661)
 
@@ -213,7 +213,7 @@ Large ETH outflows to subsequent addresses, bridges, or exchanges have not been 
 
 ## Signing boundaries for custody operators
 
-The operational task is to control both withdrawal approval and signatures that change an account's execution code. Another account can submit the outer transaction, so **filtering outbound type-4 transactions at the sending service is insufficient**. The following defenses follow from the observed path and the authorization's scope.
+The operational task is to control both withdrawal approval and signatures that change an account's execution code. Another account can submit the outer transaction, so **filtering outbound type-4 transactions at the sending service is insufficient**. These defenses follow from the observed path and the authorization's scope.
 
 - **Identify authorizations at the signer.** If EIP-7702 is unused, reject delegation signing in the `0x05` domain. Control request formats and permissions so raw-digest signing cannot bypass transaction-policy checks.
 - **Approve delegation as a high-authority change.** Where needed, enforce chain and implementation allowlists, inspect the actual address and bytecode, and simulate behavior. For proxies, inspect upgrade authority too. Recipient, amount, calldata, and execution replay protection belong in safe delegate policies.

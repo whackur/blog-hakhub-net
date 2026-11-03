@@ -3,7 +3,7 @@ title: "Agentic Payments in June 2026: x402, UCP, and MPP Implementation Progres
 meta_title: ""
 description: "A month's worth of implementation changes across x402, UCP, MPP/pay.sh, and ACP: auth-capture, builder-code attribution, idempotency hardening, and ERC-8126 going Final."
 date: 2026-06-30T07:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:04:19+00:00
 image: "/images/posts/agentic-payments-june-2026-x402-ucp-mpp/agent-payment-layer-stack.png"
 categories: ["Blockchain"]
 tags: ["agentic-payments", "x402", "ucp", "mpp", "stablecoin"]
@@ -12,7 +12,7 @@ translationKey: "agentic-payments-june-2026-x402-ucp-mpp"
 draft: false
 ---
 
-Agentic payments in June 2026 moved from "can an agent pay" toward "who authorized the payment, how is it verified, and how is it traced." The major open protocols (x402, UCP, MPP/pay.sh, and ACP) each had meaningful implementation changes. All figures and commit details below come from GitHub API, PyPI, and npm registry checks.
+Agentic payments in June 2026 moved from "can an agent pay" toward "who authorized the payment, how is it verified, and how is it traced." The major open protocols (x402, UCP, MPP/pay.sh, and ACP) each received implementation updates. All figures and commit details below come from GitHub API, PyPI, and npm registry checks.
 
 ## What agentic payments are
 
@@ -61,9 +61,9 @@ Package releases: PyPI `x402 2.12.0` (May 29), npm `@x402/* 2.14.0` (May 29), Py
 
 ## UCP: idempotency, buyer consent, signed order responses
 
-The Universal Commerce Protocol saw a focused set of changes around payment correctness and evidence.
+The Universal Commerce Protocol changes addressed payment correctness and evidence.
 
-**Idempotency 409 contract.** A [fix commit](https://github.com/Universal-Commerce-Protocol/ucp) made the idempotency key contract explicit: same key plus mismatched payload returns HTTP 409 Conflict. This closes a gap where an agent retrying after a network failure could accidentally get a stale cached response for a different cart or checkout body. The `Content-Digest` header serves as the natural payload comparison primitive. This is a small spec change with real consequences for preventing duplicate orders and stale price confirmations.
+**Idempotency 409 contract.** A [fix commit](https://github.com/Universal-Commerce-Protocol/ucp) made the idempotency key contract explicit: same key plus mismatched payload returns HTTP 409 Conflict. This closes a gap where an agent retrying after a network failure could accidentally get a stale cached response for a different cart or checkout body. The `Content-Digest` header provides a way to compare payloads. This is a small spec change with real consequences for preventing duplicate orders and stale price confirmations.
 
 **Buyer consent expansion.** Cart and checkout now support purpose-scoped consent structures with `granted`, `source`, and `description` fields. The `source` distinguishes between a business default and a platform-captured buyer preference. For agentic shopping, this matters because agents can encounter consent decisions during browsing and cart assembly, not only at checkout.
 
@@ -101,9 +101,9 @@ ERC-8004 itself had no ethereum/ercs process-status change in June. That is sepa
 
 The standards cover different layers of one flow: commerce, HTTP payment, execution tooling, identity and authorization, and provenance.
 
-The June changes show agentic payments splitting across layers rather than converging on one protocol. x402 handles HTTP 402 payment challenges and facilitator settlement. UCP covers cart/checkout consent, identity, and order evidence. ERC-8004/8126/8273 handle agent identity and action-level authorization. pay.sh handles execution-surface tooling.
+The June changes show agentic payments splitting across layers rather than converging on one protocol. x402 handles HTTP 402 payment challenges and facilitator settlement. UCP covers cart/checkout consent, identity, and order evidence. ERC-8004/8126/8273 handle agent identity and action-level authorization. pay.sh provides tools for initiating payments from execution environments.
 
-The practical implication is that building a complete agentic payment flow requires decisions across all four layers, and they don't yet talk to each other in a standardized way.
+Building a complete agentic payment flow requires decisions across all four layers, and they don't yet talk to each other in a standardized way.
 
 If you're evaluating an integration now, it helps to mark what is unfinished. x402 auth-capture landed client-side signing only; server and facilitator support is pending. MPP subscriptions still have server-side activation verification and the on-chain `create_plan` broadcast as TODOs. ERC-8273 is a Draft whose interface can change. As of this month, the changes you can put into production directly are the UCP idempotency contract and the x402 security patches. The rest are directional signals.
 

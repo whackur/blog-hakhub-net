@@ -3,7 +3,7 @@ title: "Qwen3.6-35B-A3B: Community Reviews, Uncensored Variants, and MTP Benchma
 meta_title: ""
 description: "From the 1.2M-download uncensored variant to real MTP acceleration numbers on 12 GB and 16 GB VRAM. What the community has found running Qwen3.6-35B-A3B locally."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T18:00:00+09:00
+lastmod: 2026-11-03T07:52:11+00:00
 image: "/images/posts/qwen3-6-35b-a3b-community-reviews/mtp-vram-speed-tradeoff.png"
 categories: ["AI"]
 tags: ["qwen", "local-llm", "moe", "mtp", "uncensored", "llama-cpp"]
@@ -36,7 +36,7 @@ The base model has significant refusal behavior on certain topics. Several commu
 
 According to the [r/hermesagent definitive variant guide](https://www.reddit.com/r/hermesagent/comments/1tmp2qy/qwen3635ba3b_community_variants_the_definitive/), by June 2026 the HauhauCS Aggressive variant had over 1.22 million downloads and 761 likes, making it the most tested uncensored option. The creator reports 0 refusals across 465 tests with no capability loss. VRAM requirements are roughly 22 GB for Q4_K_P and 20 GB for IQ4_XS. The creator acknowledges sporadic topic drift in long agentic loops.
 
-The community consensus from that guide is that the model answers exactly what it is asked and produces unusual outputs only when given unusual inputs. In short, behavior tracks the user's prompts rather than the model's own tendencies (see [r/hermesagent guide](https://www.reddit.com/r/hermesagent/comments/1tmp2qy/qwen3635ba3b_community_variants_the_definitive/)).
+The community consensus from that guide is that the model answers exactly what it is asked and produces unusual outputs only when given unusual inputs. Its behavior tracks the user's prompts rather than the model's own tendencies (see [r/hermesagent guide](https://www.reddit.com/r/hermesagent/comments/1tmp2qy/qwen3635ba3b_community_variants_the_definitive/)).
 
 ### Other variants
 
@@ -55,8 +55,8 @@ The KL divergence figure measures how far the variant's output distribution drif
 From the [r/hermesagent guide](https://www.reddit.com/r/hermesagent/comments/1tmp2qy/qwen3635ba3b_community_variants_the_definitive/) and the [r/LocalLLM tool-calling test thread](https://www.reddit.com/r/LocalLLM/comments/1sqpsut/qwen_3635ba3b_reddit_asked_so_i_tested_if_the_35/):
 
 - **Tool calling**: Improved stability over Qwen3.5. One independently measured MCPMark score of 37.0.
-- **Coding**: Codebase-wide analysis and modification gets consistently positive marks.
-- **Reasoning**: Deep reasoning traces praised for complex problems.
+- **Coding**: Codebase-wide analysis and modification get consistently positive marks.
+- **Reasoning**: Users praise its deep reasoning traces on complex problems.
 - **Value**: Several users describe frontier-level performance locally at around 21 GB VRAM.
 
 Simon Willison wrote on his blog that ["on my laptop, Qwen3.6 drew a better pelican than Claude Opus 4.7"](https://simonwillison.net/2026/Apr/16/qwen-beats-opus/). A comment on [HN](https://news.ycombinator.com/item?id=47798382) reported solving 11 out of 98 Power Ranking tasks. Both are individual data points.
@@ -67,7 +67,7 @@ Reported consistently across threads (see [HackerNoon's overview](https://hacker
 
 - **Tool-call loops**: The most-cited problem. The model repeatedly calls the same tool.
 - **Topic drift**: Shows up in long agentic runs; the creator of HauhauCS Aggressive acknowledges this.
-- **Temperature sensitivity**: temp=1.0 is widely recommended to reduce repetition and looping. Default 0.6-0.8 produces more loop behavior.
+- **Temperature sensitivity**: temp=1.0 is widely recommended to reduce repetition and looping. The default 0.6-0.8 leads to more loops.
 - **Code recall**: Distilled variants show lower CodeNeedle scores, with potential for mistakes when reproducing code.
 
 ### Recommended settings

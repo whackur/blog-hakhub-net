@@ -3,7 +3,7 @@ title: "ERC-8004 Agent Reputation: On-Chain Registration and Lookup"
 meta_title: ""
 description: "ERC-8004 is a set of three registries, not a single contract. How to register feedback using giveFeedback(), aggregate it with getSummary() against a trusted client set, and what services exist today to browse ERC-8004 data."
 date: 2026-06-30T15:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:26:45+00:00
 image: "/images/posts/erc8004-agent-reputation-registry-lookup/reputation-write-read-flow.png"
 categories: ["Blockchain"]
 tags: ["ai-agent", "erc-8004", "reputation", "smart-contract", "onchain"]
@@ -180,7 +180,7 @@ Tags are free-form strings. Any value is valid, but only entries sharing the exa
 
 **Placeholder-heavy registry.** As of May 2026, a significant share of registered agents are placeholders with little real activity. Reputation data is sparse at this stage, and scores reflect that.
 
-**Sybil exposure.** Permissionless writes mean any actor can flood the registry with self-reviews. A poorly chosen `clientAddresses` set in `getSummary()` exposes callers to inflated or manipulated aggregates. The client set is where the actual trust decision lives.
+**Sybil exposure.** Permissionless writes mean any actor can flood the registry with self-reviews. A poorly chosen `clientAddresses` set in `getSummary()` exposes callers to inflated or manipulated aggregates. The choice of client set determines which feedback is trusted.
 
 **Off-chain URI durability.** `feedbackHash` detects tampering, but if an HTTPS-hosted `feedbackURI` goes offline, the full feedback payload is unrecoverable. IPFS or another content-addressed store reduces this risk.
 
@@ -196,19 +196,19 @@ The standard is still a Draft, actual reputation data is thin, and Sybil resista
 
 ## Further reading
 
-- [AI Agent Identity, Verification, and Policy: The ERC-8004/8126/8196 Trust Stack](../ai-agent-wallet-trust-stack-erc-8004-8126-8196) — conceptual overview (this blog)
-- [QuickNode ERC-8004 Explorer](https://erc-8004.quicknode.com) — agent browser and developer feedback submission guide
-- [Agentscan](https://agentscan.info) — multichain agent search and reputation browser
-- [erc-8004-contracts reference implementation](https://github.com/erc-8004/erc-8004-contracts) — source for ABI and storage layout
+- [AI Agent Identity, Verification, and Policy: The ERC-8004/8126/8196 Trust Stack](../ai-agent-wallet-trust-stack-erc-8004-8126-8196): conceptual overview (this blog)
+- [QuickNode ERC-8004 Explorer](https://erc-8004.quicknode.com): agent browser and developer feedback submission guide
+- [Agentscan](https://agentscan.info): multichain agent search and reputation browser
+- [erc-8004-contracts reference implementation](https://github.com/erc-8004/erc-8004-contracts): source for ABI and storage layout
 
 ## References
 
-- [EIP-8004 (Draft)](https://eips.ethereum.org/EIPS/eip-8004) — Ethereum Improvement Proposals, accessed 2026-06-30
-- [ethereum/ERCs: ERC-8004](https://github.com/ethereum/ERCs/blob/master/ERCS/erc-8004.md) — EIP source text, accessed 2026-06-30
-- [erc-8004/erc-8004-contracts](https://github.com/erc-8004/erc-8004-contracts) — reference contract implementation, accessed 2026-06-30
-- [QuickNode ERC-8004 Explorer](https://erc-8004.quicknode.com) — contract addresses, ABI docs, and tutorials, accessed 2026-06-30
-- [Agentscan](https://agentscan.info) — AI agent explorer, accessed 2026-06-30
-- [8004.org](https://www.8004.org) — official ERC-8004 site, accessed 2026-06-30
-- [DeepWiki: erc-8004-contracts](https://deepwiki.com/erc-8004/erc-8004-contracts) — reference contract API docs, accessed 2026-06-30
-- [Allium](https://www.allium.so) — on-chain AI identity analytics, accessed 2026-06-30
-- [arXiv 2606.26028: Can Trustless Agents Be Trusted?](https://arxiv.org/abs/2606.26028) — empirical study of ERC-8004 across Ethereum/BSC/Base, accessed 2026-06-30
+- [EIP-8004 (Draft)](https://eips.ethereum.org/EIPS/eip-8004): Ethereum Improvement Proposals, accessed 2026-06-30
+- [ethereum/ERCs: ERC-8004](https://github.com/ethereum/ERCs/blob/master/ERCS/erc-8004.md): EIP source text, accessed 2026-06-30
+- [erc-8004/erc-8004-contracts](https://github.com/erc-8004/erc-8004-contracts): reference contract implementation, accessed 2026-06-30
+- [QuickNode ERC-8004 Explorer](https://erc-8004.quicknode.com): contract addresses, ABI docs, and tutorials, accessed 2026-06-30
+- [Agentscan](https://agentscan.info): AI agent explorer, accessed 2026-06-30
+- [8004.org](https://www.8004.org): official ERC-8004 site, accessed 2026-06-30
+- [DeepWiki: erc-8004-contracts](https://deepwiki.com/erc-8004/erc-8004-contracts): reference contract API docs, accessed 2026-06-30
+- [Allium](https://www.allium.so): on-chain AI identity analytics, accessed 2026-06-30
+- [arXiv 2606.26028: Can Trustless Agents Be Trusted?](https://arxiv.org/abs/2606.26028): empirical study of ERC-8004 across Ethereum/BSC/Base, accessed 2026-06-30

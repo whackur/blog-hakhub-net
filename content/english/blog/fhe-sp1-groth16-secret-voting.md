@@ -3,7 +3,7 @@ title: "Secret Voting Architecture with FHE, SP1, and Groth16"
 meta_title: ""
 description: "How to design on-chain secret voting using FHE for encrypted tallying, SP1 for execution proofs, and Groth16 for EVM-friendly verification, with a full security assumptions checklist."
 date: 2026-06-30T02:00:00+09:00
-lastmod: 2026-08-31T11:30:00+09:00
+lastmod: 2026-11-03T07:28:40+00:00
 image: "/images/posts/fhe-sp1-groth16-secret-voting/secret-voting-architecture.png"
 categories: ["Blockchain"]
 tags: ["fhe", "zk-proof", "groth16", "sp1", "voting", "privacy", "zero-knowledge", "maci", "semaphore"]
@@ -28,7 +28,7 @@ FHE's job is to aggregate votes without decrypting them. A voter encrypts a ball
 
 [SP1](https://docs.succinct.xyz/docs/sp1/introduction) is a zkVM for Rust programs compiled to RISC-V. In a secret voting context, a Rust program verifies that voter eligibility checks, nullifier deduplication, ciphertext handle lists, aggregation rules, and public-value digests are all consistent, then produces a proof of that execution.
 
-One thing worth being precise about: re-executing all FHE homomorphic operations inside SP1 for proof purposes gets expensive. In practice, the FHE computation path and the ZK verification boundary are separated. SP1's role is closer to proving that the aggregation transcript and public inputs are internally consistent, not re-running every FHE operation from scratch.
+Re-executing all FHE homomorphic operations inside SP1 for proof purposes gets expensive. In practice, the FHE computation path and the ZK verification boundary are separated. SP1's role is closer to proving that the aggregation transcript and public inputs are internally consistent, not re-running every FHE operation from scratch.
 
 ### Groth16: on-chain verification wrapper
 

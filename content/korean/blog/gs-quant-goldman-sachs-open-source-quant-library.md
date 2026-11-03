@@ -3,7 +3,7 @@ title: "gs-quant: 골드만삭스가 퀀트 코드를 오픈소스로 공개한 
 meta_title: "gs-quant 골드만삭스 오픈소스 퀀트 라이브러리 리뷰"
 description: "GS Quant에서 계정 없이 실행하는 시계열 계산과 상품 정의, 인증·데이터 권한이 필요한 Marquee 조회와 가격 평가를 실제 코드와 예제로 구분합니다."
 date: 2026-08-26T10:00:00+09:00
-lastmod: 2026-10-15T15:51:21Z
+lastmod: 2026-11-03T07:33:35Z
 image: "/images/posts/gs-quant-goldman-sachs-open-source-quant-library/quant-local-marquee-editorial-20261016.webp"
 categories: ["Finance"]
 tags: ["quant-finance", "open-source", "python", "goldman-sachs"]
@@ -12,7 +12,7 @@ translationKey: "gs-quant-goldman-sachs-open-source-quant-library"
 draft: false
 ---
 
-GS Quant는 **내가 준비한 데이터의 시계열 계산과 금융 상품 객체 정의는 로컬에서 실행하고, Marquee의 데이터 조회·가격 평가·리스크 계산은 인증된 서비스로 요청하는 Python 툴킷**입니다. 공개 코드의 Apache-2.0 라이선스와 원격 서비스·데이터를 사용할 권한은 별개입니다. 설치했다고 골드만삭스의 가격 평가 서비스를 함께 받은 것은 아니지만, 계정 없이 실행할 수 있는 분석 코드도 있습니다. [공개 소스](https://github.com/goldmansachs/gs-quant)에서 이 두 영역을 함수별로 구분해야 합니다.
+GS Quant는 **내가 준비한 데이터의 시계열 계산과 금융 상품 객체 정의는 로컬에서 실행하고 Marquee의 데이터 조회·가격 평가·리스크 계산은 인증된 서비스로 요청하는 Python 툴킷**입니다. 공개 코드의 Apache-2.0 라이선스와 원격 서비스·데이터를 사용할 권한은 별개입니다. 설치했다고 골드만삭스의 가격 평가 서비스를 함께 받은 것은 아니지만 계정 없이 실행할 수 있는 분석 코드도 있습니다. [공개 소스](https://github.com/goldmansachs/gs-quant)에서 이 두 영역을 함수별로 구분해야 합니다.
 
 예를 들어 CSV에서 읽은 가격의 수익률을 구하는 일과, 옵션의 현재 가치를 골드만삭스 모델로 평가하는 일은 요구 조건이 다릅니다. 전자는 입력값과 Python 환경으로 충분합니다. 후자는 상품 조건뿐 아니라 원격 모델과 시장 데이터, 그 서비스를 호출할 권한까지 필요합니다. 용도에 따라 필요한 것을 나누면 다음과 같습니다.
 
@@ -28,7 +28,7 @@ GS Quant는 **내가 준비한 데이터의 시계열 계산과 금융 상품 �
 
 ## 설치한 패키지와 원격 서비스의 버전은 다릅니다
 
-2026년 10월 16일 한국시간 확인 기준 최신 GitHub 릴리스는 [`release-2.2.1`](https://github.com/goldmansachs/gs-quant/releases/tag/release-2.2.1)입니다. 공개 시각은 2026년 10월 13일 10:41:56 UTC이며, [PyPI의 최신 패키지](https://pypi.org/project/gs-quant/2.2.1/)도 2.2.1입니다. PyPI 메타데이터와 README는 **Python 3.10 이상**을 요구합니다.
+2026년 10월 16일 한국시간 확인 기준 최신 GitHub 릴리스는 [`release-2.2.1`](https://github.com/goldmansachs/gs-quant/releases/tag/release-2.2.1)입니다. 공개 시각은 2026년 10월 13일 10:41:56 UTC이며 [PyPI의 최신 패키지](https://pypi.org/project/gs-quant/2.2.1/)도 2.2.1입니다. PyPI 메타데이터와 README는 **Python 3.10 이상**을 요구합니다.
 
 ```bash
 python -m pip install "gs-quant==2.2.1"
@@ -104,7 +104,7 @@ frame = weather.get_data(
 
 ## 가격 평가는 상품 조건을 원격 계산 요청으로 바꿉니다
 
-스왑의 가치를 구하려면 입력한 고정금리와 명목금액 외에도 평가일, 금리 곡선 등 평가에 필요한 시장 정보와 모델이 있어야 합니다. GS Quant의 기본 상품 구현은 [`GsRiskApi`](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/instrument/core.py)를 공급자로 사용합니다. [`price()`](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/priceable.py#L75)는 가격 측정치를 지정한 `calc()`로 이어지고, [리스크 API 구현](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/api/gs/risk.py#L63)은 세션으로 `/risk/calculate` 또는 `/risk/calculate/bulk`에 요청합니다.
+스왑의 가치를 구하려면 입력한 고정금리와 명목금액 외에도 평가일, 금리 곡선 등 평가에 필요한 시장 정보와 모델이 있어야 합니다. GS Quant의 기본 상품 구현은 [`GsRiskApi`](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/instrument/core.py)를 공급자로 사용합니다. [`price()`](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/priceable.py#L75)는 가격 측정치를 지정한 `calc()`로 이어지고 [리스크 API 구현](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/api/gs/risk.py#L63)은 세션으로 `/risk/calculate` 또는 `/risk/calculate/bulk`에 요청합니다.
 
 따라서 Python 소스에서 볼 수 있는 것은 상품 표현, 요청 구성, 결과 처리입니다. 이 경로에서 호출하는 서버 측 가격 평가 모델을 패키지 설치만으로 로컬에서 실행할 수는 없습니다. 서버의 내부 구현을 특정 사내 시스템과 동일하다고 추정할 이유도 없습니다.
 
@@ -120,13 +120,13 @@ with PricingContext(pricing_date=date(2026, 1, 5)):
 value = value_future.result()
 ```
 
-[`PricingContext`](https://developer.gs.com/docs/gsquant/pricing-and-risk/pricing-context/)는 평가일, 시장 데이터 기준일과 위치, 비동기·배치 처리 같은 공통 조건을 관리합니다. context 안의 계산은 블록을 나갈 때 묶어 전송하며, 안에서 받은 future의 결과는 블록 밖에서 읽습니다. `is_async`는 호출 측의 대기 방식을 조절하는 설정입니다. 로컬 객체를 만들거나 비동기 옵션을 켜는 일이 원격 계산을 오프라인 계산으로 바꾸지는 않습니다.
+[`PricingContext`](https://developer.gs.com/docs/gsquant/pricing-and-risk/pricing-context/)는 평가일, 시장 데이터 기준일과 위치, 비동기·배치 처리 같은 공통 조건을 관리합니다. context 안의 계산은 블록을 나갈 때 묶어 전송하며 안에서 받은 future의 결과는 블록 밖에서 읽습니다. `is_async`는 호출 측의 대기 방식을 조절하는 설정입니다. 로컬 객체를 만들거나 비동기 옵션을 켜는 일이 원격 계산을 오프라인 계산으로 바꾸지는 않습니다.
 
 동일한 결과를 다시 얻어야 한다면 패키지 버전 외에 상품 조건과 평가일, 시장 데이터 기준일·위치, 사용한 데이터와 권한 범위도 기록해야 합니다. GitHub 커밋은 클라이언트 구현을 고정하는 근거이지 서버 모델과 데이터까지 고정됐다는 증거는 아닙니다.
 
 ## MCP 통합도 기존 세션을 사용합니다
 
-2.2.1 소스에는 [실험 단계의 MCP 통합](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/mcp/README.md)이 있습니다. MCP(Model Context Protocol)는 AI 클라이언트가 도구를 호출하는 인터페이스이며, 이 구현은 FastMCP 기반 서버와 클라이언트를 제공합니다. 별도의 `mcp` 선택 의존성이 필요하고 README는 API·CLI·설정이 바뀔 수 있다고 명시합니다.
+2.2.1 소스에는 [실험 단계의 MCP 통합](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/mcp/README.md)이 있습니다. MCP(Model Context Protocol)는 AI 클라이언트가 도구를 호출하는 인터페이스이며 이 구현은 FastMCP 기반 서버와 클라이언트를 제공합니다. 별도의 `mcp` 선택 의존성이 필요하고 README는 API·CLI·설정이 바뀔 수 있다고 명시합니다.
 
 인증 방식에 따라 어떤 계정으로 요청하는지도 달라집니다. `local`은 서버가 만든 한 세션을 도구 호출에 재사용합니다. `passthrough`는 요청에 전달된 인증 정보로 호출자의 세션을 구성합니다. [미들웨어 구현](https://github.com/goldmansachs/gs-quant/blob/bbe7071653ccfc0d431e11c3a31dbd511afc394f/gs_quant/mcp/middleware.py)에서도 이 차이가 드러납니다. AI 클라이언트를 연결해도 데이터 구독이나 가격 평가 권한이 새로 생기지 않습니다. `local`은 계산 위치를 뜻하는 이름도 아닙니다. 해당 세션을 사용하는 도구는 여전히 Marquee API를 호출할 수 있습니다.
 
@@ -138,7 +138,7 @@ value = value_future.result()
 
 목적이 **모델을 직접 실행하고 수정하는 학습**이라면 [QuantLib](https://www.quantlib.org/)도 함께 살펴볼 만합니다. C++ 기반의 오픈소스 금융 모델링·리스크 라이브러리이며 Python 바인딩을 제공합니다. 여기서의 비교 기준은 수치 정확도나 수익성이 아니라 필요한 계산 구현을 로컬에서 확보하는가입니다. 시장 데이터와 평가 가정을 준비하는 문제는 여전히 남습니다.
 
-GS Quant를 선택할 때 가장 먼저 확인할 것은 필요한 함수의 입력과 호출 경로입니다. 이미 가진 데이터를 분석할 목적이면 로컬 함수부터 실행하고, Marquee 결과가 목적이면 세션과 서비스·데이터별 권한부터 확인하는 편이 맞습니다.
+GS Quant를 선택할 때 가장 먼저 확인할 것은 필요한 함수의 입력과 호출 경로입니다. 이미 가진 데이터를 분석할 목적이면 로컬 함수부터 실행하고 Marquee 결과가 목적이면 세션과 서비스·데이터별 권한부터 확인하는 편이 맞습니다.
 
 ## 함께 보면 좋을 자료
 

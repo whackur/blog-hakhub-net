@@ -3,7 +3,7 @@ title: "바이낸스 Ethereum 지갑 유출과 EIP-7702 nonce-range spray 분석
 meta_title: ""
 description: "Binance 14 위임 거래의 유효 서명 50개, 주요 유출·차단 거래와 후속 스왑을 대조하고 서명 권한 침해와 프로토콜 검증 결함을 구분합니다."
 date: 2026-10-30T14:00:00+09:00
-lastmod: 2026-10-30T15:16:16+09:00
+lastmod: 2026-11-03T07:15:15+00:00
 image: "/images/posts/binance-eip-7702-nonce-spray-incident/cover.webp"
 categories: ["Blockchain", "Security"]
 tags: ["ethereum", "eip-7702", "binance", "custody", "incident-analysis"]
@@ -23,11 +23,11 @@ draft: false
 .content:has(#binance-7702-mobile) table code::after { content: none; }
 </style>
 
-2026년 10월 30일 새벽, Etherscan이 **Binance 14**로 식별한 Ethereum 계정에 EIP-7702 위임이 설정됐습니다. 3분 24초 뒤 외부 실행자가 이 계정을 호출했고, ETH와 여러 ERC-20 토큰이 공격자 수취 주소로 이동했습니다. 위임 거래의 원시 바이트에는 피해 계정으로 복구되는 유효한 서명 50개가 들어 있습니다. 확인된 경로는 **유효한 위임 서명을 이용한 계정 권한 탈취**와 부합합니다. 서명 검증을 건너뛰었거나 ECDSA가 깨졌다는 증거는 확보되지 않았습니다. [위임 거래](https://etherscan.io/tx/0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b), [주요 스윕 거래](https://etherscan.io/tx/0x53bd38b816c23e74134786c29a8c18d792777998a3b9326047b583100e88e2f3)
+2026년 10월 30일 새벽, Etherscan이 **Binance 14**로 식별한 Ethereum 계정에 EIP-7702 위임이 설정됐습니다. 3분 24초 뒤 외부 실행자가 이 계정을 호출했고 ETH와 여러 ERC-20 토큰이 공격자 수취 주소로 이동했습니다. 위임 거래의 원시 바이트에는 피해 계정으로 복구되는 유효한 서명 50개가 들어 있습니다. 확인된 경로는 **유효한 위임 서명을 이용한 계정 권한 탈취**와 부합합니다. 서명 검증을 건너뛰었거나 ECDSA가 깨졌다는 증거는 확보되지 않았습니다. [위임 거래](https://etherscan.io/tx/0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b), [주요 스윕 거래](https://etherscan.io/tx/0x53bd38b816c23e74134786c29a8c18d792777998a3b9326047b583100e88e2f3)
 
 핵심 미확정 사항은 그 유효한 서명을 누가 어떤 경로로 얻었느냐입니다. 개인키 원문 탈취, 서명 인프라 오용, 승인 정책 실패, 탈취된 사전 서명은 온체인 결과만으로 구분되지 않습니다. nonce 여러 개를 대상으로 서명한 흔적은 이 질문에 단서를 주지만 답을 확정하지는 않습니다.
 
-이 보고서의 범위는 Ethereum의 Binance 14 위임과 대표 거래 7개, 후속 스왑 및 특정 시점의 잔액 관찰입니다. 시각은 KST로 통일했습니다. 최초 위임과 아래 주요 거래 7개의 UTC 날짜는 10월 29일입니다. [Unchained의 보도](https://unchainedcrypto.com/binance-says-user-funds-are-completely-safe-after-3-5-billion-drains-from-its-hot-wallets/)는 다른 체인과 전체 피해 규모를 함께 다루지만, 해당 총액과 총동결액을 여기서 독립 검산한 것은 아닙니다. BTC·Tron·Arbitrum·Avalanche의 침해 원인을 EIP-7702로 묶어 설명할 근거도 없습니다.
+이 보고서의 범위는 Ethereum의 Binance 14 위임과 대표 거래 7개, 후속 스왑 및 특정 시점의 잔액 관찰입니다. 시각은 KST로 통일했습니다. 최초 위임과 아래 주요 거래 7개의 UTC 날짜는 10월 29일입니다. [Unchained의 보도](https://unchainedcrypto.com/binance-says-user-funds-are-completely-safe-after-3-5-billion-drains-from-its-hot-wallets/)는 다른 체인과 전체 피해 규모를 함께 다루지만 해당 총액과 총동결액을 여기서 독립 검산한 것은 아닙니다. BTC·Tron·Arbitrum·Avalanche의 침해 원인을 EIP-7702로 묶어 설명할 근거도 없습니다.
 
 ## 사건의 계정과 권한 구조
 
@@ -43,7 +43,7 @@ EOA(externally owned account)는 개인키에 대응하는 외부 소유 계정�
 | 위임 구현 | [0x63e842b054bd624a465454d533c33f573e9c6fae](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae) |
 | 별도 송금 계정, Binance 16 | [0xDFd5293D8e347dFe59E90eFd55b2956a1343963d](https://etherscan.io/address/0xDFd5293D8e347dFe59E90eFd55b2956a1343963d) |
 
-외부 실행자는 위임 거래를 제출하고 호출한 계정입니다. 위임을 허용하는 서명자는 Binance 14입니다. 두 역할을 나누어 봐야, Binance 14에서 시작하는 일반 출금 거래가 없어도 자금이 이동한 이유를 이해할 수 있습니다.
+외부 실행자는 위임 거래를 제출하고 호출한 계정입니다. 위임을 허용하는 서명자는 Binance 14입니다. 두 역할을 나누어 봐야 Binance 14에서 시작하는 일반 출금 거래가 없어도 자금이 이동한 이유를 이해할 수 있습니다.
 
 ## 위임부터 재스윕까지의 거래 7개
 
@@ -77,7 +77,7 @@ Binance 16에서 같은 수취 계정으로 `28,005.6 ETH`가 전송됩니다. B
 
 [0xdc102dd89dded5a83f1008906883ffb7c81ff3b7d7965d8c7277d170b5e17481](https://etherscan.io/tx/0xdc102dd89dded5a83f1008906883ffb7c81ff3b7d7965d8c7277d170b5e17481), 블록 `26300855`.
 
-최상위 From은 외부 실행자, To는 Binance 14입니다. 그런데 토큰 이동의 출발지는 Etherscan 라벨 Binance: Hot Wallet 34이며, 주요 수취 계정으로 `780,000,000 USDC`가 이동합니다.
+최상위 From은 외부 실행자, To는 Binance 14입니다. 그런데 토큰 이동의 출발지는 Etherscan 라벨 Binance: Hot Wallet 34이며 주요 수취 계정으로 `780,000,000 USDC`가 이동합니다.
 
 Unchained는 이를 Binance 14가 소유한 별도 스마트월렛의 권한을 행사한 경로로 설명합니다. 확인된 최상위 호출과 토큰 이동은 그 설명과 부합합니다. 다만 Hot Wallet 34의 owner storage, 전체 호출 trace, 검증된 소스까지 독립 대조하지 않았으므로 세부 권한 경로는 보도에 귀속합니다. [Unchained 보도](https://unchainedcrypto.com/binance-says-user-funds-are-completely-safe-after-3-5-billion-drains-from-its-hot-wallets/)
 
@@ -91,13 +91,13 @@ Etherscan은 Tether가 주요 수취 계정의 USDT 사용을 차단한 거래�
 
 [0xc954c86f118e8e410e6a3eb9e3b38ff4a95fbdae9d2d58e13166afb7a1f4fc5f](https://etherscan.io/tx/0xc954c86f118e8e410e6a3eb9e3b38ff4a95fbdae9d2d58e13166afb7a1f4fc5f), 블록 `26300971`.
 
-USDC Token에 대한 Blacklist 호출이 표시됩니다. 앞선 USDT 차단과 이 호출의 존재는 확인되지만, 두 거래만으로 보도된 총동결액을 검산할 수는 없습니다. 이후의 해제 여부나 모든 자산의 사용 가능 상태도 별도 확인 대상입니다.
+USDC Token에 대한 Blacklist 호출이 표시됩니다. 앞선 USDT 차단과 이 호출의 존재는 확인되지만 두 거래만으로 보도된 총동결액을 검산할 수는 없습니다. 이후의 해제 여부나 모든 자산의 사용 가능 상태도 별도 확인 대상입니다.
 
 ### 7. 06:44:11 KST, Binance 14 재스윕
 
 [0x55ba4dabc41b468e580751373ad31acdee6f5ba398682df2c93e5a8340870556](https://etherscan.io/tx/0x55ba4dabc41b468e580751373ad31acdee6f5ba398682df2c93e5a8340870556), 블록 `26301167`.
 
-실행자가 Binance 14를 다시 호출합니다. 주요 수취 계정으로 `369.831856995580626695 ETH`, `200,397,771.824195 USDT` 등이 이동합니다. 이 시점 전의 모든 입금 출처를 추적한 결과는 아니지만, 위임 이후 잔여 자금이나 후속 유입도 계속 위험할 수 있음을 보여주는 거래입니다.
+실행자가 Binance 14를 다시 호출합니다. 주요 수취 계정으로 `369.831856995580626695 ETH`, `200,397,771.824195 USDT` 등이 이동합니다. 이 시점 전의 모든 입금 출처를 추적한 결과는 아니지만 이 거래는 위임 이후 잔여 자금이나 후속 유입도 계속 위험할 수 있음을 보여줍니다.
 
 ## 50개 서명이 덮은 것은 계정 nonce 범위
 
@@ -110,7 +110,7 @@ authorization = [chain_id, address, nonce, y_parity, r, s]
 digest = keccak256(0x05 || rlp([chain_id, address, nonce]))
 ```
 
-[위임 거래의 Raw Tx Hex](https://etherscan.io/getRawTx?tx=0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b)를 RLP로 디코딩하고 재인코딩하면 원래 바이트와 일치합니다. 전체 바이트의 Keccak-256도 거래 해시와 일치합니다. 따라서 탐색기의 authorization 표가 정렬된 방식과 별개로, 실제 제출된 목록의 순서를 확인할 수 있습니다.
+[위임 거래의 Raw Tx Hex](https://etherscan.io/getRawTx?tx=0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b)를 RLP로 디코딩하고 재인코딩하면 원래 바이트와 일치합니다. 전체 바이트의 Keccak-256도 거래 해시와 일치합니다. 따라서 탐색기의 authorization 표가 정렬된 방식과 별개로 실제 제출된 목록의 순서를 확인할 수 있습니다.
 
 | 원시 데이터 검증 항목 | 결과 |
 | --- | --- |
@@ -123,11 +123,11 @@ digest = keccak256(0x05 || rlp([chain_id, address, nonce]))
 | 별도 cryptography/OpenSSL ECDSA 검증 | 50개 모두 통과 |
 | 바깥 거래 서명에서 복구한 sender | `0x7c8601d4645b93cea45f71e118a729332e6b5ca0` |
 
-OpenSSL 검증에는 이미 계산한 32바이트 Keccak digest를 Prehashed API로 전달했습니다. API의 해시 알고리즘 지정 때문에 SHA-256으로 다시 해싱한 결과가 아닙니다. 공개키 복구 계산과 별개인 ECDSA 검증이 같은 digest와 서명을 받아들였다는 의미입니다. 바깥 거래의 sender와 authorization의 authority도 서로 다르게 복구됩니다.
+OpenSSL 검증에는 이미 계산한 32바이트 Keccak digest를 Prehashed API로 전달했습니다. API의 해시 알고리즘 지정 때문에 SHA-256으로 다시 해싱한 결과가 아닙니다. 공개키 복구 계산과 별개로 수행한 ECDSA 검증도 같은 digest와 서명을 받아들였습니다. 바깥 거래의 sender와 authorization의 authority도 서로 다르게 복구됩니다.
 
 이 결과는 올바른 서명 수학과 계정의 대응 관계를 확인합니다. 합법적인 운영자가 승인했다는 뜻도, 공격자가 개인키 원문을 소유했다는 증거도 아닙니다. 서명이 생성된 장치, 시각, 요청자, 승인 절차는 원시 거래에 들어 있지 않습니다.
 
-nonce별 digest가 달라지므로 유효한 서명 하나에서 nonce 숫자만 바꾸어 50개를 만들 수 없습니다. 이 묶음은 유효한 위임 서명들로 **계정 nonce 범위를 덮는 nonce-range spray**입니다. 무작위 서명으로 개인키를 맞히는 brute force와는 구분됩니다. 계속 움직이는 핫월렛의 포함 시점 nonce 차이를 견디려는 방법과 양립하지만, 공격자가 정확한 nonce를 몰랐는지, 언제 서명했는지까지 이 패턴이 알려주지는 않습니다. [원시 거래](https://etherscan.io/getRawTx?tx=0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b), [Blockaid 분석](https://x.com/blockaid_/status/2115924317888495661)
+nonce별 digest가 달라지므로 유효한 서명 하나에서 nonce 숫자만 바꾸어 50개를 만들 수 없습니다. 이 묶음은 유효한 위임 서명들로 **계정 nonce 범위를 덮는 nonce-range spray**입니다. 무작위 서명으로 개인키를 맞히는 brute force와는 구분됩니다. 계속 움직이는 핫월렛의 포함 시점 nonce 차이를 견디려는 방법과 양립하지만 공격자가 정확한 nonce를 몰랐는지, 언제 서명했는지까지 이 패턴이 알려주지는 않습니다. [원시 거래](https://etherscan.io/getRawTx?tx=0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b), [Blockaid 분석](https://x.com/blockaid_/status/2115924317888495661)
 
 ## 내림차순 목록에서는 하나만 적용되는 조건
 
@@ -141,11 +141,11 @@ Etherscan의 Authorizations 표는 nonce `18914809`만 Validity=True, 나머지 
 
 탐색기에 표시된 당시 nonce를 전제로 한 순차 처리 계산입니다. 아카이브 노드에서 실제 prestate를 가져와 재실행한 결과는 아닙니다. 도식의 한 번 적용은 코드 실행 50회를 뜻하지 않습니다.
 
-순서를 오름차순으로 가정하면 연속 적용이 가능한 다른 계산이 나옵니다. 이 사건에서는 원시 바이트가 내림차순이므로 그 가정을 사용할 수 없습니다. 동일 ECDSA `r`의 반복도 이 50개에서는 관찰되지 않았습니다. 이는 단순한 동일 `k` 재사용 패턴을 찾지 못했다는 뜻이며, 편향된 `k`, 부분 유출, MPC 구현 오류까지 배제하는 증거는 아닙니다.
+순서를 오름차순으로 가정하면 연속 적용이 가능한 다른 계산이 나옵니다. 이 사건에서는 원시 바이트가 내림차순이므로 그 가정을 사용할 수 없습니다. 동일 ECDSA `r`의 반복도 이 50개에서는 관찰되지 않았습니다. 이는 단순한 동일 `k` 재사용 패턴을 찾지 못했다는 뜻이며 편향된 `k`, 부분 유출, MPC 구현 오류까지 배제하는 증거는 아닙니다.
 
 ## 확인된 권한 악용과 미확정인 최초 침해
 
-서명 검증 결함은 공격자가 필요한 권한 없이 검사를 통과시키는 문제입니다. 이 사건에서 확보한 것은 올바른 digest에 대해 같은 피해 계정으로 복구되고 별도 ECDSA 검증도 통과하는 50개 서명입니다. 현재 증거는 EIP-7702 합의 규칙이나 ECDSA 검증을 우회했다는 분류를 지지하지 않습니다. 유효하게 검증되는 위조가 이론상 불가능하다는 증명까지 한 것은 아니지만, 우선 조사할 경계는 **서명을 생성하거나 획득하는 권한**입니다.
+서명 검증 결함은 공격자가 필요한 권한 없이 검사를 통과시키는 문제입니다. 이 사건에서 확보한 것은 올바른 digest에 대해 같은 피해 계정으로 복구되고 별도 ECDSA 검증도 통과하는 50개 서명입니다. 현재 증거는 EIP-7702 합의 규칙이나 ECDSA 검증을 우회했다는 분류를 지지하지 않습니다. 유효하게 검증되는 위조가 이론상 불가능하다는 증명까지 한 것은 아니지만 우선 조사할 경계는 **서명을 생성하거나 획득하는 권한**입니다.
 
 | 가능한 서명 획득 경로 | 구분에 필요한 증거 |
 | --- | --- |
@@ -156,17 +156,17 @@ Etherscan의 Authorizations 표는 nonce `18914809`만 Validity=True, 나머지 
 
 이 가설들은 동시에 일부 성립할 수도 있으며 현재 온체인 자료로 하나를 선택할 수 없습니다. 모든 서명이 `chain_id=1`이라는 사실도 이 묶음을 다른 체인에서 그대로 쓰는 범용 authorization과 구분할 뿐, 다른 체인의 침해를 설명하지는 않습니다.
 
-정상 지갑 구현의 `execute` 서명 검증이 재사용되거나 우회되는 취약점과도 구분해야 합니다. 여기에는 처음부터 공격에 사용된 구현을 가리키는 authorization이 있습니다. 정상 delegate의 실행 검증 버그를 추가로 가정하지 않아도 초기 경로를 설명할 수 있습니다. Blockaid는 해당 구현을 운영자 주소가 하드코딩된 sweeper로 분석했습니다. 여기서 sweeper라는 표현은 그 분석과 관찰된 반복 자산 이동에 근거하며, 구현 바이트코드나 접근 제어를 독립 감사했다는 뜻은 아닙니다. [Blockaid 원문](https://x.com/blockaid_/status/2115924317888495661)
+정상 지갑 구현의 `execute` 서명 검증이 재사용되거나 우회되는 취약점과도 구분해야 합니다. 여기에는 처음부터 공격에 사용된 구현을 가리키는 authorization이 있습니다. 정상 delegate의 실행 검증 버그를 추가로 가정하지 않아도 초기 경로를 설명할 수 있습니다. Blockaid는 해당 구현을 운영자 주소가 하드코딩된 sweeper로 분석했습니다. 여기서 sweeper라는 표현은 그 분석과 관찰된 반복 자산 이동에 근거하며 구현 바이트코드나 접근 제어를 독립 감사했다는 뜻은 아닙니다. [Blockaid 원문](https://x.com/blockaid_/status/2115924317888495661)
 
 ## Etherscan에 공개된 Claude 재구성 소스
 
 2026-10-30 14:49 KST에 확인한 [위임 구현의 Etherscan 코드 페이지](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code)는 `Source Code Verified / Exact Match`를 표시합니다. 컴파일러는 `v0.8.28+commit.7893614a`, optimizer는 200 runs, EVM 대상은 `cancun`으로 나옵니다. 이는 컴파일한 소스와 배포 코드의 일치 검증 표시이며 보안 감사나 안전성 보증은 아닙니다. 같은 페이지의 감사 항목은 `No Contract Security Audit Submitted`로 표시됐습니다.
 
-공개된 `Target.sol`의 주석은 이를 원본 소스가 아닌 AI 재구성 소스로 명시합니다. 주석에 따르면 Claude가 배포된 런타임 바이트코드에서 2026-10-30 00:30 UTC(09:30 KST)에 재구성했고, `solc 0.8.28`, `via-ir`, optimizer 200 runs, `cancun`으로 컴파일하면 끝부분 메타데이터 해시를 제외한 런타임 바이트코드가 일치한다고 합니다. 컨트랙트명과 매개변수명도 추정이라고 적혀 있습니다. Claude라는 귀속과 재구성 시각은 소스 주석의 주장이며, 작성자 신원이나 업로드 시각을 독립 확인한 자료는 아닙니다. Etherscan의 `Exact Match` 표시와 이 메타데이터 단서는 구분해서 읽어야 하며, 별도 재컴파일이나 바이트코드 대조 결과는 확보하지 않았습니다. [공개 소스](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code)
+공개된 `Target.sol`의 주석은 이를 원본 소스가 아닌 AI 재구성 소스로 명시합니다. 주석에 따르면 Claude가 배포된 런타임 바이트코드에서 2026-10-30 00:30 UTC(09:30 KST)에 재구성했고 `solc 0.8.28`, `via-ir`, optimizer 200 runs, `cancun`으로 컴파일하면 끝부분 메타데이터 해시를 제외한 런타임 바이트코드가 일치한다고 합니다. 컨트랙트명과 매개변수명도 추정이라고 적혀 있습니다. Claude라는 귀속과 재구성 시각은 소스 주석의 주장이며 작성자 신원이나 업로드 시각을 독립 확인한 자료는 아닙니다. Etherscan의 `Exact Match` 표시와 이 메타데이터 단서는 구분해서 읽어야 하며 별도 재컴파일이나 바이트코드 대조 결과는 확보하지 않았습니다. [공개 소스](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code)
 
 이 재구성 소스에서는 `onlyAuthorized`가 호출자를 하드코딩된 `authorizedCaller`인 `0x7C8601d4645b93cea45F71e118A729332e6B5CA0`으로 제한합니다. 앞서 바깥 type-4 거래 서명에서 복구한 제출자와 같은 주소입니다. `sweep`, `withdrawETH`, `withdrawToken`, `callExecute`에 이 제한이 붙어 있어 자산 전송과 외부 실행 호출의 구조를 읽기 쉬워졌습니다. 이는 공개된 재구성 소스의 구조를 확인한 것이며 개별 거래의 실행 trace를 독립 검증한 결과는 아닙니다. [구현 코드](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae#code)
 
-이 자료는 배포된 sweeper의 동작을 이해하는 데 도움을 줍니다. 기존의 유효한 위임 서명 50개라는 검증 결과는 달라지지 않으며, 서명을 누가 어떤 경로로 얻었는지도 밝혀주지 않습니다. 재구성 소스의 공개는 공격자의 원본 소스를 확보했다거나 Claude가 공격 코드를 작성했다는 증거가 아닙니다.
+이 자료는 배포된 sweeper의 동작을 이해하는 데 도움을 줍니다. 기존의 유효한 위임 서명 50개라는 검증 결과는 달라지지 않으며 서명을 누가 어떤 경로로 얻었는지도 밝혀주지 않습니다. 재구성 소스의 공개는 공격자의 원본 소스를 확보했다거나 Claude가 공격 코드를 작성했다는 증거가 아닙니다.
 
 ## 위임의 범위와 외부 지갑 권한
 
@@ -209,7 +209,7 @@ RAD를 풀 경유로 ETH로 바꾼 경로입니다. 중간 USDC는 풀 사이에
 
 누구나 이런 메시지나 더스트를 보낼 수 있습니다. 텍스트의 Hyperliquid·Monero 언급은 해당 서비스로 자금이 흘렀다는 증거가 아닙니다.
 
-대규모 ETH의 후속 주소·브리지·거래소 반출은 전체 이력으로 재구성하지 않았습니다. 최신 25개 전송만으로 전체 자금 흐름을 대신할 수 없으며, 초기 탈취량에서 관찰 잔액을 빼서 외부 반출액으로 계산할 수도 없습니다. 추가 유입, 스왑, 가스, 래핑과 다른 주소·체인의 이동을 함께 대사해야 합니다. 믹서나 특정 서비스로의 최종 도착도 이 확인 범위 밖입니다.
+대규모 ETH의 후속 주소·브리지·거래소 반출은 전체 이력으로 재구성하지 않았습니다. 최신 25개 전송만으로 전체 자금 흐름을 대신할 수 없으며 초기 탈취량에서 관찰 잔액을 빼서 외부 반출액으로 계산할 수도 없습니다. 추가 유입, 스왑, 가스, 래핑과 다른 주소·체인의 이동을 함께 대사해야 합니다. 믹서나 특정 서비스로의 최종 도착도 이 확인 범위 밖입니다.
 
 ## 수탁 운영에서 점검할 서명 경계
 
