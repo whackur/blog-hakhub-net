@@ -65,3 +65,11 @@ npm run dev        # 또는 pnpm dev — Tailwind 감시 + hugo server
 - GitHub Actions 워크플로우가 **Node/pnpm → Tailwind 빌드 → Hugo(모듈 포함) 빌드 → Pages 배포** 순으로 동작해야 한다 (Hugoplate는 Hugo Modules + Tailwind 의존).
 - `static/CNAME` = `blog.hakhub.net` 유지.
 - `/public`, `/resources/_gen`은 커밋 금지 (CI가 빌드).
+
+## llms 파일 갱신
+
+`npm run build`의 프로덕션 Hugo 빌드는 언어별 `llms.txt`, `llms-full.txt`, 페이지별 Markdown을 다시 생성하며, GitHub Pages 배포 시 HTML과 함께 업로드합니다. 원고를 편집하는 즉시 라이브 파일과 동기화되는 방식은 아닙니다. 변경 내용을 라이브에 반영하려면 빌드와 배포가 완료되어야 합니다.
+
+`llms.txt`는 제목·설명과 페이지별 Markdown 링크를 담은 색인이고, `llms-full.txt`는 페이지 본문을 모은 파일입니다. 프로덕션 빌드에서 미발행 초안은 제외됩니다. 이 파일의 제공이 검색 노출이나 AI 서비스의 인용을 보장하지는 않습니다.
+
+SEO 변경은 수정 전 프로덕션 출력에서 `python3 scripts/verify_seo.py --snapshot <baseline.json>`으로 기준을 저장하고, 수정 후 빌드에서 `python3 scripts/verify_seo.py --baseline <baseline.json> --llms-regression`으로 검증할 수 있습니다. 빌드와 검증에는 같은 격리된 Hugo 캐시·리소스 환경을 사용합니다. llms 회귀 검증은 임시 콘텐츠 복사본을 두 번 빌드해 한·영 제목·설명·본문 갱신과 초안 제외를 확인하고 임시 파일을 정리하며, 실제 원고와 프로덕션 출력의 바이트 보존을 검사합니다.

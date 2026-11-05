@@ -5,9 +5,17 @@ locale = "ko-kr"
 contentDir = "content/korean"
 weight = 1
 
+[ko.params.metadata]
+home_title = "HakHubNet | AI·블록체인 기술 블로그"
+description = "AI, 블록체인, 보안, 금융 기술을 다루는 HakHubNet의 한국어 기술 글과 분석입니다."
+
 ################ English language ##################
 [en]
 label = "English"
 locale = "en-us"
 contentDir = "content/english"
 weight = 2
+
+[en.params.metadata]
+home_title = "HakHubNet | AI and blockchain tech blog"
+description = "Technical articles and analysis on AI, blockchain, security, and finance from HakHubNet."
