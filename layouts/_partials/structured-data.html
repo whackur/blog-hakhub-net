@@ -2,8 +2,8 @@
   Project-level SEO/AEO additions: self-referencing canonical + JSON-LD.
 
   Included from layouts/_partials/essentials/head.html, right after the
-  basic-seo module partial. Deliberately kept OUT of a basic-seo.html override
-  so the upstream seo-tools/basic-seo module can keep updating on its own.
+  basic-seo module partial. Metadata and article dates use the same resolvers
+  as the project basic-seo.html override.
 
   https://github.com/gethugothemes/hugo-modules/tree/master/seo-tools/basic-seo
 */}}
@@ -79,13 +79,12 @@
     {{ $article = merge $article (dict "image" .) }}
   {{ end }}
 
-  {{ if not .PublishDate.IsZero }}
-    {{ $article = merge $article (dict "datePublished" (.PublishDate.Format "2006-01-02T15:04:05Z07:00")) }}
-    {{ $modified := .PublishDate }}
-    {{ if not .Lastmod.IsZero }}
-      {{ $modified = .Lastmod }}
-    {{ end }}
-    {{ $article = merge $article (dict "dateModified" ($modified.Format "2006-01-02T15:04:05Z07:00")) }}
+  {{ $dates := partial "seo/article-dates.html" . }}
+  {{ with $dates.published }}
+    {{ $article = merge $article (dict "datePublished" .) }}
+  {{ end }}
+  {{ with $dates.modified }}
+    {{ $article = merge $article (dict "dateModified" .) }}
   {{ end }}
 
   {{/* Author page URL is built exactly like the theme builds its author links
@@ -160,7 +159,8 @@
     "url" .Permalink
     "inLanguage" $inLanguage
   }}
-  {{ with .Params.description | default site.Params.metadata.description }}
+  {{ $metadata := partial "seo/metadata.html" . }}
+  {{ with $metadata.description }}
     {{ $website = merge $website (dict "description" .) }}
   {{ end }}
 

@@ -1,0 +1,68 @@
+{{- $title := site.Title -}}
+{{- $description := .Summary -}}
+{{- $isTopic := in (slice "taxonomy" "term") .Kind -}}
+
+{{- if .IsHome -}}
+  {{- $title = site.Params.metadata.home_title | default $title -}}
+{{- else if $isTopic -}}
+  {{- $taxonomy := .Data.Plural -}}
+  {{- $label := T $taxonomy | default .Title -}}
+  {{- if eq .Kind "term" -}}
+    {{- $title = printf "%s | %s | %s" .Title $label site.Title -}}
+    {{- if eq .Lang "ko" -}}
+      {{- $description = printf "HakHubNet의 %s %s에 속한 기술 글과 분석을 모았습니다." .Title $label -}}
+    {{- else -}}
+      {{- if eq $taxonomy "tags" -}}
+        {{- $description = printf "Technical articles tagged %s on HakHubNet." .Title -}}
+      {{- else -}}
+        {{- $description = printf "Technical articles in the %s category on HakHubNet." .Title -}}
+      {{- end -}}
+    {{- end -}}
+  {{- else -}}
+    {{- $title = printf "%s | %s" $label site.Title -}}
+    {{- if eq .Lang "ko" -}}
+      {{- if eq $taxonomy "tags" -}}
+        {{- $description = "HakHubNet의 태그 목록에서 관심 있는 기술 주제의 글을 찾아보세요." -}}
+      {{- else -}}
+        {{- $description = "HakHubNet의 카테고리 목록에서 AI, 블록체인, 보안, 금융 기술 글을 찾아보세요." -}}
+      {{- end -}}
+    {{- else -}}
+      {{- if eq $taxonomy "tags" -}}
+        {{- $description = "Browse HakHubNet tags to find articles by technical topic." -}}
+      {{- else -}}
+        {{- $description = "Browse HakHubNet categories for articles on AI, blockchain, security, and finance." -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if .Params.meta_title -}}
+  {{- $title = .Params.meta_title -}}
+{{- else if not $isTopic -}}
+  {{- with $.Params.title -}}
+    {{- $title = . -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if .Params.meta_description -}}
+  {{- $description = .Params.meta_description -}}
+{{- else if .Params.description -}}
+  {{- $description = .Params.description -}}
+{{- else if not $isTopic -}}
+  {{- $description = site.Params.metadata.description | default $description -}}
+{{- end -}}
+
+{{/* Only the blog section paginates today. Calling Paginator on other kinds
+  would create pagination that their layouts do not request.
+*/}}
+{{- if and (eq .Kind "section") (eq .Section "blog") -}}
+  {{- if gt .Paginator.PageNumber 1 -}}
+    {{- if eq .Lang "ko" -}}
+      {{- $title = printf "%s | %d페이지" $title .Paginator.PageNumber -}}
+    {{- else -}}
+      {{- $title = printf "%s | Page %d" $title .Paginator.PageNumber -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- return (dict "title" $title "description" $description) -}}

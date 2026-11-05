@@ -4,29 +4,9 @@
   <base href="{{ .Permalink }}" />
 {{ end }}
 
-
-<!-- checking title -->
-{{ $title := site.Title }}
-<!-- checking page meta title -->
-{{ if .Params.meta_title }}
-  {{ $title = .Params.meta_title }}
-  <!-- checking page title -->
-{{ else if .Params.title }}
-  {{ $title = .Params.title }}
-{{ end }}
-
-
-<!-- checking description -->
-{{ $description := .Summary }}
-{{ if .Params.meta_description }}
-  {{ $description = .Params.meta_description }}
-  <!-- checking page description -->
-{{ else if .Params.description }}
-  {{ $description = .Params.description }}
-  <!-- checking page description -->
-{{ else if site.Params.metadata.description }}
-  {{ $description = site.Params.metadata.description }}
-{{ end }}
+{{ $metadata := partial "seo/metadata.html" . }}
+{{ $title := $metadata.title }}
+{{ $description := $metadata.description }}
 
 
 <!-- checking og image -->
@@ -42,6 +22,7 @@
 {{ else if .Params.image }}
   {{ $imagePath = .Params.image }}
 {{ end }}
+
 
 <!-- title -->
 <title>{{ $title }}</title>
@@ -60,9 +41,10 @@
 
 <!-- multilingual SEO optimizations -->
 {{/* Project override: hreflang values come from `.Language.LanguageCode`, the
-     same expression Hugo's embedded sitemap template uses for its xhtml:link
-     hreflang, so head and sitemap always agree. x-default points at the
-     default-language (weight 1) translation rather than the current page. */}}
+  same expression Hugo's embedded sitemap template uses for its xhtml:link
+  hreflang, so head and sitemap always agree. x-default points at the
+  default-language (weight 1) translation rather than the current page.
+*/}}
 {{ if .IsTranslated }}
   {{ $xDefault := .Permalink }}
   {{ range .AllTranslations }}
@@ -137,7 +119,11 @@
         <meta name="twitter:image" content="{{ $image.Permalink }}" />
         <meta
           name="twitter:card"
-          content="{{- if (and (gt $imageWidth 300) (gt $imageHeight 157) (not (eq $imageWidth $imageHeight))) -}}summary_large_image{{- else -}}summary{{- end -}}" />
+          content="{{- if (and (gt $imageWidth 300) (gt $imageHeight 157) (not (eq $imageWidth $imageHeight))) -}}
+            summary_large_image
+          {{- else -}}
+            summary
+          {{- end -}}" />
       {{ end }}
       <!-- /if image gt 144px -->
       <meta property="og:image:width" content="{{ $imageWidth }}" />
@@ -147,9 +133,10 @@
 
     <!-- /if not svg -->
     {{/* Project override: `path.Ext` returns the extension WITH its leading
-         dot (".png"), so the upstream expression emitted "image/.png". Strip
-         the dot, then map the two extensions whose MIME subtype differs from
-         the extension itself. */}}
+      dot (".png"), so the upstream expression emitted "image/.png". Strip
+      the dot, then map the two extensions whose MIME subtype differs from
+      the extension itself.
+    */}}
     {{ $mimeExt := strings.TrimPrefix `.` $imageExt }}
     {{ $mime := printf `image/%s` $mimeExt }}
     {{ if eq $mimeExt `svg` }}
@@ -169,7 +156,18 @@
 <!-- ######### OpenGraph others meta ############## -->
 <meta property="og:title" content="{{ $title }}" />
 <meta property="og:description" content="{{ $description }}" />
-<meta property="og:type" content="website" />
+{{ if and .IsPage (eq .Section "blog") }}
+  <meta property="og:type" content="article" />
+  {{ $dates := partial "seo/article-dates.html" . }}
+  {{ with $dates.published }}
+    <meta property="article:published_time" content="{{ . }}" />
+  {{ end }}
+  {{ with $dates.modified }}
+    <meta property="article:modified_time" content="{{ . }}" />
+  {{ end }}
+{{ else }}
+  <meta property="og:type" content="website" />
+{{ end }}
 <meta property="og:url" content="{{ .Permalink }}" />
 
 <!-- ########## twitter others meta ############### -->
