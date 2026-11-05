@@ -1,0 +1,12 @@
+{{- $dates := dict -}}
+{{- if not .PublishDate.IsZero -}}
+  {{- $modified := .PublishDate -}}
+  {{- if not .Lastmod.IsZero -}}
+    {{- $modified = .Lastmod -}}
+  {{- end -}}
+  {{- $dates = dict
+    "published" (.PublishDate.Format "2006-01-02T15:04:05Z07:00")
+    "modified" ($modified.Format "2006-01-02T15:04:05Z07:00")
+  -}}
+{{- end -}}
+{{- return $dates -}}
