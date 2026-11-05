@@ -1,5 +1,9 @@
 /* Add your own custom styles here */
 
+article .content :where(ul, ol, li, li p):not(:where(.table-of-content *)) {
+  @apply text-base;
+}
+
 .post-tags-label {
   flex-shrink: 0;
   white-space: nowrap;
