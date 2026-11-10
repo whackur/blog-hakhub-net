@@ -73,3 +73,7 @@ npm run dev        # 또는 pnpm dev — Tailwind 감시 + hugo server
 `llms.txt`는 제목·설명과 페이지별 Markdown 링크를 담은 색인이고, `llms-full.txt`는 페이지 본문을 모은 파일입니다. 프로덕션 빌드에서 미발행 초안은 제외됩니다. 이 파일의 제공이 검색 노출이나 AI 서비스의 인용을 보장하지는 않습니다.
 
 SEO 변경은 수정 전 프로덕션 출력에서 `python3 scripts/verify_seo.py --snapshot <baseline.json>`으로 기준을 저장하고, 수정 후 빌드에서 `python3 scripts/verify_seo.py --baseline <baseline.json> --llms-regression`으로 검증할 수 있습니다. 빌드와 검증에는 같은 격리된 Hugo 캐시·리소스 환경을 사용합니다. llms 회귀 검증은 임시 콘텐츠 복사본을 두 번 빌드해 한·영 제목·설명·본문 갱신과 초안 제외를 확인하고 임시 파일을 정리하며, 실제 원고와 프로덕션 출력의 바이트 보존을 검사합니다.
+
+## 링크로 확인하는 미발행 미리보기
+
+선택한 초안만 배포하려면 [미리보기 운영 절차](draft-previews.md)를 따릅니다. 원고의 `draft: true`를 유지하고 `unlisted_preview: true`를 명시합니다. 일반 `npm run build`가 미리보기를 함께 생성합니다. 링크를 아는 누구나 접근할 수 있으며, 공개 저장소의 원문도 공개됩니다.
