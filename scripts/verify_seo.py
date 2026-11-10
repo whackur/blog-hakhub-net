@@ -180,9 +180,7 @@ def verify(destination, baseline):
 def llms_regression(destination):
     before = snapshot(destination)
     output_hashes = {str(p.relative_to(destination)): digest(p) for p in destination.rglob("*") if p.is_file()}
-    work = ROOT / ".atl" / "seo-regression"
-    work.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="fixture-", dir=work) as temporary:
+    with tempfile.TemporaryDirectory(prefix="seo-regression-") as temporary:
         temp = Path(temporary)
         content = temp / "content"
         shutil.copytree(ROOT / "content", content)
@@ -223,10 +221,13 @@ draft: {str(draft).lower()}
                 fallback = terms / "seo-fallback"
                 fallback.mkdir(exist_ok=True)
                 (fallback / "_index.md").write_text('---\ntitle: "Fallback topic"\ndescription: "EXPLICIT-FALLBACK-DESCRIPTION"\n---\n')
-            log = work / f"{stage.lower()}-build.log"
+            log = temp / f"{stage.lower()}-build.log"
             command = ["npm", "run", "build", "--", "--configDir", str(config_dir)]
             with log.open("w") as stream:
-                subprocess.run(command, cwd=ROOT, env=env, stdout=stream, stderr=subprocess.STDOUT, check=True)
+                result = subprocess.run(command, cwd=ROOT, env=env, stdout=stream, stderr=subprocess.STDOUT)
+            if result.returncode:
+                print(log.read_text())
+            result.check_returncode()
             for lang, prefix in (("ko", ""), ("en", "en/")):
                 base = output / prefix
                 index = (base / "llms.txt").read_text()

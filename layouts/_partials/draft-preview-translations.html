@@ -1,0 +1,12 @@
+{{- $translations := .AllTranslations -}}
+{{- if site.Params.draft_preview_build -}}
+  {{- $translations = slice -}}
+  {{- $basePath := (urls.Parse site.BaseURL).Path -}}
+  {{- range .AllTranslations -}}
+    {{- $path := strings.TrimPrefix $basePath (urls.Parse .Permalink).Path -}}
+    {{- if in site.Params.draft_preview_urls $path -}}
+      {{- $translations = $translations | append . -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $translations -}}

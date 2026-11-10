@@ -1,0 +1,8 @@
+<title>{{ .Title }} | {{ site.Title }}</title>
+<meta name="robots" content="noindex,nofollow" />
+<meta name="referrer" content="no-referrer" />
+<meta name="description" content="{{ .Description }}" />
+<link rel="canonical" href="{{ .Permalink }}" />
+{{ range (partial "draft-preview-translations.html" .) }}
+  <link rel="alternate" hreflang="{{ .Language.Locale }}" href="{{ .Permalink }}" />
+{{ end }}
