@@ -37,15 +37,38 @@ def git_inputs():
 
 def mounted_inputs(common):
     result = run("hugo", "config", "mounts", *common, capture_output=True, text=True)
-    remaining = result.stdout.strip()
+    return parse_mounts(result.stdout)
+
+
+def parse_mounts(stdout):
+    remaining = stdout.strip()
+    # Hugo 0.163.3 writes this progress line to stdout on a cold module cache.
+    first, separator, rest = remaining.partition("\n")
+    if separator and first.rstrip("\r") == "hugo: downloading modules …":
+        remaining = rest.lstrip()
     inputs = []
     while remaining:
-        module, end = json.JSONDecoder().raw_decode(remaining)
+        try:
+            module, end = json.JSONDecoder().raw_decode(remaining)
+        except json.JSONDecodeError as error:
+            raise ValueError("Invalid Hugo mount data: expected a complete JSON object") from error
+        if (not isinstance(module, dict)
+                or not isinstance(module.get("dir"), str) or not module["dir"]
+                or "\0" in module["dir"] or not Path(module["dir"]).is_absolute()
+                or not isinstance(module.get("mounts"), list)):
+            raise ValueError("Invalid Hugo mount data: module requires an absolute dir and mounts list")
         directory = Path(module["dir"]).resolve()
         if directory != ROOT:
             inputs.append(directory)
-        inputs.extend(directory / mount["source"] for mount in module["mounts"])
+        for mount in module["mounts"]:
+            if (not isinstance(mount, dict)
+                    or any(not isinstance(mount.get(key), str) or not mount[key] or "\0" in mount[key]
+                           for key in ("source", "target"))):
+                raise ValueError("Invalid Hugo mount data: mount requires nonempty source and target strings")
+            inputs.append(directory / mount["source"])
         remaining = remaining[end:].lstrip()
+    if not inputs:
+        raise ValueError("Invalid Hugo mount data: no input paths returned")
     return inputs
 
 

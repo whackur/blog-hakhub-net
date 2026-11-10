@@ -10,8 +10,9 @@ import shutil
 import subprocess
 import tempfile
 from urllib.parse import urlsplit
+from unittest.mock import patch
 
-from build_previews import SEGMENT, OUTPUT_MARKER
+from build_previews import SEGMENT, OUTPUT_MARKER, mounted_inputs, validate_destination
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -68,21 +69,73 @@ def page(root, language, slug, *, draft=True, opt=True, future=False, expired=Fa
     return path
 
 
-def build(root, name, destination=None, cli=False):
+def build(root, name, destination=None, cli=False, cold=False):
     sources = manifest(root / "content")
     log = root / f"{name}.log"
     with log.open("w") as stream:
         command = ["npm", "run", "build"]
         if cli:
             command += ["--", "--destination", str(destination)]
-        result = subprocess.run(command, cwd=root, stdout=stream, stderr=subprocess.STDOUT,
-                                env=dict(os.environ, HUGO_PUBLISHDIR=str(root / "content" if cli else destination or root / "public"),
-                                         HUGO_BUILDDRAFTS="true", HUGO_BUILDFUTURE="true", HUGO_BUILDEXPIRED="true"))
+        env = dict(os.environ, HUGO_PUBLISHDIR=str(root / "content" if cli else destination or root / "public"),
+                   HUGO_BUILDDRAFTS="true", HUGO_BUILDFUTURE="true", HUGO_BUILDEXPIRED="true")
+        if cold:
+            for key in ("HUGO_CACHEDIR", "GOMODCACHE", "GOCACHE"):
+                path = root.parent / key.lower()
+                assert not path.exists(), ("Cache must start absent", path)
+                env[key] = str(path)
+        result = subprocess.run(command, cwd=root, stdout=stream, stderr=subprocess.STDOUT, env=env)
     if result.returncode:
         print(log.read_text())
     assert result.returncode == 0, (name, result.returncode)
     assert manifest(root / "content") == sources, "Build changed editorial sources"
-    print(f"PASS {name}: npm run build (exit 0), sources preserved", flush=True)
+    print(f"PASS {name}: npm run build (exit 0), sources preserved" + (", fresh Hugo/Go caches" if cold else ""), flush=True)
+
+
+def assert_mount_parser():
+    with tempfile.TemporaryDirectory(prefix="mount-parser-") as temporary:
+        source = Path(temporary) / "mounted-input"
+        source.mkdir()
+        sentinel = source / "sentinel"
+        sentinel.write_text("preserve mounted input")
+        module = {"dir": str(ROOT), "mounts": [{"source": str(source), "target": "assets"}]}
+        second = {"dir": str(Path(temporary) / "module"), "mounts": [{"source": "layouts", "target": "layouts"}]}
+        stream = json.dumps(module) + "\n" + json.dumps(second) + "\n"
+        expected = [source, Path(second["dir"]), Path(second["dir"]) / "layouts"]
+        for prefix in ("", "hugo: downloading modules …\n", "hugo: downloading modules …\r\n"):
+            with patch("build_previews.run", return_value=subprocess.CompletedProcess([], 0, prefix + stream)):
+                inputs = mounted_inputs([])
+            assert inputs == expected
+            try:
+                validate_destination(source / "new-output", inputs)
+            except ValueError as error:
+                assert "overlaps an input" in str(error)
+            else:
+                raise AssertionError("Prefixed mount data failed to protect the mounted source")
+        malformed_modules = [None, [], {}, {"dir": "relative", "mounts": []},
+                             {"dir": "", "mounts": []}, {"dir": 3, "mounts": []},
+                             {"dir": str(ROOT), "mounts": None}, {"dir": str(ROOT), "mounts": []},
+                             {"dir": str(ROOT), "mounts": [None]}]
+        for field in ("source", "target"):
+            for value in (None, "", 1, "nul\0path"):
+                mount = {"source": str(source), "target": "assets", field: value}
+                malformed_modules.append({"dir": str(ROOT), "mounts": [mount]})
+        invalid = ["", "hugo: downloading modules …\n", "unexpected diagnostic\n" + stream,
+                   "hugo: downloading modules …\n{broken}\n" + stream, stream + "trailing diagnostic",
+                   json.dumps(module) + '\n{"dir":', stream + '\n{"mounts":null}',
+                   json.dumps(module) + "\nhugo: downloading modules …\n" + json.dumps(second)]
+        invalid += [json.dumps(value) for value in malformed_modules]
+        for value in invalid:
+            for prefix in ("", "hugo: downloading modules …\n"):
+                with patch("build_previews.run", return_value=subprocess.CompletedProcess([], 0, prefix + value)):
+                    try:
+                        mounted_inputs([])
+                    except ValueError as error:
+                        assert "Invalid Hugo mount data" in str(error), error
+                    else:
+                        raise AssertionError(f"Invalid mounts were accepted: {value!r}")
+        assert sentinel.read_text() == "preserve mounted input"
+        assert not (source / "new-output").exists()
+    print(f"PASS mount parser: warm/prefixed streams preserve input guards; {len(invalid) * 2} malformed streams refused", flush=True)
 
 
 def assert_destination_safety(root):
@@ -209,6 +262,7 @@ def assert_unlisted(output, slugs):
 
 
 def main():
+    assert_mount_parser()
     originals = {name: manifest(ROOT / name) for name in ("content", "assets", "static")}
     with tempfile.TemporaryDirectory(prefix="preview-regression-") as temporary:
         root = Path(temporary) / "repo"
@@ -243,7 +297,7 @@ def main():
         page(root, "english", translation_slugs[2], draft=False, opt=False, classified=False)
         for language in ("korean", "english"):
             page(root, language, "preview-regression-published-pair", draft=False, opt=False, classified=False)
-        build(root, "initial")
+        build(root, "initial", cold=True)
         output = root / "public"
         slugs = ["preview-system-check", "preview-regression-opted", "preview-regression-future", "preview-regression-bundle", "preview-regression-solo"]
         for prefix in ("", "en/"):
