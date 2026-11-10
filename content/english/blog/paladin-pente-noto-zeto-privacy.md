@@ -3,7 +3,7 @@ title: "Paladin Pente, Noto, and Zeto: Private Data and Settlement Validation"
 description: "How Besu and Paladin divide responsibilities, how Pente, Noto, and Zeto validate private transitions, and how they settle DvP on one ledger."
 meta_title: ""
 date: 2026-11-10T07:13:48Z
-lastmod: 2026-11-10T07:13:48Z
+lastmod: 2026-11-10T08:20:54Z
 image: "/images/posts/paladin-pente-noto-zeto-privacy/cover.png"
 categories: ["Blockchain"]
 tags: ["besu", "paladin", "pente", "noto", "zeto", "privacy", "atomic-settlement"]

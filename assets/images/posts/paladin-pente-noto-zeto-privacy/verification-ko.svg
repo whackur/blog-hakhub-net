@@ -1,45 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="560" height="1140" viewBox="0 0 560 1140" role="img" aria-labelledby="title desc" lang="ko">
-<title id="title">비공개 데이터와 원장 검증</title><desc id="desc">Paladin 도메인의 논리적 경계. Besu가 실행하는 하나의 공유 원장. 각 도메인은 서로 다른 검증 기준 유지. 최종 EVM 실행에서 결제 leg 결합 가능</desc>
-<style>text{font-family:system-ui,sans-serif;fill:#172838} .bg{fill:#fafcfd} .panel{fill:#fff;stroke:#cad5dc} .band{fill:#eaf0f5} .label{fill:#4c5e6c} @media(prefers-color-scheme:dark){.bg{fill:#14202b}.panel{fill:#1b2d3b;stroke:#526677}.band{fill:#263f52}text{fill:#f3f7fa}.label{fill:#c2d0db}}</style>
-<rect width="560" height="1140" class="bg"/>
-<text x="24" y="45" font-size="30" font-weight="700">비공개 데이터와 원장 검증</text>
-<text x="24" y="77" font-size="23" class="label">Paladin 도메인의 논리적 경계</text>
-<rect x="16" y="100" width="528" height="276" rx="14" class="panel" stroke-width="2"/>
-<rect x="16" y="100" width="8" height="276" rx="4" fill="#1f5275"/>
-<text x="38" y="136" font-size="30" font-weight="700">Pente</text>
-<text x="38" y="168" font-size="22" class="label">비공개 영역</text>
-<text x="38" y="201" font-size="24">계정·storage·nonce·실행 입력</text>
-<text x="38" y="231" font-size="24">그룹 멤버가 보관하고 재실행</text>
-<path d="M 280 242 v 20 m -6 -6 l 6 6 l 6 -6" fill="none" stroke="#6c8191" stroke-width="3"/>
-<rect x="30" y="271" width="500" height="94" rx="8" class="band"/>
-<text x="42" y="297" font-size="21" class="label">공유 EVM의 계약 검사</text>
-<text x="42" y="326" font-size="23">endorsement 서명 + 상태 ID</text>
-<text x="42" y="353" font-size="23">inputs 소비 · reads 유효성 확인</text>
-<rect x="16" y="395" width="528" height="276" rx="14" class="panel" stroke-width="2"/>
-<rect x="16" y="395" width="8" height="276" rx="4" fill="#825526"/>
-<text x="38" y="431" font-size="30" font-weight="700">Noto</text>
-<text x="38" y="463" font-size="22" class="label">비공개 영역</text>
-<text x="38" y="492" font-size="24">owner·amount·salt</text>
-<text x="38" y="518" font-size="24">notary와 지정 당사자가 열람</text>
-<text x="38" y="544" font-size="23">값 보존 검사는 notary가 수행</text>
-<path d="M 280 552 v 10 m -5 -5 l 5 5 l 5 -5" fill="none" stroke="#6c8191" stroke-width="3"/>
-<rect x="30" y="566" width="500" height="94" rx="8" class="band"/>
-<text x="42" y="592" font-size="21" class="label">공유 EVM의 계약 검사</text>
-<text x="42" y="621" font-size="23">notary / spender 권한 + 상태 ID</text>
-<text x="42" y="648" font-size="23">입력 미소비 확인 · 상태 소비</text>
-<rect x="16" y="690" width="528" height="276" rx="14" class="panel" stroke-width="2"/>
-<rect x="16" y="690" width="8" height="276" rx="4" fill="#316650"/>
-<text x="38" y="726" font-size="30" font-weight="700">Zeto</text>
-<text x="38" y="758" font-size="22" class="label">비공개 영역</text>
-<text x="38" y="791" font-size="24">증명 생성 주체: 비밀키·witness</text>
-<text x="38" y="821" font-size="24">수취자: 자기 출력 opening</text>
-<path d="M 280 832 v 20 m -6 -6 l 6 6 l 6 -6" fill="none" stroke="#6c8191" stroke-width="3"/>
-<rect x="30" y="861" width="500" height="94" rx="8" class="band"/>
-<text x="42" y="887" font-size="21" class="label">공유 EVM의 계약 검사</text>
-<text x="42" y="916" font-size="23">proof + 공개 입력 + 소비 규칙</text>
-<text x="42" y="943" font-size="23">nullifier 변형은 Merkle 포함 증명</text>
-<rect x="16" y="995" width="528" height="125" rx="14" fill="#203b52"/>
-<text x="32" y="1029" font-size="24" style="fill:#fff" font-weight="700">Besu가 실행하는 하나의 공유 원장</text>
-<text x="32" y="1063" font-size="24" style="fill:#fff" font-weight="400">각 도메인은 서로 다른 검증 기준 유지</text>
-<text x="32" y="1097" font-size="24" style="fill:#fff" font-weight="400">최종 EVM 실행에서 결제 leg 결합 가능</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="842" viewBox="0 0 560 842" role="img" aria-labelledby="title desc" lang="ko">
+<title id="title">비공개 데이터와 원장 검증</title>
+<desc id="desc">Pente, Noto, Zeto의 비공개 데이터와 검증 주체를 공유 EVM 계약의 검사와 나란히 비교합니다. Besu 같은 공유 원장에서도 도메인별 검증 규칙은 유지되며, 최종 EVM 거래에서 결제 leg를 결합할 수 있습니다.</desc>
+<style>
+text{font-family:system-ui,sans-serif;font-size:22px;fill:#25323d}
+.bg{fill:#fff}.rule{stroke:#d6dce1;stroke-width:1}.divider{stroke:#d6dce1;stroke-width:1;stroke-dasharray:3 5}
+.title{font-size:24px;font-weight:600}.head{font-size:21px;fill:#53616c}.domain{font-size:23px;font-weight:600;fill:#35627a}.note{font-size:21px;fill:#53616c}
+@media(prefers-color-scheme:dark){.bg{fill:#171c22}text{fill:#e2e7ec}.rule,.divider{stroke:#45515c}.head,.note{fill:#bac4ce}.domain{fill:#91b9ce}}
+</style>
+<rect width="560" height="842" class="bg"/>
+<text x="20" y="36" class="title">비공개 데이터와 원장 검증</text>
+<text x="20" y="78" class="head">비공개 데이터·검증</text>
+<text x="298" y="78" class="head">공유 EVM 계약의 검사</text>
+<path d="M20 94H540 M280 110V728" class="divider" fill="none"/>
+<text x="20" y="128" class="domain">Pente</text>
+<text x="20" y="164">EVM 계정·storage</text>
+<text x="20" y="192">nonce·실행 입력</text>
+<text x="20" y="220">그룹 멤버가 보관·재실행</text>
+<text x="298" y="164">endorsement 서명</text>
+<text x="298" y="192">+ 상태 ID</text>
+<text x="298" y="220">inputs 소비</text>
+<text x="298" y="248">reads 유효성 확인</text>
+<path d="M20 292H540" class="rule" fill="none"/>
+<text x="20" y="328" class="domain">Noto</text>
+<text x="20" y="364">owner·amount·salt</text>
+<text x="20" y="392">notary·지정 당사자 열람</text>
+<text x="20" y="420">notary가 값 보존 검사</text>
+<text x="298" y="364">notary / spender 권한</text>
+<text x="298" y="392">+ 상태 ID</text>
+<text x="298" y="420">입력 미소비 확인</text>
+<text x="298" y="448">상태 소비</text>
+<path d="M20 492H540" class="rule" fill="none"/>
+<text x="20" y="528" class="domain">Zeto</text>
+<text x="20" y="564">증명 생성자: 비밀키</text>
+<text x="20" y="592">+ witness</text>
+<text x="20" y="620">수취자: 자기 출력</text>
+<text x="20" y="648">opening</text>
+<text x="298" y="564">verifier: proof</text>
+<text x="298" y="592">+ 공개 입력</text>
+<text x="298" y="620">계약: 소비 규칙</text>
+<text x="298" y="648">nullifier 변형:</text>
+<text x="298" y="676">Merkle 포함 검사</text>
+<path d="M20 692H540" class="rule" fill="none"/>
+<text x="20" y="762" class="note">Besu 같은 하나의 공유 원장</text>
+<text x="20" y="790" class="note">도메인별 검증 규칙 유지</text>
+<text x="20" y="818" class="note">최종 EVM 거래에서 결제 leg 결합 가능</text>
 </svg>

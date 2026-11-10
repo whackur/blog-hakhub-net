@@ -1,45 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="560" height="1140" viewBox="0 0 560 1140" role="img" aria-labelledby="title desc" lang="en">
-<title id="title">Private data and ledger checks</title><desc id="desc">Logical boundaries of Paladin domains. One shared ledger executed by Besu. Each domain retains its validation rules. Settlement legs can join one final EVM tx</desc>
-<style>text{font-family:system-ui,sans-serif;fill:#172838} .bg{fill:#fafcfd} .panel{fill:#fff;stroke:#cad5dc} .band{fill:#eaf0f5} .label{fill:#4c5e6c} @media(prefers-color-scheme:dark){.bg{fill:#14202b}.panel{fill:#1b2d3b;stroke:#526677}.band{fill:#263f52}text{fill:#f3f7fa}.label{fill:#c2d0db}}</style>
-<rect width="560" height="1140" class="bg"/>
-<text x="24" y="45" font-size="30" font-weight="700">Private data and ledger checks</text>
-<text x="24" y="77" font-size="23" class="label">Logical boundaries of Paladin domains</text>
-<rect x="16" y="100" width="528" height="276" rx="14" class="panel" stroke-width="2"/>
-<rect x="16" y="100" width="8" height="276" rx="4" fill="#1f5275"/>
-<text x="38" y="136" font-size="30" font-weight="700">Pente</text>
-<text x="38" y="168" font-size="22" class="label">PRIVATE AREA</text>
-<text x="38" y="201" font-size="24">Accounts, storage, nonce, input</text>
-<text x="38" y="231" font-size="24">Group members store and re-execute</text>
-<path d="M 280 242 v 20 m -6 -6 l 6 6 l 6 -6" fill="none" stroke="#6c8191" stroke-width="3"/>
-<rect x="30" y="271" width="500" height="94" rx="8" class="band"/>
-<text x="42" y="297" font-size="21" class="label">SHARED EVM CONTRACT CHECKS</text>
-<text x="42" y="326" font-size="23">Endorsements + state IDs</text>
-<text x="42" y="353" font-size="23">Consume inputs; check read states</text>
-<rect x="16" y="395" width="528" height="276" rx="14" class="panel" stroke-width="2"/>
-<rect x="16" y="395" width="8" height="276" rx="4" fill="#825526"/>
-<text x="38" y="431" font-size="30" font-weight="700">Noto</text>
-<text x="38" y="463" font-size="22" class="label">PRIVATE AREA</text>
-<text x="38" y="492" font-size="24">Owner, amount, salt</text>
-<text x="38" y="518" font-size="24">Notary and designated parties see data</text>
-<text x="38" y="544" font-size="23">Notary checks value conservation</text>
-<path d="M 280 552 v 10 m -5 -5 l 5 5 l 5 -5" fill="none" stroke="#6c8191" stroke-width="3"/>
-<rect x="30" y="566" width="500" height="94" rx="8" class="band"/>
-<text x="42" y="592" font-size="21" class="label">SHARED EVM CONTRACT CHECKS</text>
-<text x="42" y="621" font-size="23">Notary / spender authority + IDs</text>
-<text x="42" y="648" font-size="23">Check unspent inputs; consume states</text>
-<rect x="16" y="690" width="528" height="276" rx="14" class="panel" stroke-width="2"/>
-<rect x="16" y="690" width="8" height="276" rx="4" fill="#316650"/>
-<text x="38" y="726" font-size="30" font-weight="700">Zeto</text>
-<text x="38" y="758" font-size="22" class="label">PRIVATE AREA</text>
-<text x="38" y="791" font-size="24">Prover: private key and witness</text>
-<text x="38" y="821" font-size="24">Recipient: own output opening</text>
-<path d="M 280 832 v 20 m -6 -6 l 6 6 l 6 -6" fill="none" stroke="#6c8191" stroke-width="3"/>
-<rect x="30" y="861" width="500" height="94" rx="8" class="band"/>
-<text x="42" y="887" font-size="21" class="label">SHARED EVM CONTRACT CHECKS</text>
-<text x="42" y="916" font-size="23">Proof + public inputs + spend rules</text>
-<text x="42" y="943" font-size="23">Nullifier variant proves membership</text>
-<rect x="16" y="995" width="528" height="125" rx="14" fill="#203b52"/>
-<text x="32" y="1029" font-size="24" style="fill:#fff" font-weight="700">One shared ledger executed by Besu</text>
-<text x="32" y="1063" font-size="24" style="fill:#fff" font-weight="400">Each domain retains its validation rules</text>
-<text x="32" y="1097" font-size="24" style="fill:#fff" font-weight="400">Settlement legs can join one final EVM tx</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="842" viewBox="0 0 560 842" role="img" aria-labelledby="title desc" lang="en">
+<title id="title">Private data and ledger checks</title>
+<desc id="desc">Pente, Noto and Zeto private data and validation roles are compared alongside shared EVM contract checks. Each domain retains its validation rules on a shared ledger such as Besu; settlement legs can join one final EVM transaction.</desc>
+<style>
+text{font-family:system-ui,sans-serif;font-size:22px;fill:#25323d}
+.bg{fill:#fff}.rule{stroke:#d6dce1;stroke-width:1}.divider{stroke:#d6dce1;stroke-width:1;stroke-dasharray:3 5}
+.title{font-size:24px;font-weight:600}.head{font-size:21px;fill:#53616c}.domain{font-size:23px;font-weight:600;fill:#35627a}.note{font-size:21px;fill:#53616c}
+@media(prefers-color-scheme:dark){.bg{fill:#171c22}text{fill:#e2e7ec}.rule,.divider{stroke:#45515c}.head,.note{fill:#bac4ce}.domain{fill:#91b9ce}}
+</style>
+<rect width="560" height="842" class="bg"/>
+<text x="20" y="36" class="title">Private data and ledger checks</text>
+<text x="20" y="78" class="head">Private data &amp; roles</text>
+<text x="298" y="78" class="head">EVM contract checks</text>
+<path d="M20 94H540 M280 110V728" class="divider" fill="none"/>
+<text x="20" y="128" class="domain">Pente</text>
+<text x="20" y="164">EVM accounts</text>
+<text x="20" y="192">storage, nonce</text>
+<text x="20" y="220">Execution input</text>
+<text x="20" y="248">Group members store</text>
+<text x="20" y="276">data and re-execute</text>
+<text x="298" y="164">Endorsement</text>
+<text x="298" y="192">signatures, state IDs</text>
+<text x="298" y="220">Consume inputs;</text>
+<text x="298" y="248">check read states</text>
+<path d="M20 292H540" class="rule" fill="none"/>
+<text x="20" y="328" class="domain">Noto</text>
+<text x="20" y="364">Owner, amount, salt</text>
+<text x="20" y="392">Notary + designated</text>
+<text x="20" y="420">parties see data</text>
+<text x="20" y="448">Notary checks</text>
+<text x="20" y="476">value conservation</text>
+<text x="298" y="364">Notary / spender</text>
+<text x="298" y="392">authority + state IDs</text>
+<text x="298" y="420">Check inputs unspent</text>
+<text x="298" y="448">consume states</text>
+<path d="M20 492H540" class="rule" fill="none"/>
+<text x="20" y="528" class="domain">Zeto</text>
+<text x="20" y="564">Prover: private key</text>
+<text x="20" y="592">+ witness</text>
+<text x="20" y="620">Recipient: own output</text>
+<text x="20" y="648">opening</text>
+<text x="298" y="564">Verifier: proof +</text>
+<text x="298" y="592">public inputs</text>
+<text x="298" y="620">Contract: spend rules</text>
+<text x="298" y="648">Nullifier variant:</text>
+<text x="298" y="676">Merkle membership</text>
+<path d="M20 692H540" class="rule" fill="none"/>
+<text x="20" y="762" class="note">One shared ledger (e.g. Besu).</text>
+<text x="20" y="790" class="note">Each domain keeps its validation rules.</text>
+<text x="20" y="818" class="note">Settlement legs can join one final EVM tx.</text>
 </svg>
