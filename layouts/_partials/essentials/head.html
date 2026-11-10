@@ -29,6 +29,9 @@
 {{ partialCached "site-verifications.html" . }}
 
 
+{{ if site.Params.draft_preview_build }}
+  {{ partial "draft-preview-head.html" . }}
+{{ else }}
 <!-- opengraph and twitter card -->
 {{/* https://github.com/gethugothemes/hugo-modules/tree/master/seo-tools/basic-seo */}}
 {{ partial "basic-seo.html" . }}
@@ -79,3 +82,5 @@
 <!-- Crisp Chat -->
 {{/* https://github.com/gethugothemes/hugo-modules/tree/master/components/crisp-chat */}}
 {{/* {{ partialCached "crisp-chat.html" . }} */}}
+
+{{ end }}
