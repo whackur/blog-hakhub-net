@@ -3,7 +3,7 @@ title: "Paladin의 Pente·Noto·Zeto: 비공개 데이터와 결제 검증의 �
 description: "Besu와 Paladin의 역할부터 Pente 그룹 승인, Noto notary, Zeto 영지식 증명, 같은 원장의 DvP 결제까지 설명합니다."
 meta_title: ""
 date: 2026-11-10T07:13:48Z
-lastmod: 2026-11-10T07:13:48Z
+lastmod: 2026-11-10T08:20:54Z
 image: "/images/posts/paladin-pente-noto-zeto-privacy/cover.png"
 categories: ["Blockchain"]
 tags: ["besu", "paladin", "pente", "noto", "zeto", "privacy", "atomic-settlement"]
